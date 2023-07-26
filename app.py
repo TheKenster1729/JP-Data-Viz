@@ -9,8 +9,6 @@ from styling import Options
 styling_options = Options()
 app = Dash(__name__)
 
-print([{"label": region, "value": [region]} for region in styling_options.region_names])
-
 app.layout = html.Div([
     dcc.Dropdown(id = "timeseries_regions",
                  value = "GLB",

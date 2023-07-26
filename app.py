@@ -7,11 +7,12 @@ import plotly.express as px
 from styling import Options
 
 styling_options = Options()
-app = Dash(__name__)
+dash_app = Dash(__name__)
+app = dash_app.server
 
-app.layout = html.Div([
+dash_app.layout = html.Div([
     dcc.Dropdown(id = "timeseries_regions",
-                 value = "GLB",
+                 value = ["GLB"],
                  options = [{"label": region, "value": region} for region in styling_options.region_names]),
     dcc.Dropdown(id = "timeseries_output",
                 value = "GDP_billion_USD2007",
@@ -19,7 +20,7 @@ app.layout = html.Div([
     dcc.Graph(id = "timeseries_1")
 ])
 
-@app.callback(Output("timeseries_1", "figure"),  
+@dash_app.callback(Output("timeseries_1", "figure"),  
               Input("timeseries_regions", "value"),
               Input("timeseries_output", "value"))
 def timeseries_1(region, output):
@@ -29,4 +30,4 @@ def timeseries_1(region, output):
     return fig
 
 if __name__ == "__main__":
-    app.run()
+    dash_app.run()

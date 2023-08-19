@@ -13,8 +13,8 @@ class LoadData:
         self.output_file = self.filters["output_name"] + ".csv"
         self.scenario = self.filters["scenario"]
         self.years = self.filters["year"]
-        self.path_to_file = os.path.join(self.directory, self.scenario, self.output_file)
-        
+        self.path_to_file = os.path.join(self.directory, self.scenario[0], self.output_file)
+
     def csv_to_dataframe(self):
         self.dataframe = pd.read_csv(self.path_to_file)
         # first by region

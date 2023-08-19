@@ -3,6 +3,9 @@ import plotly.express as px
 from processing import LoadData
 import numpy as np
 from styling import Color
+import pandas as pd
+import plotly.figure_factory as ff
+from plotly.subplots import make_subplots
 
 class Bar:
     pass
@@ -28,7 +31,7 @@ class TimeSeries:
         ninetieth_df = dataframe.pivot_table("Value", index = ["Region"], columns = ["Year"], aggfunc = lambda x: np.percentile(x, 90))
 
         fig = go.Figure()
-        for i, region in enumerate(self.regions):
+        for i, region in enumerate([self.regions]):
             color = Color().timeseries_colors[i]
             fig.add_scatter(x = tenth_df.columns, y = tenth_df.loc[region], mode = "lines", line_color = color)
             fig.add_scatter(x = median_df.columns, y = median_df.loc[region], mode = "lines", fill = "tonexty", line_color = color)
@@ -41,5 +44,26 @@ class TimeSeries:
     # for a given output, select region and select multiple scenarios
     # for a given output, select a scenario and select multiple regions
 
+
+class InputDistributions:
+    def __init__(self, inputs):
+        test_inputs = np.random.normal(loc = 0, scale = 1, size = (400, 50))
+        column_names = [f"Column {i}" for i in range(1, 51)]
+        testing_df = pd.DataFrame(test_inputs, columns = column_names)
+        self.testing_df = testing_df
+        self.inputs = inputs
+
+    def create_input_distribution(self):
+        data = self.testing_df[self.inputs]
+        fig = make_subplots(rows = 1, cols = len(self.inputs))
+        for i in range(len(self.inputs)):
+            fig.add_trace(go.Violin(x = data[self.inputs[i]], name = self.inputs[0]), row = 1, col = i + 1)
+
+        fig.update_traces(orientation = 'h', side = 'positive', width = 3, points = False)
+
+        return fig
+
 if __name__ == "__main__":
-    TimeSeries("type1", "GDP_billion_USD2007", ["GLB", "USA", "MEX"], "Ref", [i for i in range(2020, 2101, 5)]).create_type1_timeseries()
+
+    fig = InputDistributions(["Column 1", "Column 2", "Column 3"]).create_input_distribution()
+    fig.show()

@@ -295,7 +295,8 @@ if __name__ == "__main__":
 
     # input dist
     fig = InputDistribution(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot("WindGas")
-    fig.write_image("assets\examples\inputs_windgas_focus.svg")
+    fig.show()
+    # fig.write_image("assets\examples\inputs_windgas_focus.svg")
 
     # input-output mapping
     # df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)

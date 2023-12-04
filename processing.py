@@ -11,17 +11,18 @@ class LoadData:
         self.filters = filters
         self.regions = self.filters["region"]
         self.output_file = self.filters["output_name"] + ".csv"
-        self.scenario = self.filters["scenario"]
+        # temporary solution
+        self.scenario = self.filters["scenario"][0] if type(self.filters["scenario"]) is list else self.filters["scenario"]
         self.years = self.filters["year"]
-        self.path_to_file = os.path.join(self.directory, self.scenario[0], self.output_file)
+        self.path_to_file = os.path.join(self.directory, self.scenario, self.output_file)
 
     def csv_to_dataframe(self):
-        self.dataframe = pd.read_csv(self.path_to_file)
+        self.dataframe = pd.read_csv(self.path_to_file, usecols = [1, 2, 3, 4, 5])
         # first by region
         self.filtered_df = self.dataframe.query("Region == @self.regions")
         # then by year
         self.filtered_df = self.filtered_df.query("Year == @self.years")
-        
+
         return self.filtered_df
 
     def export_dataframe(self):
@@ -40,7 +41,7 @@ class Scripts:
         self.initial_directory = initial_directory
         self.output_directory = output_directory
         self.aggregate_df = None
-        self.cases = ["Ref"]
+        self.cases = ["Ref", "2C"]
         # self.list_filenames_by_case_dict = self.list_filenames_by_case()
         self.main()
 

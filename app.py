@@ -408,7 +408,9 @@ def update_figure(output, region, scenario, year):
 ###############################################
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = True,
+            port = "8050",
+            host = "18.13.51.101")
 
     # discarded components
 

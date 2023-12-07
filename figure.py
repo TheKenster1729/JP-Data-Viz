@@ -130,9 +130,6 @@ class TimeSeries:
             plot.add_trace(trace, row = row, col = col)
 
         plot.update_layout(title = "{} Timeseries and Distributions for {}".format(Readability().readability_dict_forward[self.output], self.year),
-                        plot_bgcolor = "#060606",
-                        paper_bgcolor = "#060606",
-                        font_color = "white",
                         height = 700,
                         margin = dict(l = 0, r = 0)
                         )
@@ -274,9 +271,6 @@ class InputOutputMappingPlot(InputOutputMapping):
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
                                       dimensions = dimensions, labelside = "bottom"), row = 1, col = 2)
         fig.update_layout(margin = dict(l = 50, r = 50, t = 50),
-                          plot_bgcolor = "#060606",
-                          paper_bgcolor = "#060606",
-                          font_color = "white",
                           title = "Feature Importances and Parallel Plot",
                           width = 1200,
                           height = 600)
@@ -286,6 +280,9 @@ class InputOutputMappingPlot(InputOutputMapping):
             fig.show()
 
         return fig
+
+class ParallelCoords:
+    pass
 
 if __name__ == "__main__":
     # timeseries

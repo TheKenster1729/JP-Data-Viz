@@ -9,7 +9,7 @@ from dash.dependencies import Input, Output, State, MATCH
 from figure import TimeSeries, InputDistribution, OutputDistribution, InputOutputMappingPlot
 import numpy as np
 
-app = dash.Dash(__name__, external_stylesheets = [dbc.themes.CYBORG])
+app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE])
 
 # initialize SQL database
 db = SQLConnection("jp_data")
@@ -41,7 +41,7 @@ navbar = dbc.Navbar(
                 dbc.Col(children = 
                     html.A(
                         "Dashboard Guide",
-                        href = "https://jp-data-viz.notion.site/MIT-JP-Data-Visualization-Dashboard-User-Guide-f696462c92bc4280a261ef67b1ab3bf3?pvs=4",
+                        href = "https://www.notion.so/thekenster/MIT-JP-Data-Visualization-Dashboard-User-Guide-f696462c92bc4280a261ef67b1ab3bf3",
                         target = "_blank",
                         style = {"textDecoration": "none", "color": "white", "text-align": "right"},
                     ),
@@ -61,7 +61,7 @@ navbar = dbc.Navbar(
     ]
 )
 
-output_timeseries = html.Div(id = "tab-1-content",
+output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
     children = [
         html.Br(),
         html.Div("Click the button below to display time series data for a new output.", className = "primary"),
@@ -163,7 +163,7 @@ app.layout = html.Div(
     [
     navbar,
     html.Br(),
-    html.P("Select a tab to display data or run scenario discovery algorithms. All figures are preserved when you switch between tabs.", className = "text-primary"),
+    html.P("Select a tab to display data or run scenario discovery algorithms. All figures are preserved when you switch between tabs.", className = "text-primary", style = {"padding": 20}),
     html.Div([
         dbc.Tabs(
             id = "tabs",

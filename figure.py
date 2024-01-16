@@ -9,6 +9,7 @@ import numpy as np
 import plotly.express as px
 from itertools import product
 from plotly.colors import n_colors
+from sklearn.preprocessing import normalize
 
 class TimeSeries:
     def __init__(self, output, year, df):
@@ -98,7 +99,7 @@ class TimeSeries:
             for j, scenario in enumerate(self.scenarios):
                 df_to_plot = self.data_for_histogram.query("Region==@region & Scenario==@scenario")
                 hist.add_trace(go.Histogram(x = df_to_plot["Value"], marker_color = Color().region_colors[region], name = region + " " + scenario, legendgroup = region,
-                                            marker = dict(pattern = dict(shape = Color().histogram_patterns[scenario])), hoverinfo = "name"), 
+                                            marker = dict(pattern = dict(shape = Color().histogram_patterns[scenario])), hoverinfo = "name", histnorm = "probability"), 
                                row = j + 1, col = i + 1)
         hist.update_layout(title_text = "Distributions for {}, {}".format(Readability().readability_dict_forward[self.output], self.year))
 
@@ -107,7 +108,20 @@ class TimeSeries:
 
         return hist
     
-    def make_plot(self, show = False, show_uncertainty = True, upper = 95, lower = 5):
+    def make_smooth(self, show = False):
+        hist = make_subplots(rows = len(self.scenarios), cols = len(self.regions))
+        for i, region in enumerate(self.regions):
+            for j, scenario in enumerate(self.scenarios):
+                df_to_plot = self.data_for_histogram.query("Region==@region & Scenario==@scenario")
+                hist.add_trace(go.Histogram(x = df_to_plot["Value"], marker_color = Color().region_colors[region], name = region + " " + scenario, legendgroup = region,
+                                            marker = dict(pattern = dict(shape = Color().histogram_patterns[scenario])), hoverinfo = "name", histnorm = "probability"), 
+                               row = j + 1, col = i + 1)
+        hist.update_layout(title_text = "Distributions for {}, {}".format(Readability().readability_dict_forward[self.output], self.year))
+
+        if show:
+            hist.show()
+
+    def make_plot(self, styling_options, use_styling = False, show = False, show_uncertainty = True, upper = 95, lower = 5):
         timeseries = self.make_timeseries_plot(upper, lower, show_uncertainty = show_uncertainty)
         hist = self.make_histograms()
 
@@ -133,7 +147,14 @@ class TimeSeries:
                         height = 700,
                         margin = dict(l = 0, r = 0)
                         )
-        plot.update_xaxes(title = "Year", row = 1, col = 1)
+        plot.update_xaxes(title = "Year", row = 1, col = 1)            
+
+        if use_styling:
+            plot.update_layout(
+            plot_bgcolor = styling_options["bk_color"],
+            )
+            plot.update_xaxes(showgrid = styling_options["gridlines"])
+            plot.update_yaxes(showgrid = styling_options["gridlines"])
 
         if len(self.scenarios) % 2 == 1:
             # odd number of histogram columns, easier case
@@ -282,7 +303,27 @@ class InputOutputMappingPlot(InputOutputMapping):
         return fig
 
 class ParallelCoords:
-    pass
+    def __init__(self, df) -> None:
+        self.df = df
+
+    def make_plot(self):
+        normed_df = self.df[df.columns[1:]].apply(lambda x: (x - x.mean())/x.std())
+        normed_df["Run #"] = self.df["Run #"]
+        print(normed_df[normed_df.columns[:-1]])
+        
+        fig = go.Figure()
+        for index, row in normed_df[normed_df.columns[:-1]].iterrows():
+            fig.add_trace(
+                go.Scatter(
+                    x = normed_df.columns[:-1],
+                    y = row,
+                    mode = "lines",
+                    line = dict(color = "gray", width = 0.3),
+                    showlegend = False
+                )
+            )
+
+        fig.show()
 
 if __name__ == "__main__":
     # timeseries
@@ -291,11 +332,16 @@ if __name__ == "__main__":
     # fig.write_image("assets\examples\carbonemissions.svg")
 
     # input dist
-    fig = InputDistribution(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot("WindGas")
-    fig.show()
+    # fig = InputDistribution(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot("WindGas")
+    # fig.show()
     # fig.write_image("assets\examples\inputs_windgas_focus.svg")
 
     # input-output mapping
     # df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)
     # fig = InputOutputMappingPlot("total_emissions_CO2_million_ton_CO2", df).make_plot()
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
+
+    # custom parcoords
+    df = SQLConnection("jp_data").custom_parcoords(["wind", "WindGas", "WindBio"], [{"name": "sectoral_emi_Agriculture_million_ton_CO2e", "region": "GLB", "scenario": "Ref", "year": 2050},
+                                                                                      {"name": "sectoral_emi_Agriculture_million_ton_CO2e", "region": "USA", "scenario": "Ref", "year": 2050}])
+    ParallelCoords(df).make_plot()

@@ -1,37 +1,51 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
 from sql_utils import SQLConnection
 from figure import InputOutputMappingPlot
+import numpy as np
+from styling import Options
+from itertools import product
+import geopandas as gp
+import matplotlib.pyplot as plt
+import pandas as pd
+from shapely import wkt
+import plotly.express as px
 
-# Initialize the Dash app
-app = dash.Dash(__name__)
+regions = ["USA", "EUR", "CHN"]
+eppa_map = gp.read_file("assets\Eppa countries\eppa6_regions.shp")
+values = []
+for region in regions:
+    data = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", region, "Ref", 2050)["Value"].median()
+    values.append(data)
 
-df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)
-fig = InputOutputMappingPlot("total_emissions_CO2_million_ton_CO2", df).make_plot()
+data_df = pd.DataFrame(data = dict(EPPA6_Regi = regions, Value = values))
+merged_df = pd.merge(eppa_map, data_df, on = "EPPA6_Regi")
+print(merged_df)
 
-# Layout of the Dash app
-app.layout = html.Div([
-    dcc.Graph(
-        id='parallel-coordinates-plot',
-        figure=fig
-    ),
-    html.Button('Add Annotations', id='annotation-button', n_clicks=0),
-])
+gdf = gp.GeoDataFrame(merged_df, geometry = "geometry")
 
-# Callback to add annotations
-@app.callback(
-    Output('parallel-coordinates-plot', 'figure'),
-    [Input('annotation-button', 'n_clicks')],
-    [State('parallel-coordinates-plot', 'restyleData')]
-)
-def update_annotations(n_clicks, data):
-    if n_clicks > 0:
-        selected_runs = data
-        print(selected_runs)
-        return go.Figure()
+fig = px.choropleth(gdf,
+                    geojson = gdf.geometry,
+                    locations = gdf.index,
+                    color = "Value",
+                    color_continuous_scale = "Viridis",
+                    hover_name = "EPPA6_Regi",
+                    title = "Renewables Production 2050 (Ref), TWh")
+# Update the layout
+fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# Show the figure
+fig.show()
+
+# fig = go.Figure(
+#     go.Choropleth(
+#         locations = eppa_map.geometry,
+#         z = data["Value"],
+#         colorscale = "Greens"
+#     )
+# )
+
+# fig.show()

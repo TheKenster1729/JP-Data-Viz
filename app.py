@@ -1,13 +1,15 @@
 # use venv when running this code
 import dash
 from dash.exceptions import PreventUpdate
-from dash import html, dcc
+from dash import html, dcc, ctx
 import dash_bootstrap_components as dbc
 from sql_utils import SQLConnection
 from styling import Options, Readability
 from dash.dependencies import Input, Output, State, MATCH
 from figure import TimeSeries, InputDistribution, OutputDistribution, InputOutputMappingPlot
 import numpy as np
+import dash_mantine_components as dmc
+import plotly.io as pio
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE])
 
@@ -68,10 +70,10 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
         dbc.Button('Add New Figure', id = 'add-output-button', n_clicks = 0, color = "primary")
     ])
 
-input_dists = html.Div(id = "tab-2-content",
+input_dists = html.Div(id = "tab-2-content", style = {"padding": 20},
     children = [
         html.Br(),
-        html.Div("Click the button below to add a new input visualization plot."),
+        html.Div("Click the button below to add a new input visualization plot.", className = "primary"),
         dbc.Button('Add New Input Distribution', id = 'add-input-dist-button', n_clicks = 0, color = "primary")
     ])
 
@@ -141,6 +143,38 @@ examples = html.Div(style = {},
     ]
 )
 
+connect = html.Div(style = {},
+    children = [
+        html.Br(),
+        html.Div(style = {},
+                 children = [
+                     dcc.Graph(id = "scenario-connection-graph")
+                ]
+            ),
+        dbc.Row(children = [
+            dbc.Col(children = [
+                html.P("Add Input", className = "text-primary"),
+                dcc.Dropdown(id = "scenario-connection-inputs", options = [{'label': i, 'value': i} for i in Options().input_names],
+                             value = ["wind"]
+                )
+            ]),
+            dbc.Col(children = [
+                html.P("Add Output", className = "text-primary"),
+                dbc.Row(children = [
+                    dbc.Col(children = [
+                        html.P("Name"),
+                        dcc.Dropdown(id = "scenario-connection-output", options = [{'label': Readability().readability_dict_forward[i], 'value': i} for i in Options().outputs])
+                    ]),
+                    dbc.Col(children = [
+                        html.P("Region"),
+                        dcc.Dropdown(id = "scenario-connection-region", options = [{"label": i, "value": i} for i in Options().region_names])
+                    ])
+                ])
+            ])
+        ])
+    ]
+)
+
 # footer = dbc.Navbar(style = {"border-radius": "30px 30px 0px 0px"},
 #     class_name = "navbar navbar-expand-lg custom-navbar",
 #     color = "#785EF0",
@@ -171,7 +205,8 @@ app.layout = html.Div(
                 dbc.Tab(id = "examples-gallery", label = "Examples Gallery", children = [examples]),
                 dbc.Tab(id = "output-timeseries", label = "Output Distributions", children = [output_timeseries]),
                 dbc.Tab(id = "input-dist", label = "Input Distributions", children = [input_dists]),
-                dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping])
+                dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping]),
+                dbc.Tab(id = "connection", label = "Connect", children = connect)
             ]
             )
         ]
@@ -257,7 +292,51 @@ def add_new_graph(n_clicks, children):
                                                                 dcc.Slider(1, 49, 1, id = {"type": "uncertainty-range-slider-lower", "index": n_clicks}, value = 5, 
                                                                            marks = {label: str(label) for label in range(0, 50, 5)}, tooltip = dict(always_visible = True)),
                                                                 dbc.Button("Set Bounds", id = {"type": "regenerate-plot-button", "index": n_clicks}, class_name = "Primary")
-                                                            ])
+                                                            ]
+                                                        ),
+                                            dbc.AccordionItem(title = "Styling Options",
+                                                              children = [
+                                                                html.P("Adjust Background Color"),
+                                                                dmc.ColorPicker(id = {"type": "timeseries-color-picker", "index": n_clicks},
+                                                                                format = "hex",
+                                                                                value = "#e5ecf5"),
+                                                                html.Br(),
+                                                                dmc.Switch(id = {"type": "toggle-gridlines", "index": n_clicks}, checked = True),
+                                                                dmc.Switch(id = {"type": "smooth-histograms", "index": n_clicks}, checked = False),
+                                                                dbc.Button(id = {"type": "apply-styling-button", "index": n_clicks},
+                                                                        children = [
+                                                                            html.Div("Apply")
+                                                                        ])
+                                                                ]),
+                                            dbc.AccordionItem(title = "Save Options",
+                                                              children = [
+                                                                dbc.Row(children = 
+                                                                [
+                                                                dbc.Col(children = [
+                                                                    html.P("Save Figure Data as CSV", className = "text-primary"),
+                                                                    dbc.Button("Download CSV", id = {"type": "timeseries-data-download-button", "index": n_clicks}, className = "primary"),
+                                                                    dcc.Download(id = {"type": "timeseries-data-download", "index": n_clicks})
+                                                                ]
+                                                                ),
+                                                                dbc.Col(children = [
+                                                                    html.P("Save Figure as High-Res PNG", className = "text-primary"),
+                                                                    dbc.Button("Download PNG", id = {"type": "timeseries-figure-download-button", "index": n_clicks}, className = "primary"),
+                                                                    dcc.Download(id = {"type": "timeseries-figure-download", "index": n_clicks})
+                                                                ]
+                                                                ),
+                                                                dbc.Col(children = [
+                                                                    html.P("Save Figure as SVG", className = "text-primary"),
+                                                                    dbc.Button("Download SVG", id = {"type": "timeseries-svg-download-button", "index": n_clicks}, className = "primary"),
+                                                                    dcc.Download(id = {"type": "timeseries-svg-download", "index": n_clicks})
+                                                                ]
+                                                                )
+                                                                ]                                     
+                                                                ),
+                                                                dbc.Row(children = [
+                                                                    html.P("Note: image and SVG exports may take a few moments.")
+                                                                ])
+                                                              ]
+                                                              )
                                       ])
                     ]
                 )
@@ -265,26 +344,54 @@ def add_new_graph(n_clicks, children):
         )
     children.append(new_element)
     return children
-
 @app.callback(
     Output({"type": "chart", "index": MATCH}, "figure"),
+    Output({"type": "timeseries-data-download", "index": MATCH}, "data"),
+    Output({"type": "timeseries-figure-download", "index": MATCH}, "data"),
+    Output({"type": "timeseries-svg-download", "index": MATCH}, "data"),
     Input({"type": "output-dropdown", "index": MATCH}, "value"),
     Input({"type": "checklist-region", "index": MATCH}, "value"),
     Input({"type": "checklist-scenario", "index": MATCH}, "value"),
     Input({"type": "toggle-uncertainty", "index": MATCH}, "value"),
     Input({"type": "output-dist-hist-year", "index": MATCH}, "value"),
     Input({"type": "regenerate-plot-button", "index": MATCH}, "n_clicks"),
+    Input({"type": "apply-styling-button", "index": MATCH}, "n_clicks"),
+    Input({"type": "timeseries-data-download-button", "index": MATCH}, "n_clicks"),
+    Input({"type": "timeseries-figure-download-button", "index": MATCH}, "n_clicks"),
+    Input({"type": "timeseries-svg-download-button", "index": MATCH}, "n_clicks"),
     State({"type": "uncertainty-range-slider-upper", "index": MATCH}, "value"),
-    State({"type": "uncertainty-range-slider-lower", "index": MATCH}, "value")
+    State({"type": "uncertainty-range-slider-lower", "index": MATCH}, "value"),
+    State({"type": "timeseries-color-picker", "index": MATCH}, "value"),
+    State({"type": "toggle-gridlines", "index": MATCH}, "checked"),
+    State({"type": "smooth-histograms", "index": MATCH}, "checked")
     )
-def update_graph(output, regions, scenarios, show_uncertainty, year, num_uncertainty_clicks, upper_bound, lower_bound):
+def update_graph(output, regions, scenarios, show_uncertainty, year, 
+                num_uncertainty_clicks, num_styling_clicks, num_download_clicks, num_png_clicks, num_svg_clicks,
+                upper_bound, lower_bound, bk_color,
+                gridlines, smooth_histograms):
     if not output or not regions or not scenarios:
         raise PreventUpdate
     df = db.output_df(output, regions, scenarios)
-    figure = TimeSeries(output, year, df).make_plot(show_uncertainty = show_uncertainty, upper = upper_bound, lower = lower_bound)
+    figure = TimeSeries(output, year, df).make_plot({"bk_color": bk_color, "gridlines": gridlines, "smooth_histograms": smooth_histograms}, 
+                                                    use_styling = True, show_uncertainty = show_uncertainty, upper = upper_bound, lower = lower_bound)
     
-    return figure
-###############################################
+    # check which input has been triggered and only download if the download button was pressed
+    try:
+        button_clicked = ctx.triggered_id["type"]
+    except TypeError:
+        button_clicked = None
+
+    if button_clicked == "timeseries-data-download-button":
+        return figure, dcc.send_data_frame(df.to_csv, "data.csv"), dash.no_update, dash.no_update
+    if button_clicked == "timeseries-figure-download-button":
+        img_bytes = pio.to_image(figure, format = "png", scale = 3, width = 2000, height = 1200)
+        return figure, dash.no_update, dcc.send_bytes(img_bytes, filename="figure.png"), dash.no_update
+    if button_clicked == "timeseries-svg-download-button":
+        svg_bytes = pio.to_image(figure, format = "svg")
+        return figure, dash.no_update, dash.no_update, dcc.send_bytes(svg_bytes, filename="figure.svg")
+    else:
+        return figure, dash.no_update, dash.no_update, dash.no_update
+    ###############################################
 
 # graphs and callback for input viz
 @app.callback(Output("tab-2-content", "children"),
@@ -407,8 +514,14 @@ def update_figure(output, region, scenario, year):
     return fig
 ###############################################
 
+# graphs and callbacks for o/o mapping
+###############################################
+
+# graphs and callbacks for 
+###############################################
+
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = True, host = "0.0.0.0")
 
     # discarded components
 

@@ -7,7 +7,7 @@ from anytree import RenderTree
 import json
 from anytree.search import findall
 from itertools import product
-from styling import Options
+from styling import Options, Readability
 from google.cloud.sql.connector import Connector, IPTypes
 import sqlalchemy
 
@@ -76,6 +76,16 @@ class SQLConnection:
 
         return df
     
+    def custom_parcoords(self, inputs, outputs_list):
+        df_to_return = pd.read_csv(r"Cleaned Data\InputsMaster.csv").rename(columns = {"Unnamed: 0": "Run #"})[["Run #"] + inputs]
+        for output_info in outputs_list:
+            df = self.input_output_mapping_df(output_info["name"], output_info["region"], output_info["scenario"], output_info["year"])
+            assert len(df) == 400 # currently each timeseries has 400 observations per year, and this is necessary for the concatenation to work
+            series_to_concat = pd.Series(df.Value, name = "{} {} {} {}".format(Readability().readability_dict_forward[output_info["name"]], output_info["region"], 
+                                                                            output_info["scenario"], output_info["year"]))
+            df_to_return = pd.concat([df_to_return, series_to_concat], axis = 1)
+        return df_to_return
+    
 '''
 import os
 import pandas as pd
@@ -103,6 +113,9 @@ for output in outputs:
             scenario_node = Node("{}".format(scenario), parent = region_node, sql_table_name = filename_dict[output] + "_{}_{}".format(region.lower(), scenario.lower()))
 '''
 if __name__ == "__main__":
-    SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
+    # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
 
-    SQLConnection("jp_data", use_cloud_db = True).test_cloud_connection()
+    # SQLConnection("jp_data", use_cloud_db = True).test_cloud_connection()
+
+    df = SQLConnection("jp_data").custom_parcoords(["wind", "WindGas", "WindBio"], [{"name": "sectoral_emi_Agriculture_million_ton_CO2e", "region": "GLB", "scenario": "Ref", "year": 2050},
+                                                                                      {"name": "sectoral_emi_Agriculture_million_ton_CO2e", "region": "USA", "scenario": "Ref", "year": 2050}])

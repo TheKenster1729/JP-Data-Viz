@@ -61,14 +61,16 @@ class SQLConnection:
 
     def output_df(self, output, regions, scenarios):
         combinations = product(regions, scenarios)
-        sql_table_names = [Options().filenames_to_sql_tables[output] + "_" + x[0].lower() + "_" + x[1].lower() for x in combinations]
+        long_names = [Options().filenames_to_sql_tables[output] + "_" + x[0].lower() + "_" + x[1].lower() for x in combinations]
 
         df_to_return = pd.DataFrame()
-        for table in sql_table_names:
-            df = pd.read_sql_table(table, con = self.engine).drop(columns = "index")
-            df_to_return = pd.concat([df_to_return, df], ignore_index = True)
+        for name in long_names:
+            query = "SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name` = {}".format(name)
+            print(self.engine.connect().execute(query))
+        #     df = pd.read_sql_table(table, con = self.engine).drop(columns = "index")
+        #     df_to_return = pd.concat([df_to_return, df], ignore_index = True)
 
-        return df_to_return
+        # return df_to_return
 
     def input_output_mapping_df(self, output, region, scenario, year):
         sql_table = Options().filenames_to_sql_tables[output] + "_" + region.lower() + "_" + scenario.lower()
@@ -103,6 +105,5 @@ for output in outputs:
             scenario_node = Node("{}".format(scenario), parent = region_node, sql_table_name = filename_dict[output] + "_{}_{}".format(region.lower(), scenario.lower()))
 '''
 if __name__ == "__main__":
-    SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
-
-    SQLConnection("jp_data", use_cloud_db = True).test_cloud_connection()
+    SQLConnection("all_data_jan_2024").output_df("consumption_billion_usd2007", ["USA", "GLB"], ["15C_med", "Above2C_med"])
+    # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)

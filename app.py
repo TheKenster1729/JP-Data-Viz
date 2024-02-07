@@ -12,7 +12,7 @@ import numpy as np
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE])
 
 # initialize SQL database
-db = SQLConnection("jp_data")
+db = SQLConnection("all_data_jan_2024")
 
 # construct navigation bar
 jp_logo = r"assets\images\JPSPGC.logo.color.png"
@@ -408,11 +408,7 @@ def update_figure(output, region, scenario, year):
 ###############################################
 
 if __name__ == '__main__':
-<<<<<<< Updated upstream
-    app.run(debug = True, host="0.0.0.0", port=8060)
-=======
     app.run(debug = True, host = "localhost")
->>>>>>> Stashed changes
 
     # discarded components
 

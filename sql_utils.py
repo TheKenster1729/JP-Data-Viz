@@ -77,7 +77,7 @@ class SQLConnection:
         df = pd.read_sql_table(sql_table, con = self.engine).query("Year == @year").drop(columns = "index").reset_index()
 
         return df
-    
+
 '''
 import os
 import pandas as pd

@@ -111,7 +111,7 @@ class Color:
                               "ANZ": "rgb(0, 67, 206)", "EUR": "rgb(255, 221, 0)", "ROE": "rgb(61, 219, 217)", "RUS": "rgb(1, 39, 73)", "ASI": "rgb(73, 29, 139)",
                               "CHN": "rgb(82, 4, 8)", "IND": "rgb(245, 222, 179)", "BRA": "rgb(111, 220, 140)", "AFR": "rgb(166, 200, 255)", "MES": "rgb(212, 187, 255)", 
                               "LAM": "rgb(0, 65, 68)", "REA": "rgb(130, 207, 255)", "KOR": "rgb(0, 93, 93)", "IDZ": "rgb(114, 110, 110)"}
-        self.scenario_markers = {"Ref": "solid", "2C": "dot"}
+        self.scenario_markers = {"Ref": "solid", "Above2C_med": "dot", "2C_med": "dash"}
         self.histogram_patterns = {"Ref": "", "2C": "/"}
         self.parallel_coords_colors = ["#785EF0", "#FFB000"]
 
@@ -128,50 +128,19 @@ class Color:
 
 class Readability:
     def __init__(self):
-        self.readability_dict_backward = {
-    "Carbon Price (USD2007 per ton CO2e)": "carbon_price_USD2007_per_ton_CO2e",
-    "CPI Price Index": "CPI_price_index",
-    "Electricity Production Biomass (No CCS, TWh)": "elec_prod_Biomass_No_CCS_TWh",
-    "Electricity Production Coal (CCS, TWh)": "elec_prod_Coal_CCS_TWh",
-    "Electricity Production Coal (No CCS, TWh)": "elec_prod_Coal_No_CCS_TWh",
-    "Electricity Production Gas (CCS, TWh)": "elec_prod_Gas_CCS_TWh",
-    "Electricity Production Gas (No CCS, TWh)": "elec_prod_Gas_No_CCS_TWh",
-    "Electricity Production Hydro (TWh)": "elec_prod_Hydro_TWh",
-    "Electricity Production Nuclear (TWh)": "elec_prod_Nuclear_TWh",
-    "Electricity Production Oil (TWh)": "elec_prod_Oil_TWh",
-    "Electricity Production Renewables (TWh)": "elec_prod_Renewables_TWh",
-    "GDP (Billion USD2007)": "GDP_billion_USD2007",
-    "Population (Million People)": "population_million_people",
-    "Primary Energy Use Biomass (EJ)": "primary_energy_use_Biomass_EJ",
-    "Primary Energy Use Coal (EJ)": "Primary_energy_use_Coal_EJ",
-    "Primary Energy Use Gas (EJ)": "primary_energy_use_Gas_EJ",
-    "Primary Energy Use Hydro (EJ)": "primary_energy_use_Hydro_EJ",
-    "Primary Energy Use Nuclear (EJ)": "primary_energy_use_Nuclear_EJ",
-    "Primary Energy Use Oil (EJ)": "primary_energy_use_Oil_EJ",
-    "Primary Energy Use Renewables (EJ)": "primary_energy_use_Renewables_EJ",
-    "Sectoral Emissions Agriculture (Million ton CO2e)": "sectoral_emi_Agriculture_million_ton_CO2e",
-    "Sectoral Emissions Commercial Residential (Million ton CO2e)": "sectoral_emi_Commercial_Residential_million_ton_CO2e",
-    "Sectoral Emissions Electricity (Million ton CO2e)": "sectoral_emi_Electricity_million_ton_CO2e",
-    "Sectoral Emissions Energy Intensive Industry Mining (Million ton CO2e)": "sectoral_emi_EnergyIntensiveIndustry_Mining_million_ton_CO2e",
-    "Sectoral Emissions Other Manufacturing (Million ton CO2e)": "sectoral_emi_Other_Manufacturing_million_ton_CO2e",
-    "Sectoral Emissions Transportation (Million ton CO2e)": "sectoral_emi_Transportation_million_ton_CO2e",
-    "Sectoral Output Agriculture (Billion USD2007)": "sectoral_output_Agriculture_billion_USD2007",
-    "Sectoral Output Commercial Residential (Billion USD2007)": "sectoral_output_Commercial_Residential_billion_USD2007",
-    "Sectoral Output Electricity (Billion USD2007)": "sectoral_output_Electricity_billion_USD2007",
-    "Sectoral Output Energy Intensive Industry Mining (Billion USD2007)": "sectoral_output_EnergyIntensiveIndustry_Mining_billion_USD2007",
-    "Sectoral Output Other Manufacturing (Billion USD2007)": "sectoral_output_Other_Manufacturing_billion_USD2007",
-    "Sectoral Output Transportation (Billion USD2007)": "sectoral_output_Transportation_billion_USD2007",
-    "Total Emissions CO2 (Million ton CO2)": "total_emissions_CO2_million_ton_CO2",
-    "Total Emissions CO2e (Million ton CO2e)": "total_emissions_CO2e_million_ton_CO2e"
-}
-        self.readability_dict_forward = {v: k for k, v in self.readability_dict_backward.items()}
-    
+        self.naming_df = pd.read_csv(r"display_names.csv")
+        self.naming_dict_long_names_first = {i["Full Output Name"]:i["Display Name"] for i in self.naming_df.to_dict("records")}
+        self.naming_dict_display_names_first = {v:k for k, v in self.naming_dict_long_names_first.items()}
+
 class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND", 
                                 "BRA", "AFR", "MES", "LAM", "REA", "KOR", "IDZ"]
-        self.scenarios = ["Ref", "2C"]
-        self.outputs = Readability().readability_dict_backward.values()
+        self.scenarios = ['15C_med', '15C_opt', '2C_med', '2C_opt', '2C_pes', 'About15C_med', 'About15C_opt', 'About15C_pes', 'Above2C_med', 'Above2C_opt', 'Above2C_pes', 'Ref']
+        self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt",
+                                       "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes", "Ref": "Ref"}
+        self.scenario_display_names_rev = {v:k for k, v in self.scenario_display_names.items()}
+        self.outputs = Readability().naming_dict_long_names_first.keys()
         self.years = [i for i in range(2020, 2101, 5)]
         self.markers = {"Ref": "circle", "2C": "triangle-up-open-dot"}
         self.input_names = [
@@ -303,17 +272,7 @@ class Options:
                 ]
         # in case
         # name = str(bound) + {1: 'st', 2: 'nd', 3: 'rd'}.get(4 if 10 <= bound % 100 < 20 else bound % 10, "th")
-        self.filenames_to_sql_tables = {"carbon_price_USD2007_per_ton_CO2e": "carbon_price", "CPI_price_index": "cpi", "elec_prod_Biomass_No_CCS_TWh": "biomass_prod",
-                                        "elec_prod_Coal_CCS_TWh": "coal_ccs_prod", "elec_prod_Coal_No_CCS_TWh": "coal_no_ccs_prod", "elec_prod_Gas_CCS_TWh": "gas_ccs_prod",
-                                        "elec_prod_Gas_No_CCS_TWh": "gas_no_ccs_prod", "elec_prod_Hydro_TWh": "hydro_prod", "elec_prod_Nuclear_TWh": "nuclear_prod",
-                                        "elec_prod_Oil_TWh": "oil_prod", "elec_prod_Renewables_TWh": "renewables_prod", "GDP_billion_USD2007": "gdp", "population_million_people": "population",
-                                        "primary_energy_use_Biomass_EJ": "biomass_use", "Primary_energy_use_Coal_EJ": "coal_use", "primary_energy_use_Gas_EJ": "gas_use",
-                                        "primary_energy_use_Hydro_EJ": "hydro_use", "primary_energy_use_Nuclear_EJ": "nuclear_use", "primary_energy_use_Oil_EJ": "oil_use",
-                                        "primary_energy_use_Renewables_EJ": "renewables_use", "sectoral_emi_Agriculture_million_ton_CO2e": "agriculture_co2e",
-                                        "sectoral_emi_Commercial_Residential_million_ton_CO2e": "residential_co2e", "sectoral_emi_Electricity_million_ton_CO2e": "electric_co2e",
-                                        "sectoral_emi_EnergyIntensiveIndustry_Mining_million_ton_CO2e": "mining_co2e", "sectoral_emi_Other_Manufacturing_million_ton_CO2e": "manufacturing_co2e",
-                                        "sectoral_emi_Transportation_million_ton_CO2e": "transportation_co2e", "sectoral_output_Agriculture_billion_USD2007": "agriculture_output", 
-                                        "sectoral_output_Commercial_Residential_billion_USD2007": "residential_output", "sectoral_output_Electricity_billion_USD2007": "electric_output",
-                                        "sectoral_output_EnergyIntensiveIndustry_Mining_billion_USD2007": "mining_output", "sectoral_output_Other_Manufacturing_billion_USD2007": "manufacturing_output",
-                                        "sectoral_output_Transportation_billion_USD2007": "transportation_output", "total_emissions_CO2_million_ton_CO2": "emissions_co2", 
-                                        "total_emissions_CO2e_million_ton_CO2e": "emissions_co2e"}
+        
+if __name__ == "__main__":
+    df = Readability().naming_dict_display_names_first
+    print(df)

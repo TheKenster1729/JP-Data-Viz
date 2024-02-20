@@ -9,6 +9,7 @@ import numpy as np
 import plotly.express as px
 from itertools import product
 from plotly.colors import n_colors
+import colour
 
 class TraceInfo:
     def __init__(self, figure):
@@ -187,7 +188,7 @@ class OldTimeSeries:
         return plot
     
 class NewTimeSeries:
-    def __init__(self, output, region, scenario, year, df, styling_options = None):
+    def __init__(self, output, region, scenario, year, df, styling_options = {"color": "by-scenario"}):
         self.output = output
         self.df = df
         self.lower = df[df.columns[0]]
@@ -198,28 +199,38 @@ class NewTimeSeries:
         self.year = year
         self.data_for_histogram = self.df.query("Year==@self.year")
         self.styling_options = styling_options
-    
-    def lower_bound_trace(self, group, color = "rgb(255,0,0)", marker = "dash"):
 
+    def get_color(self):
+        if self.styling_options["color"] == "by-region":
+            color = Color().region_colors[self.region]
+        elif self.styling_options["color"] == "by-scenario":
+            color = Color().scenario_colors[self.scenario]
+        elif self.styling_options["color"] == "standard":
+            base_shade = Color().region_colors[self.region]
+            amount_to_lighten = Options().scenarios.index(self.scenario)
+            color = Color().lighten_hex(base_shade, brightness_offset = amount_to_lighten*8)
+        return color
+    
+    def lower_bound_trace(self, group, marker = "dash"):
+        color = self.get_color()
         trace = go.Scatter(
             x = self.df.index,
             y = self.lower,
-            line = dict(color = color, dash = marker),
+            line = dict(color = color),
             legendgroup = group,
             showlegend = False,
             hoverinfo = "skip",
-            customdata = ["{} {} {} lower".format(self.output, self.region, self.scenario)]
+            customdata = ["{} {} {} lower".format(self.output, self.region, self.scenario)],
         )
 
         return trace
     
-    def median_trace(self, group, color = "rgb(255,0,0)", marker = "dash"):
-
+    def median_trace(self, group, marker = "dash"):
+        color = self.get_color()
         trace = go.Scatter(
             x = self.df.index,
             y = self.median,
-            # name = "{} {}".format(self.region, Options().scenario_display_names[self.scenario]),
-            line = dict(color = color, dash = marker),
+            line = dict(color = color),
             legendgroup = group,
             name = "{} {}".format(self.region, Options().scenario_display_names[self.scenario]),
             customdata = ["{} {} {} median".format(self.output, self.region, self.scenario)]
@@ -227,7 +238,8 @@ class NewTimeSeries:
 
         return trace
 
-    def upper_bound_trace(self, group, color = "rgb(255,0,0)", marker = "dash"):
+    def upper_bound_trace(self, group, marker = "dash"):
+        color = self.get_color()
         fillcolor = Color().convert_to_fill(color)
 
         trace = go.Scatter(
@@ -235,7 +247,7 @@ class NewTimeSeries:
             y = self.upper,
             fill = "tonexty",
             fillcolor = fillcolor,
-            line = dict(color = color, dash = marker),
+            line = dict(color = color),
             legendgroup = group,
             showlegend = False,
             hoverinfo = "skip",
@@ -246,9 +258,9 @@ class NewTimeSeries:
 
     def return_traces(self, show = False, show_uncertainty = True):
         group = "{} {}".format(self.region, self.scenario)
-        lower = self.lower_bound_trace(group, color = Color().region_colors[self.region], marker = Color().scenario_markers[self.scenario])
-        median = self.median_trace(group, color = Color().region_colors[self.region], marker = Color().scenario_markers[self.scenario])
-        upper = self.upper_bound_trace(group, color = Color().region_colors[self.region], marker = Color().scenario_markers[self.scenario])
+        lower = self.lower_bound_trace(group)
+        median = self.median_trace(group)
+        upper = self.upper_bound_trace(group)
 
         # fig.update_layout(
         #     yaxis_title = '{}'.format(self.output),
@@ -367,7 +379,6 @@ class OutputHistograms:
 
         return fig
    
-
 class InputDistribution:
     def __init__(self, inputs):
         self.inputs = inputs
@@ -392,7 +403,7 @@ class InputDistribution:
         fig.add_trace(go.Histogram(x = self.input_df_no_run[input_name], name = input_name, showlegend = False))
 
         return fig
-    
+
     def make_plot(self, input_name, show = False):
         violin = self.create_input_distribution()
         hist = self.create_input_histogram(input_name)
@@ -402,9 +413,6 @@ class InputDistribution:
             plot.add_trace(violin.data[i], row = 1, col = 1)
         plot.add_trace(hist.data[0], row = 1, col = 2)
         plot.update_layout(title = "Inputs Visualization",
-                        plot_bgcolor = "#060606",
-                        paper_bgcolor = "#060606",
-                        font_color = "white",
                         width = 1400,
                         height = 700)
         plot.update_xaxes(title = "Input Comparison", row = 1, col = 1)
@@ -464,8 +472,8 @@ class OutputDistribution:
         pass
 
 class InputOutputMappingPlot(InputOutputMapping):
-    def __init__(self, output, df):
-        super().__init__(output, df)
+    def __init__(self, output, region, df):
+        super().__init__(output, region, df)
 
     def make_plot(self, num_to_plot = 5, show = False):
         feature_importances, sorted_labeled_importances, top_n = self.random_forest(num_to_plot = num_to_plot)
@@ -473,7 +481,7 @@ class InputOutputMappingPlot(InputOutputMapping):
 
         _, y_discrete = self.preprocess_for_classification()
         y_discrete_series = pd.Series(y_discrete.ravel(), name = "y_discrete")
-        parcoords_df = pd.concat([self.inputs[top_n], self.y_continuous, y_discrete_series], axis = 1)
+        parcoords_df = pd.concat([self.inputs[top_n], self.y_continuous.reset_index(drop = True), y_discrete_series], axis = 1)
 
         dimensions = []
         color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
@@ -487,11 +495,14 @@ class InputOutputMappingPlot(InputOutputMapping):
                           width = 1200,
                           height = 600)
 
-        
         if show:
             fig.show()
 
         return fig
+
+class ChoroplethMap:
+    def __init__(self) -> None:
+        pass
 
 class ParallelCoords:
     pass
@@ -499,7 +510,7 @@ class ParallelCoords:
 if __name__ == "__main__":
     # timeseries
     db_obj = SQLConnection("all_data_jan_2024")
-    df = DataRetrieval(db_obj, "consumption_billion_usd2007", "GLB", "Ref").single_output_df()
+    # df = DataRetrieval(db_obj, "consumption_billion_usd2007", "GLB", "Ref").single_output_df()
     # lower = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).lower_bound_trace(None)
     # upper = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).upper_bound_trace(None)
     # median = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).median_trace(None)
@@ -508,7 +519,7 @@ if __name__ == "__main__":
     # fig.add_trace(upper)
     # fig.add_trace(median)
     # fig.show()
-    OutputHistograms("consumption_billion_USD2007", ["GLB", "USA", "EUR"], ["Ref", "Above2C_med"], 2050, db_obj).make_plot(show = True)
+    # OutputHistograms("consumption_billion_USD2007", ["GLB", "USA", "EUR"], ["Ref", "Above2C_med"], 2050, db_obj).make_plot(show = True)
     # input dist
     # fig = InputDistribution(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot("WindGas")
     # fig.show()
@@ -516,5 +527,6 @@ if __name__ == "__main__":
 
     # input-output mapping
     # df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)
-    # fig = InputOutputMappingPlot("total_emissions_CO2_million_ton_CO2", df).make_plot()
+    df = DataRetrieval(db_obj, "emissions_CO2_total_million_ton_CO2", "GLB", "Ref", 2050).input_output_mapping_df()
+    fig = InputOutputMappingPlot("emissions_CO2_total_million_ton_CO2", "GLB", df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")

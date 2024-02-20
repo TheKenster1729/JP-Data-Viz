@@ -1,6 +1,6 @@
 import pandas as pd
 from plotly.colors import n_colors, hex_to_rgb, convert_dict_colors_to_same_type
-import textwrap
+from PIL import ImageColor
 
 class Color:
     def __init__(self):
@@ -107,10 +107,17 @@ class Color:
             "Warm Gray 10": "f7f3f2"
             }
         self.hex_palette = {key: '#' + value for key, value in self.palette.items()}
-        self.region_colors = {"GLB": "rgb(127, 127, 127)", "USA": "rgb(0, 83, 154)", "CAN": "rgb(162, 25, 31)", "MEX": "rgb(4, 67, 23)", "JPN": "rgb(250, 77, 86)",
-                              "ANZ": "rgb(0, 67, 206)", "EUR": "rgb(255, 221, 0)", "ROE": "rgb(61, 219, 217)", "RUS": "rgb(1, 39, 73)", "ASI": "rgb(73, 29, 139)",
-                              "CHN": "rgb(82, 4, 8)", "IND": "rgb(245, 222, 179)", "BRA": "rgb(111, 220, 140)", "AFR": "rgb(166, 200, 255)", "MES": "rgb(212, 187, 255)", 
-                              "LAM": "rgb(0, 65, 68)", "REA": "rgb(130, 207, 255)", "KOR": "rgb(0, 93, 93)", "IDZ": "rgb(114, 110, 110)"}
+        # self.region_colors = {"GLB": "rgb(127, 127, 127)", "USA": "rgb(0, 83, 154)", "CAN": "rgb(162, 25, 31)", "MEX": "rgb(4, 67, 23)", "JPN": "rgb(250, 77, 86)",
+        #                       "ANZ": "rgb(0, 67, 206)", "EUR": "rgb(255, 221, 0)", "ROE": "rgb(61, 219, 217)", "RUS": "rgb(1, 39, 73)", "ASI": "rgb(73, 29, 139)",
+        #                       "CHN": "rgb(82, 4, 8)", "IND": "rgb(245, 222, 179)", "BRA": "rgb(111, 220, 140)", "AFR": "rgb(166, 200, 255)", "MES": "rgb(212, 187, 255)", 
+        #                       "LAM": "rgb(0, 65, 68)", "REA": "rgb(130, 207, 255)", "KOR": "rgb(0, 93, 93)", "IDZ": "rgb(114, 110, 110)"}
+        self.region_colors = {"GLB": "#7F7F7F", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
+                              "ANZ": "#1B344A", "EUR": "#679C82", "ROE": "#91C96E", "RUS": "#2B4739", "ASI": "#493B82",
+                              "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092", 
+                              "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
+        self.scenario_colors = {"15C_med": "#750e13", "15C_opt": "#ffb3b8", "About15C_pes": "#740937", "About15C_med": "#ffafd2",
+                                "About15C_opt": "#491d8b", "2C_pes": "#d4bbff", "2C_med": "#002d9c", "2C_opt": "#a6c8ff",
+                                "Above2C_pes": "#003a6d", "Above2C_med": "#82cfff", "Above2C_opt": "#004144", "Ref": "#3ddbd9"}
         self.scenario_markers = {"Ref": "solid", "Above2C_med": "dot", "2C_med": "dash"}
         self.histogram_patterns = {"Ref": "", "2C": "/"}
         self.parallel_coords_colors = ["#785EF0", "#FFB000"]
@@ -121,10 +128,18 @@ class Color:
     
     def convert_to_fill(self, color, alpha = 0.3):
         # add alpha channel
-        fill_color = color[:3] + "a" + color[3:]
-        # add alpha value
-        fill_color = fill_color[:-1] + ", {})".format(alpha)
-        return fill_color
+        rgb = ImageColor.getcolor(color, "RGB")
+        rgba = tuple(list(rgb) + [alpha])
+        return "rgba" + str(rgba)
+    
+    def lighten_hex(self, hex_color, brightness_offset = 1):
+        if len(hex_color) != 7:
+            raise Exception("Passed %s into color_variant(), needs to be in #87c95f format." % hex_color)
+        rgb_hex = [hex_color[x:x+2] for x in [1, 3, 5]]
+        new_rgb_int = [int(hex_value, 16) + brightness_offset for hex_value in rgb_hex]
+        new_rgb_int = [min([255, max([0, i])]) for i in new_rgb_int] # make sure new values are between 0 and 255
+        # hex() produces "0x88", we want just "88"
+        return "#" + "".join([hex(i)[2:] for i in new_rgb_int])
 
 class Readability:
     def __init__(self):
@@ -136,7 +151,7 @@ class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND", 
                                 "BRA", "AFR", "MES", "LAM", "REA", "KOR", "IDZ"]
-        self.scenarios = ['15C_med', '15C_opt', '2C_med', '2C_opt', '2C_pes', 'About15C_med', 'About15C_opt', 'About15C_pes', 'Above2C_med', 'Above2C_opt', 'Above2C_pes', 'Ref']
+        self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt', 'Ref']
         self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt",
                                        "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes", "Ref": "Ref"}
         self.scenario_display_names_rev = {v:k for k, v in self.scenario_display_names.items()}
@@ -274,5 +289,8 @@ class Options:
         # name = str(bound) + {1: 'st', 2: 'nd', 3: 'rd'}.get(4 if 10 <= bound % 100 < 20 else bound % 10, "th")
         
 if __name__ == "__main__":
-    df = Readability().naming_dict_display_names_first
-    print(df)
+    region_colors = {"GLB": "#7F7F7F", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
+                            "ANZ": "#1B344A", "EUR": "#679C82", "ROE": "#91C96E", "RUS": "#2B4739", "ASI": "#493B82",
+                            "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092", 
+                            "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
+    print(list(region_colors.values()))

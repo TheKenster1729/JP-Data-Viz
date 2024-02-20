@@ -11,8 +11,9 @@ import numpy as np
 import plotly.graph_objects as go
 from itertools import product
 from pprint import pprint
+from dash_iconify import DashIconify
 
-app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE])
+app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BOOTSTRAP])
 
 # initialize SQL database and other UI elements
 db = SQLConnection("all_data_jan_2024")
@@ -75,11 +76,16 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
                         dbc.Card(
                             className = "card text-white bg-primary mb-3",
                             children = [
-                                html.H4(style = {"padding": 10}, children = "Output Visualization")
+                                html.Div(style = {'display': 'flex'},
+                                    children = [
+                                        html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Output Visualization"),
+                                        DashIconify(icon = "feather:info", width = 60, style = {"padding": 10, "color": "#9AC1F4"})
+                                    ]
+                                )
                             ]
-                        )
+                        )                    
                     ]
-            ),
+                ),
             dbc.Col(width = 10,
                     children = [
                         dbc.Card(
@@ -160,13 +166,21 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
         ),
         dbc.Row(
             children = [
-                dbc.Col(
-                    width = {"offset": 2},
+                dbc.Col(width = {"size": 9, "offset": 1},
                     children = [
                         dbc.Row(html.Div("Scenario", className = "text-primary")),
                         dbc.Row(
                             dbc.Checklist(id = "scenario-dropdown", style = {"padding": 10}, options = [{"label":k, "value":v} for k, v in options_obj.scenario_display_names_rev.items()],
                                         inline = True, value = ["2C_med"])
+                        )
+                    ]
+                ),
+                dbc.Col(width = 2,
+                    children = [
+                        dbc.Row(html.Div("Color"), className = "text-primary"),
+                        dbc.Row(
+                            dcc.Dropdown(id = "output-color-scheme", options = [{"label": "Standard", "value": "standard"}, {"label": "By Region", "value": "by-region"}, {"label": "By Scenario", "value": "by-scenario"}],
+                                        value = "standard")
                         )
                     ]
                 )
@@ -175,19 +189,118 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
     ]
 )
 
-input_dists = html.Div(id = "tab-2-content",
-    children = [
-        html.Br(),
-        html.Div("Click the button below to add a new input visualization plot."),
-        dbc.Button('Add New Input Distribution', id = 'add-input-dist-button', n_clicks = 0, color = "primary")
-    ])
+# input_dists = html.Div(id = "tab-2-content",
+#     children = [
+#         html.Br(),
+#         html.Div("Click the button below to add a new input visualization plot."),
+#         dbc.Button('Add New Input Distribution', id = 'add-input-dist-button', n_clicks = 0, color = "primary")
+#     ])
 
-input_output_mapping = html.Div(id = "tab-4-content",
-    children = [
-        html.Div(style = {"padding": 20, "display": "flex", "flex-direction": "row", "gap": 10},
+input_dists = html.Div(style = {"padding": 20},
             children = [
-                html.Div(style = {"display": "flex", "flex-direction": "column", "gap": 5, "justify-content": "center", "width": 100},
+                dbc.Row(
                     children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                dbc.Card(
+                                    className = "card text-white bg-primary mb-3",
+                                    children = [
+                                        html.Div(style = {"display": "flex"},
+                                            children = [
+                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Input Visualization"),
+                                                DashIconify(icon = "feather:info", width = 60, style = {"padding": 10, "color": "#9AC1F4"})
+                                            ]
+                                        )
+                                    ]
+                                )
+                            ]
+                        ),
+                        dbc.Col(width = 10,
+                            children = [
+                                dbc.Card(
+                                    dbc.CardBody(
+                                        children = [
+                                            dbc.Row(
+                                                children = [
+                                                    dbc.Col(width = 8,
+                                                        children = [
+                                                            dbc.Row(html.Div("Inputs to Compare", className = "text-primary")),
+                                                            dbc.Row(
+                                                                dcc.Dropdown(
+                                                                    id = "input-dist-options",
+                                                                    options = [{'label': i, 'value': i} for i in Options().input_names],
+                                                                    value = ["wind", "oil", "gas", "WindGas", "WindBio"],
+                                                                    multi = True
+                                                                    ),
+                                                                )
+                                                            ]
+                                                        ),
+                                                        dbc.Col(width = 2,
+                                                            children = [
+                                                                dbc.Row(html.Div("Input to Highlight", className = "text-primary")),
+                                                                dbc.Row(
+                                                                    dcc.Dropdown(style = {"width": 200},
+                                                                        id = "expanded-view-input-dist-options",
+                                                                        options = [{'label': i, 'value': i} for i in Options().input_names],
+                                                                        value = "wind"
+                                                                        )
+                                                                    )
+                                                                ]
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                )
+                            ]
+                        ),
+                html.Div(
+                        children = [
+                            dcc.Graph(id = "input-dist-graph")
+                        ]
+                )
+            ]
+        )
+
+input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
+    children = [
+        html.Div(
+            children = [
+                dbc.Row(
+                    children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                dbc.Card(
+                                    className = "card text-white bg-primary mb-3",
+                                    children = [
+                                        html.Div(style = {'display': 'flex'},
+                                            children = [
+                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Input/Output Mapping"),
+                                                DashIconify(icon = "feather:info", width = 60, style = {"padding": 10, "color": "#9AC1F4"})
+                                            ]
+                                        )
+                                    ]
+                                )                    
+                            ]
+                        ),
+                        dbc.Col(
+                            children = [
+                                dbc.Row(html.Div("Output Name", className = "text-primary")),
+                                dbc.Row(
+                                dcc.Dropdown(id = "input-output-mapping-output",
+                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                    value = "emissions_CO2eq_total_million_ton_CO2eq")
+                                )
+                            ]
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    children = [
+                        dbc.Col(
+                            children = [
                                 html.Div("Region", className = "text-primary"),
                                 dcc.Dropdown(
                                     id = "input-output-mapping-regions",
@@ -202,22 +315,26 @@ input_output_mapping = html.Div(id = "tab-4-content",
                                 ),
                                 html.Div("Year", className = "text-primary"),
                                 dcc.Dropdown(
-                                            id = "input-output-mapping-year",
-                                            options = [{'label': i, 'value': i} for i in Options().years],
-                                            value = 2050)
-                            ]
-                        ),
-                html.Div(style = {"display": "flex", "flex-direction": "column", "flex": 1, "gap": 5},
-                    children = [
-                                html.Div("Output", className = "text-primary"),
-                                dcc.Dropdown(id = "input-output-mapping-output",
-                                options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
-                                value = "total_emissions_CO2_million_ton_CO2"
-                                ),
+                                    id = "input-output-mapping-year",
+                                    options = [{'label': i, 'value': i} for i in Options().years],
+                                    value = 2050)
+                                ]
+                            ),
+                        dbc.Col(
+                            children = [
                                 dcc.Loading([dcc.Graph(id = "input-output-mapping-figure")]),
-                ]),
-        ])
-    ])
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
+
+choropleth_map = html.Div(
+    
+)
 
 examples = html.Div(style = {},
     children = [
@@ -278,7 +395,8 @@ app.layout = html.Div(
                 # dbc.Tab(id = "examples-gallery", label = "Examples Gallery", children = [examples]),
                 dbc.Tab(id = "output-timeseries", label = "Output Distributions", children = [output_timeseries]),
                 dbc.Tab(id = "input-dist", label = "Input Distributions", children = [input_dists]),
-                dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping])
+                dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping]),
+                dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [input_output_mapping])
             ]
             )
         ]
@@ -286,93 +404,7 @@ app.layout = html.Div(
     ]
 )
 
-# # graphs and callback for output time series visualization
-# @app.callback(Output("tab-1-content", "children"),
-#               Input("add-output-button", "n_clicks"),
-#               State("tab-1-content", "children"))
-# def add_new_graph(n_clicks, children):
-#     if not n_clicks:
-#         raise PreventUpdate
-#     new_element = html.Div(style = {"padding": 20, "display": "flex", "flex-direction": "row"},
-#             children = [
-#                 html.Div(
-#                     children = [
-#                         html.Div("Region", className = "text-primary"),
-#                         dbc.Checklist(
-#                             id = {"type": "checklist-region", "index": n_clicks},
-#                             options = [{'label': i, 'value': i} for i in Options().region_names],
-#                             value = ["GLB"]
-#                         )
-#                     ]
-#                 ),
-#             html.Div(style = {"flex": 1, "margin-left": 20},
-#                 children = [
-#                     html.Div("Output", className = "text-primary"),
-#                     dcc.Dropdown(id = {"type": "output-dropdown", "index": n_clicks},
-#                     options = [{'label': Readability().readability_dict_forward[i], 'value': i} for i in Options().outputs],
-#                     value = "total_emissions_CO2_million_ton_CO2"
-#                 ),
-#                     dcc.Graph(id = {"type": "chart", "index": n_clicks}),
-#                     dbc.Row(
-#                         children = 
-#                         [
-#                             dbc.Col(
-#                                 children = [
-#                                     html.Div("Scenario", className = "text-primary"),
-#                                     dbc.Checklist(
-#                                         id = {"type": "checklist-scenario", "index": n_clicks},
-#                                         options = [{'label': i, 'value': i} for i in Options().scenarios],
-#                                         value = ["Ref"],
-#                                         inline = True
-#                                     ),
-#                                     html.Div("Show Uncertainty", className = "text-primary"),
-#                                     dbc.Checklist(
-#                                         id = {"type": "toggle-uncertainty", "index": n_clicks},
-#                                         options = [{"label": "Uncertainty On", "value": True}],
-#                                         value = [True],
-#                                         inline = True
-#                                     )
-#                                 ]
-#                             ),
-#                             dbc.Col(
-#                                 children = [
-#                                     html.Div(
-#                                         children = [
-#                                             html.Div("Year", className = "text-primary"),
-#                                             dcc.Slider(
-#                                                 min = min(Options().years),
-#                                                 max = max(Options().years),
-#                                                 step = int((max(Options().years) - min(Options().years))/(len(Options().years) - 1)),
-#                                                 id = {"type": "output-dist-hist-year", "index": n_clicks},
-#                                                 marks = {year: str(year) for year in Options().years[::2]},
-#                                                 value = 2050)
-#                                         ]
-#                                     )
-#                                 ]
-#                             )
-#                         ]
-#                         ),
-#                         dbc.Accordion(start_collapsed = True,
-#                                       children = [
-#                                           dbc.AccordionItem(title = "Advanced Options",
-#                                                             children = [
-#                                                                 html.P("Set Uncertainty Range - Upper and Lower Percentiles", className = "text-primary"),
-#                                                                 html.P("Upper Bound"),
-#                                                                 dcc.Slider(51, 99, 1, id = {"type": "uncertainty-range-slider-upper", "index": n_clicks}, value = 95,
-#                                                                            marks = {label: str(label) for label in range(50, 100, 5)}, tooltip = dict(always_visible = True)),
-#                                                                 html.P("Lower Bound"),
-#                                                                 dcc.Slider(1, 49, 1, id = {"type": "uncertainty-range-slider-lower", "index": n_clicks}, value = 5, 
-#                                                                            marks = {label: str(label) for label in range(0, 50, 5)}, tooltip = dict(always_visible = True)),
-#                                                                 dbc.Button("Set Bounds", id = {"type": "regenerate-plot-button", "index": n_clicks}, class_name = "Primary")
-#                                                             ])
-#                                       ])
-#                     ]
-#                 )
-#             ]
-#         )
-#     children.append(new_element)
-#     return children
-
+# adding slider for histogram when user selects histogram option
 @app.callback(
     Output('slider-area', 'style'),
     Input('chart-options', 'value'))
@@ -382,16 +414,18 @@ def add_hist_slider(chart_type):
     else:
         return {"display": "none"}
 
+# callback for output time series
 @app.callback(
     Output('output-time-series-plot', 'figure'),
     [Input('output-dropdown', 'value'),
      Input('region-dropdown', 'value'),
      Input('scenario-dropdown', 'value'),
      Input('chart-options', 'value'),
-     Input('year-slider', 'value')],
+     Input('year-slider', 'value'),
+     Input('output-color-scheme', 'value')],
     [State('output-time-series-plot', 'figure')]
 )
-def update_graph(output_name, selected_regions, selected_scenarios, chart_type, year, existing_figure):
+def update_graph(output_name, selected_regions, selected_scenarios, chart_type, year, color_scheme, existing_figure):
     if chart_type == "time-series":
         if not selected_regions or not selected_scenarios:
             raise PreventUpdate
@@ -400,11 +434,11 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
             region = selected_regions[0]
             scenario = selected_scenarios[0]
             new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(5, 95)
-            traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df).return_traces()
+            traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
 
             fig = go.Figure(traces_to_add)
             fig.update_layout(
-                height = 600,
+                height = 650,
                 margin = dict(t = 20, b = 20, l = 10)
             )
             return fig
@@ -413,11 +447,11 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
         if current_trace_info.type[0] == "histogram": # means active figure is histogram, so need to generate scatter 
             for region, scenario in product(selected_regions, selected_scenarios):
                 new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(5, 95)
-                traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df).return_traces()
+                traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
 
             fig = go.Figure(traces_to_add)
             fig.update_layout(
-                height = 600,
+                height = 650,
                 margin = dict(t = 20, b = 20, l = 10)
             )
             return fig
@@ -445,12 +479,12 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
             for i in decomposed_traces_to_add:
                 output, reg, sce = tuple(i.split(" "))
                 new_trace_df = DataRetrieval(db, output_name, reg, sce).single_output_df_to_graph(5, 95)
-                traces_to_add = NewTimeSeries(output_name, reg, sce, 2050, new_trace_df).return_traces()
+                traces_to_add = NewTimeSeries(output_name, reg, sce, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
                 new_traces += traces_to_add
 
             fig = go.Figure(data = current_traces + new_traces)
             fig.update_layout(
-                height = 550,
+                height = 650,
                 margin = dict(t = 20, b = 20, l = 10)
             )
             return fig
@@ -466,128 +500,35 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
         )
         return fig
 
-# ###############################################
+# callback for inputs
+@app.callback(
+    Output("input-dist-graph", "figure"),
+    Input("input-dist-options", "value"),
+    Input("expanded-view-input-dist-options", "value"))
+def update_input_dist(inputs, focus_input):
+    if not inputs:
+        raise PreventUpdate
+    figure = InputDistribution(inputs).make_plot(focus_input)
 
-# # graphs and callback for input viz
-# @app.callback(Output("tab-2-content", "children"),
-#               Input("add-input-dist-button", "n_clicks"),
-#               State("tab-2-content", "children"))
-# def add_input_distribution(n_clicks, children):
-#     if not n_clicks:
-#         raise PreventUpdate
-#     new_element = html.Div(
-#             children = [
-#                 html.Br(),
-#                 dbc.Row(style = {"padding": 20},
-#                         children = [
-#                             dbc.Col(
-#                                     dcc.Dropdown(
-#                                         id = {"type": "checklist-input", "index": n_clicks},
-#                                         options = [{'label': i, 'value': i} for i in Options().input_names],
-#                                         value = ["wind"],
-#                                         multi = True
-#                                     ),
-#                                 ),
-#                                 dbc.Col(
-#                                     children = [
-#                                         dcc.Dropdown(style = {"width": 100},
-#                                             id = {"type": "checklist-input-histogram", "index": n_clicks},
-#                                             options = [{'label': i, 'value': i} for i in Options().input_names],
-#                                             value = "wind"
-#                                         )
-#                                     ]
-#                                 )
-#                                 ]
-#                             ),
-#                 html.Div(
-#                         children = [
-#                             dcc.Graph(id = {"type": "input-dist-graph", "index": n_clicks})
-#                         ]
-#                 )
-#             ]
-#         )
-#     children.append(new_element)
-#     return children
+    return figure
 
-# @app.callback(
-#     Output({"type": "input-dist-graph", "index": MATCH}, "figure"),
-#     Input({"type": "checklist-input", "index": MATCH}, "value"),
-#     Input({"type": "checklist-input-histogram", "index": MATCH}, "value"))
-# def update_input_dist(inputs, focus_input):
-#     if not inputs:
-#         raise PreventUpdate
-#     figure = InputDistribution(inputs).make_plot(focus_input)
-
-#     return figure
-# ###############################################
-
-# #graphs and callback for tab 3
-# '''
-# @app.callback(Output("tab-3-content", "children"),
-#               Input("add-output-dist-button", "n_clicks"),
-#               State("tab-3-content", "children"))
-# def add_output_distribution(n_clicks, children):
-#     if not n_clicks:
-#         raise PreventUpdate
-#     new_element = html.Div(style = {"padding": 20, "display": "flex", "flex-direction": "row"},
-#             children = [
-#                 html.Div(
-#                     children = [
-#                         dbc.Checklist(
-#                             id = {"type": "checklist-region-output-dist", "index": n_clicks},
-#                             options = [{'label': i, 'value': i} for i in Options().region_names],
-#                             value = ["GLB"]
-#                         )
-#                     ]
-#                 ),
-#             html.Div(style = {"padding": 20, "flex": 1},
-#                 children = [
-#                     dcc.Dropdown(id = {"type": "output-dropdown-output-dist", "index": n_clicks},
-#                     options = [{'label': Readability().readability_dict_forward[i], 'value': i} for i in Options().outputs],
-#                     value = "total_emissions_CO2_million_ton_CO2"
-#                 ),
-#                     dcc.Graph(id = {"type": "output-dist-graph", "index": n_clicks}),
-#                     dbc.Checklist(
-#                         id = {"type": "checklist-scenario-output-dist", "index": n_clicks},
-#                         options = [{'label': i, 'value': i} for i in Options().scenarios],
-#                         value = ["Ref"],
-#                         inline = True
-#                 )
-#             ])
-#         ])
-#     children.append(new_element)
-#     return children
-
-# @app.callback(
-#     Output({"type": "output-dist-graph", "index": MATCH}, "figure"),
-#     [Input({"type": "output-dropdown-output-dist", "index": MATCH}, "value"),
-#     Input({"type": "checklist-region-output-dist", "index": MATCH}, "value"),
-#     Input({"type": "checklist-scenario-output-dist", "index": MATCH}, "value")])
-# def update_graph(output, regions, scenarios):
-#     if not output:
-#         raise PreventUpdate
-#     figure = OutputDistribution(output).create_output_distribution(regions, scenarios)
-#     return figure
-# ###############################################
-# '''
-
-# # graphs and callbacks for i/o mapping
-# @app.callback(
-#     Output("input-output-mapping-figure", "figure"),
-#     Input("input-output-mapping-output", "value"),
-#     Input("input-output-mapping-regions", "value"),
-#     Input("input-output-mapping-scenario", "value"),
-#     Input("input-output-mapping-year", "value")
-# )
-# def update_figure(output, region, scenario, year):
-#     if not region or not output or not year:
-#         raise PreventUpdate
+# callback for i/o mapping
+@app.callback(
+    Output("input-output-mapping-figure", "figure"),
+    Input("input-output-mapping-output", "value"),
+    Input("input-output-mapping-regions", "value"),
+    Input("input-output-mapping-scenario", "value"),
+    Input("input-output-mapping-year", "value")
+)
+def update_figure(output, region, scenario, year):
+    if not region or not output or not year:
+        raise PreventUpdate
     
-#     df = db.input_output_mapping_df(output, region, scenario, year)
-#     fig = InputOutputMappingPlot(output, df).make_plot()
+    df = DataRetrieval(db, output, region, scenario, year).input_output_mapping_df()
+    fig = InputOutputMappingPlot(output, region, df).make_plot()
 
-#     return fig
-# ###############################################
+    return fig
+###############################################
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

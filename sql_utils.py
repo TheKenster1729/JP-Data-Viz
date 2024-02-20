@@ -85,11 +85,8 @@ class DataRetrieval:
 
         # return df_to_return
 
-    def input_output_mapping_df(self, output, region, scenario, year):
-        sql_table = Options().filenames_to_sql_tables[output] + "_" + region.lower() + "_" + scenario.lower()
-        df = pd.read_sql_table(sql_table, con = self.engine).query("Year == @year").drop(columns = "index").reset_index()
-
-        return df
+    def input_output_mapping_df(self):
+        return self.single_output_df().query("Year==@self.year")
 
 '''
 import os
@@ -118,6 +115,6 @@ for output in outputs:
             scenario_node = Node("{}".format(scenario), parent = region_node, sql_table_name = filename_dict[output] + "_{}_{}".format(region.lower(), scenario.lower()))
 '''
 if __name__ == "__main__":
-    SQLConnection("all_data_jan_2024").output_df("consumption_billion_usd2007", ["USA", "GLB", "EUR"], ["Above2C_med", "15C_med"])
-
+    db = SQLConnection("all_data_jan_2024")
+    print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
     # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)

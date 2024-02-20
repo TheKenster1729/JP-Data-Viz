@@ -3,11 +3,11 @@ import numpy as np
 import plotly.graph_objects as go
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sql_utils import SQLConnection
+from sql_utils import SQLConnection, DataRetrieval
 from styling import Readability
 
 class InputOutputMapping:
-    def __init__(self, output, df, threshold = 70, gt = True):
+    def __init__(self, output, region, df, threshold = 70, gt = True):
         self.output = output
         self.df = df
         self.y_continuous = self.df["Value"]
@@ -15,7 +15,7 @@ class InputOutputMapping:
         self.gt = gt
         self.inputs = pd.read_csv(r"Cleaned Data/InputsMaster.csv")
         # need to remove input pop/gdp not relevant to this region
-        self.region = self.df["Region"].unique()[0] # should only contain one value
+        self.region = region
         columns_to_remove = []
         for column in self.inputs.columns:
             signifiers = [" GDP", "Non-{} GDP".format(self.region), " Pop", "Non-{} Pop".format(self.region)]
@@ -39,10 +39,10 @@ class InputOutputMapping:
         fit_model = DecisionTreeClassifier().fit(X, y)
 
         return fit_model
-    
+
     def random_forest(self, num_to_plot = 5):
         X, y = self.preprocess_for_classification()
-        fit_model = RandomForestClassifier(n_estimators = 200).fit(X, y)
+        fit_model = RandomForestClassifier(n_estimators = 100).fit(X, y)
 
         # get the average feature importances
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = X.columns)
@@ -52,5 +52,10 @@ class InputOutputMapping:
         return feature_importances, sorted_labeled_importances, top_n
 
 if __name__ == "__main__":
-    df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "Ref", 2050)
-    # top_n = InputOutputMapping("elec_prod_Renewables_TWh", df).random_forest()
+    db = SQLConnection("all_data_jan_2024")
+    df1 = DataRetrieval(db, "primary_energy_use_Total_EJ", "GLB", "Ref", 2050).input_output_mapping_df()
+    df2 = DataRetrieval(db, "primary_energy_use_Renewables_EJ", "USA", "Ref", 2050).input_output_mapping_df()
+    df = df2/df1
+
+    top_n = InputOutputMapping("primary_energy_use_Total_EJ", "GLB", df2).random_forest()
+    print(top_n)

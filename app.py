@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 from sql_utils import SQLConnection, DataRetrieval
 from styling import Options, Readability
 from dash.dependencies import Input, Output, State, MATCH
-from figure import NewTimeSeries, InputDistribution, OutputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms
+from figure import NewTimeSeries, InputDistribution, OutputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
@@ -332,9 +332,67 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
         ]
     )
 
-choropleth_map = html.Div(
-    
-)
+choropleth_map = html.Div(style = {"padding": 20},
+    children = [
+        html.Div(
+            children = [
+                dbc.Row(
+                    children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                dbc.Card(
+                                    className = "card text-white bg-primary mb-3",
+                                    children = [
+                                        html.Div(style = {'display': 'flex'},
+                                            children = [
+                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Choropleth Mapping"),
+                                                DashIconify(icon = "feather:info", width = 60, style = {"padding": 10, "color": "#9AC1F4"})
+                                            ]
+                                        )
+                                    ]
+                                )                    
+                            ]
+                        ),
+                        dbc.Col(
+                            children = [
+                                dbc.Row(html.Div("Output Name", className = "text-primary")),
+                                dbc.Row(
+                                dcc.Dropdown(id = "choropleth-mapping-output",
+                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                    value = "emissions_CO2eq_total_million_ton_CO2eq")
+                                )
+                            ]
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    children = [
+                        dbc.Col(
+                            children = [
+                                html.Div("Scenario", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "choropleth-mapping-scenario",
+                                    options = [{'label': i, 'value': i} for i in Options().scenarios],
+                                    value = "Ref"
+                                ),
+                                html.Div("Year", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "choropleth-mapping-year",
+                                    options = [{'label': i, 'value': i} for i in Options().years],
+                                    value = 2050)
+                                ]
+                            ),
+                        dbc.Col(
+                            children = [
+                                dcc.Loading([dcc.Graph(id = "choropleth-mapping-figure")]),
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
 
 examples = html.Div(style = {},
     children = [
@@ -396,7 +454,7 @@ app.layout = html.Div(
                 dbc.Tab(id = "output-timeseries", label = "Output Distributions", children = [output_timeseries]),
                 dbc.Tab(id = "input-dist", label = "Input Distributions", children = [input_dists]),
                 dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping]),
-                dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [input_output_mapping])
+                dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [choropleth_map])
             ]
             )
         ]
@@ -529,6 +587,22 @@ def update_figure(output, region, scenario, year):
 
     return fig
 ###############################################
+
+# callback for choropleth mapping
+# @app.callback(
+#     Output("choropleth-mapping-figure", "figure"),
+#     Input("choropleth-mapping-output", "value"),
+#     Input("choropleth-mapping-scenario", "value"),
+#     Input("choropleth-mapping-year", "value")
+# )
+# def update_figure(output, scenario, year):
+#     if not scenario or not output or not year:
+#         raise PreventUpdate
+    
+#     df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
+#     fig = ChoroplethMap(df, output, scenario, year, 5, 95).make_plot()
+
+#     return fig
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

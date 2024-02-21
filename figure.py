@@ -9,7 +9,8 @@ import numpy as np
 import plotly.express as px
 from itertools import product
 from plotly.colors import n_colors
-import colour
+import geopandas as gpd
+import json
 
 class TraceInfo:
     def __init__(self, figure):
@@ -501,8 +502,103 @@ class InputOutputMappingPlot(InputOutputMapping):
         return fig
 
 class ChoroplethMap:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, df, output, scenario, year, lower_bound, upper_bound) -> None:
+        self.df = df
+        self.output = output
+        self.scenario = scenario
+        self.year = year
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    def number_to_ordinal(self, n):
+        """
+        Convert an integer from 1 to 100 into its English ordinal representation.
+        
+        Args:
+        n (int): Integer from 1 to 100
+        
+        Returns:
+        str: The ordinal representation of n
+        """
+        if 11 <= n <= 13:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return str(n) + suffix
+
+    def make_plot(self, show = False):
+        # Retrieve the data for the specified parameters
+        lower_bound_column_name = '{} Percentile'.format(self.number_to_ordinal(self.lower_bound))
+        upper_bound_column_name = '{} Percentile'.format(self.number_to_ordinal(self.upper_bound))
+
+        global_min = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].min().min()
+        global_max = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].max().max()
+        
+        # Load the spatial data
+        gdf = gpd.read_file(r"assets\Eppa countries\eppa6_regions_simplified.shp").rename(columns = {"EPPA6_Regi": "Region"})
+        
+        # Merge the data with the spatial data
+        merged_gdf = gdf.merge(self.df, on = "Region")
+        geojson = json.loads(merged_gdf.to_json())
+        for feature in geojson['features']:
+                feature['id'] = feature['properties']['Region']
+
+        # Create a choropleth map
+        lower = go.Choropleth(
+            geojson = geojson,
+            locations = merged_gdf["Region"],
+            z = merged_gdf[lower_bound_column_name],
+            featureidkey = "properties.Region",
+            colorscale = "Viridis",
+            marker_line_color = 'black',
+            marker_line_width = 0.5,
+            zmin = global_min,
+            zmax = global_max,
+            showscale = False
+        )
+        mid = go.Choropleth(
+            geojson = geojson,
+            locations = merged_gdf["Region"],
+            z = merged_gdf['Median'],
+            featureidkey = "properties.Region",
+            colorscale = "Viridis",
+            marker_line_color = 'black',
+            marker_line_width = 0.5,
+            zmin = global_min,
+            zmax = global_max,
+            showscale = False
+        )
+        upper = go.Choropleth(
+            geojson = geojson,
+            locations = merged_gdf["Region"],
+            z = merged_gdf[upper_bound_column_name],
+            featureidkey = "properties.Region",
+            colorscale = "Viridis",
+            marker_line_color = 'black',
+            marker_line_width = 0.5,
+            zmin = global_min,
+            zmax = global_max,            
+            showscale = True,
+            colorbar_title = Readability().naming_dict_long_names_first[self.output],
+            colorbar = dict(orientation = 'h')
+        )
+
+        fig = make_subplots(rows = 1, cols = 3, specs = [[{'type': 'choropleth'} for c in np.arange(3)]])
+        fig.add_trace(lower, row = 1, col = 1)
+        fig.add_trace(mid, row = 1, col = 2)
+        fig.add_trace(upper, row = 1, col = 3)
+        fig.update_geos(dict(
+                showframe = False,
+                showcoastlines = False,
+                projection_type = 'equirectangular'
+            ),
+        )
+        # fig.update_layout(width = 800,
+        #                   height = 1200)
+        if show:
+            fig.show()
+
+        return fig
 
 class ParallelCoords:
     pass
@@ -527,6 +623,9 @@ if __name__ == "__main__":
 
     # input-output mapping
     # df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)
-    df = DataRetrieval(db_obj, "emissions_CO2_total_million_ton_CO2", "GLB", "Ref", 2050).input_output_mapping_df()
-    fig = InputOutputMappingPlot("emissions_CO2_total_million_ton_CO2", "GLB", df).make_plot(show = True)
+    # df = DataRetrieval(db_obj, "emissions_CO2_total_million_ton_CO2", "GLB", "Ref", 2050).input_output_mapping_df()
+    # fig = InputOutputMappingPlot("emissions_CO2_total_million_ton_CO2", "GLB", df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
+
+    # choropleth map
+    ChoroplethMap(db_obj, "emissions_CO2eq_total_million_ton_CO2eq", "Ref", 2050, 5, 95).make_plot(show = True)

@@ -3,7 +3,7 @@ from analysis import InputOutputMapping
 from styling import Color, Options, Readability
 import pandas as pd
 from plotly.subplots import make_subplots
-from sql_utils import SQLConnection
+from sql_utils import SQLConnection, DataRetrieval
 from processing import LoadData
 import numpy as np
 import plotly.express as px
@@ -11,87 +11,267 @@ from itertools import product
 from plotly.colors import n_colors
 from sklearn.preprocessing import normalize
 
-class TimeSeries:
-    def __init__(self, output, year, df):
+class TraceInfo:
+    def __init__(self, figure):
+        self.fig = figure
+        self.traces = self.__traces()
+        self.number = self.__len__()
+        self.names = self.__trace_names()
+        self.colors = self.__trace_colors()
+        self.uid_names = self.__uid_names()
+        self.custom_data = self.__custom_data()
+        self.type = self.__type()
+
+    def __getitem__(self, index):
+        return self.traces[index]
+
+    def __len__(self):
+        return len(self.traces)
+
+    def __traces(self):
+        return self.fig.get('data', [])
+
+    def __trace_colors(self):
+        return [trace.get('marker', {}).get('color') for trace in self.traces]
+
+    def __trace_names(self):
+        return [trace.get('name') for trace in self.traces]
+    
+    def __uid_names(self):
+        return [trace.get('uid') for trace in self.traces]
+    
+    def __custom_data(self):
+        return [trace.get("customdata") for trace in self.traces]
+    
+    def __type(self):
+        return [trace.get("type") for trace in self.traces]
+
+class OldTimeSeries:
+    def __init__(self, output, region, scenario, year, df, styling_options = None):
         self.output = output
         self.df = df
-        self.regions = self.df.Region.unique()
-        self.scenarios = self.df.Scenario.unique()
+        self.lower = df[df.columns[0]]
+        self.median = df.Median
+        self.upper = df[df.columns[2]]
+        self.region = region
+        self.scenario = scenario
         self.year = year
         self.data_for_histogram = self.df.query("Year==@self.year")
-
-    def lower_bound_trace(self, data, group, bound, color = "black", marker = "dash"):
-        lower = data.pivot_table(values = "Value", index = "Year", aggfunc = lambda x: np.percentile(x, bound))
+        self.styling_options = styling_options
+    
+    def lower_bound_trace(self, group, color = "rgb(255,0,0)", marker = "dash"):
 
         trace = go.Scatter(
-            x = lower.index,
-            y = lower.Value,
+            x = self.df.index,
+            y = self.lower,
             line = dict(color = color, dash = marker),
             legendgroup = group,
             showlegend = False,
-            hoverinfo = "skip"
+            hoverinfo = "skip",
+            name = "{} {}".format(self.region, self.scenario),
+            customdata = ["{} {} {} lower".format(self.output, self.region, self.scenario)]
         )
 
         return trace
     
-    def median_trace(self, data, group, region, scenario, color = "black", marker = "dash"):
-        median = data.pivot_table(values = "Value", index = "Year", aggfunc = np.median)
+    def median_trace(self, group, color = "rgb(255,0,0)", marker = "dash"):
 
         trace = go.Scatter(
-            x = median.index,
-            y = median.Value,
-            name = "{} {}".format(region, scenario),
+            x = self.df.index,
+            y = self.median,
+            # name = "{} {}".format(self.region, Options().scenario_display_names[self.scenario]),
             line = dict(color = color, dash = marker),
             legendgroup = group,
+            name = "{} {}".format(self.region, self.scenario),
+            customdata = ["{} {} {} median".format(self.output, self.region, self.scenario)]
         )
 
         return trace
 
-    def upper_bound_trace(self, data, group, bound, color = "black", marker = "dash"):
-        upper = data.pivot_table(values = "Value", index = "Year", aggfunc = lambda x: np.percentile(x, bound))
+    def upper_bound_trace(self, group, color = "rgb(255,0,0)", marker = "dash"):
         fillcolor = Color().convert_to_fill(color)
 
         trace = go.Scatter(
-            x = upper.index,
-            y = upper.Value,
+            x = self.df.index,
+            y = self.upper,
             fill = "tonexty",
             fillcolor = fillcolor,
             line = dict(color = color, dash = marker),
             legendgroup = group,
             showlegend = False,
-            hoverinfo = "skip"
+            hoverinfo = "skip",
+            name = "{} {}".format(self.region, self.scenario),
+            customdata = ["{} {} {} upper".format(self.output, self.region, self.scenario)]
         )
 
         return trace
 
-    def make_timeseries_plot(self, upper_bound, lower_bound, show = False, show_uncertainty = True):
-        fig = go.Figure()
-        for region in self.regions:
-            color = Color().region_colors[region]
-            for scenario in self.scenarios:
-                group = "{} {}".format(region, scenario)
-                marker = Color().scenario_markers[scenario]
-                data = self.df[self.df["Region"].isin([region]) & self.df["Scenario"].isin([scenario])]
-                median = self.median_trace(data, group, region, scenario, color = color, marker = marker)
-                if show_uncertainty:
-                    lower = self.lower_bound_trace(data, group, lower_bound, color = color, marker = marker)
-                    upper = self.upper_bound_trace(data, group, upper_bound, color = color, marker = marker)
+    def return_traces(self, show = False, show_uncertainty = True):
+        group = "{} {}".format(self.region, self.scenario)
+        lower = self.lower_bound_trace(group, color = Color().region_colors[self.region], marker = Color().scenario_markers[self.scenario])
+        median = self.median_trace(group, color = Color().region_colors[self.region], marker = Color().scenario_markers[self.scenario])
+        upper = self.upper_bound_trace(group, color = Color().region_colors[self.region], marker = Color().scenario_markers[self.scenario])
 
-                    fig.add_trace(lower)
-                    fig.add_trace(upper)
-                
-                fig.add_trace(median)
+        # fig.update_layout(
+        #     yaxis_title = '{}'.format(self.output),
+        #     hovermode = "x",
+        #     title = '{}'.format(Readability().readability_dict_forward[self.output])
+        # )
 
-        fig.update_layout(
-            yaxis_title = '{}'.format(self.output),
-            hovermode = "x",
-            title = '{}'.format(Readability().readability_dict_forward[self.output])
-        )
+        # if show:
+        #     fig.show()
+
+        return [lower, upper, median]
+    
+    def make_histograms(self, show = False):
+        hist = make_subplots(rows = len(self.scenarios), cols = len(self.regions))
+        for i, region in enumerate(self.regions):
+            for j, scenario in enumerate(self.scenarios):
+                df_to_plot = self.data_for_histogram.query("Region==@region & Scenario==@scenario")
+                hist.add_trace(go.Histogram(x = df_to_plot["Value"], marker_color = Color().region_colors[region], name = region + " " + scenario, legendgroup = region,
+                                            marker = dict(pattern = dict(shape = Color().histogram_patterns[scenario])), hoverinfo = "name"), 
+                               row = j + 1, col = i + 1)
+        hist.update_layout(title_text = "Distributions for {}, {}".format(Readability().readability_dict_forward[self.output], self.year))
 
         if show:
-            fig.show()
+            hist.show()
 
-        return fig
+        return hist
+    
+    def make_plot(self, show = False, show_uncertainty = True, upper = 95, lower = 5):
+        timeseries = self.make_timeseries_plot(upper, lower, show_uncertainty = show_uncertainty)
+        hist = self.make_histograms()
+
+        num_rows = len(self.regions)
+        num_columns = len(self.scenarios) * 2
+
+        # Create a new subplot figure with enough rows and columns for all subplots
+        plot = make_subplots(rows = num_rows, cols = num_columns,
+                specs = [[{"colspan": int(num_columns/2), "rowspan": num_rows}, *(None for i in range(int(num_columns/2) - 1))] + [{} for i in range(int(num_columns/2))]] + [[*(None for i in range(int(num_columns/2)))] + [{} for i in range(int(num_columns/2))] for j in range(num_rows - 1)],
+                )
+        # Add the timeseries plot to the first subplot
+        for i in range(len(timeseries.data)):
+            plot.add_trace(timeseries.data[i], row = 1, col = 1)
+
+        # Add each histogram subplot to the new subplot figure
+        for i, trace in enumerate(hist.data):
+            row_and_col = [(row, col) for row in range(1, num_rows + 1) for col in range(int(num_columns/2) + 1, int(num_columns + 1))]          
+            row = row_and_col[i][0]
+            col = row_and_col[i][1]
+            plot.add_trace(trace, row = row, col = col)
+
+        plot.update_layout(title = "{} Timeseries and Distributions for {}".format(Readability().readability_dict_forward[self.output], self.year),
+                        height = 700,
+                        margin = dict(l = 0, r = 0)
+                        )
+        plot.update_xaxes(title = "Year", row = 1, col = 1)
+
+        if len(self.scenarios) % 2 == 1:
+            # odd number of histogram columns, easier case
+            plot.update_xaxes(title = "{}".format(Readability().readability_dict_forward[self.output]), row = num_rows, col = int(num_columns/2) + len(self.regions) % 2)
+        else:
+            # even number of histograms, so must take average
+            x_position = (num_columns / 2 + len(self.scenarios)/2) / num_columns
+            y_position = -0.05
+
+            # add annotation for the x-axis label
+            plot.add_annotation(dict(
+                x = x_position, y = y_position, showarrow = False,
+                text = "{}".format(Readability().readability_dict_forward[self.output]), xref = "paper", yref = "paper",
+                xanchor = "center", yanchor = "top",
+                font = dict(size = 14)
+            ))
+
+        if show:
+            plot.show()
+
+        return plot
+    
+class NewTimeSeries:
+    def __init__(self, output, region, scenario, year, df, styling_options = {"color": "by-scenario"}):
+        self.output = output
+        self.df = df
+        self.lower = df[df.columns[0]]
+        self.median = df.Median
+        self.upper = df[df.columns[2]]
+        self.region = region
+        self.scenario = scenario
+        self.year = year
+        self.data_for_histogram = self.df.query("Year==@self.year")
+        self.styling_options = styling_options
+
+    def get_color(self):
+        if self.styling_options["color"] == "by-region":
+            color = Color().region_colors[self.region]
+        elif self.styling_options["color"] == "by-scenario":
+            color = Color().scenario_colors[self.scenario]
+        elif self.styling_options["color"] == "standard":
+            base_shade = Color().region_colors[self.region]
+            amount_to_lighten = Options().scenarios.index(self.scenario)
+            color = Color().lighten_hex(base_shade, brightness_offset = amount_to_lighten*8)
+        return color
+    
+    def lower_bound_trace(self, group, marker = "dash"):
+        color = self.get_color()
+        trace = go.Scatter(
+            x = self.df.index,
+            y = self.lower,
+            line = dict(color = color),
+            legendgroup = group,
+            showlegend = False,
+            hoverinfo = "skip",
+            customdata = ["{} {} {} lower".format(self.output, self.region, self.scenario)],
+        )
+
+        return trace
+    
+    def median_trace(self, group, marker = "dash"):
+        color = self.get_color()
+        trace = go.Scatter(
+            x = self.df.index,
+            y = self.median,
+            line = dict(color = color),
+            legendgroup = group,
+            name = "{} {}".format(self.region, Options().scenario_display_names[self.scenario]),
+            customdata = ["{} {} {} median".format(self.output, self.region, self.scenario)]
+        )
+
+        return trace
+
+    def upper_bound_trace(self, group, marker = "dash"):
+        color = self.get_color()
+        fillcolor = Color().convert_to_fill(color)
+
+        trace = go.Scatter(
+            x = self.df.index,
+            y = self.upper,
+            fill = "tonexty",
+            fillcolor = fillcolor,
+            line = dict(color = color),
+            legendgroup = group,
+            showlegend = False,
+            hoverinfo = "skip",
+            customdata = ["{} {} {} upper".format(self.output, self.region, self.scenario)]
+        )
+
+        return trace
+
+    def return_traces(self, show = False, show_uncertainty = True):
+        group = "{} {}".format(self.region, self.scenario)
+        lower = self.lower_bound_trace(group)
+        median = self.median_trace(group)
+        upper = self.upper_bound_trace(group)
+
+        # fig.update_layout(
+        #     yaxis_title = '{}'.format(self.output),
+        #     hovermode = "x",
+        #     title = '{}'.format(Readability().readability_dict_forward[self.output])
+        # )
+
+        # if show:
+        #     fig.show()
+
+        return [lower, upper, median]
     
     def make_histograms(self, show = False):
         hist = make_subplots(rows = len(self.scenarios), cols = len(self.regions))
@@ -177,6 +357,48 @@ class TimeSeries:
 
         return plot
 
+class OutputHistograms:
+    def __init__(self, output, regions, scenarios, year, db_obj, styling_options = None):
+        self.output = output
+        self.db_obj = db_obj
+        self.regions = regions
+        self.scenarios = scenarios
+        self.year = year
+        self.styling_options = styling_options
+
+    def get_data(self, region, scenario):
+        df = DataRetrieval(self.db_obj, self.output, region, scenario).single_output_df()
+        return df.query("Year==@self.year")
+
+    def make_plot(self, show = False):
+        # Create an empty figure
+        fig = make_subplots(rows = len(self.regions), cols = len(self.scenarios))
+
+        # Loop through each combination of region and scenario
+        for i, region in enumerate(self.regions):
+            for j, scenario in enumerate(self.scenarios):
+                # Fetch the data for this combination
+                df = self.get_data(region, scenario)
+                
+                # Add a histogram to the figure for this combination
+                fig.add_trace(go.Histogram(x = df['Value'],
+                                        name = f"{region} - {Options().scenario_display_names[scenario]}",
+                                        opacity = 0.75),
+                                        row = i + 1,
+                                        col = j + 1)
+
+        # Update the layout of the figure
+        fig.update_layout(
+            title_text = f"Histograms for {Readability().naming_dict_long_names_first[self.output]}, {self.year}",  # Title
+            xaxis_title_text = 'Value',  # X-axis label
+            yaxis_title_text = 'Count'  # Y-axis label
+        )
+        
+        if show:
+            fig.show()
+
+        return fig
+   
 class InputDistribution:
     def __init__(self, inputs):
         self.inputs = inputs
@@ -201,7 +423,7 @@ class InputDistribution:
         fig.add_trace(go.Histogram(x = self.input_df_no_run[input_name], name = input_name, showlegend = False))
 
         return fig
-    
+
     def make_plot(self, input_name, show = False):
         violin = self.create_input_distribution()
         hist = self.create_input_histogram(input_name)
@@ -211,9 +433,6 @@ class InputDistribution:
             plot.add_trace(violin.data[i], row = 1, col = 1)
         plot.add_trace(hist.data[0], row = 1, col = 2)
         plot.update_layout(title = "Inputs Visualization",
-                        plot_bgcolor = "#060606",
-                        paper_bgcolor = "#060606",
-                        font_color = "white",
                         width = 1400,
                         height = 700)
         plot.update_xaxes(title = "Input Comparison", row = 1, col = 1)
@@ -273,8 +492,8 @@ class OutputDistribution:
         pass
 
 class InputOutputMappingPlot(InputOutputMapping):
-    def __init__(self, output, df):
-        super().__init__(output, df)
+    def __init__(self, output, region, df):
+        super().__init__(output, region, df)
 
     def make_plot(self, num_to_plot = 5, show = False):
         feature_importances, sorted_labeled_importances, top_n = self.random_forest(num_to_plot = num_to_plot)
@@ -282,7 +501,7 @@ class InputOutputMappingPlot(InputOutputMapping):
 
         _, y_discrete = self.preprocess_for_classification()
         y_discrete_series = pd.Series(y_discrete.ravel(), name = "y_discrete")
-        parcoords_df = pd.concat([self.inputs[top_n], self.y_continuous, y_discrete_series], axis = 1)
+        parcoords_df = pd.concat([self.inputs[top_n], self.y_continuous.reset_index(drop = True), y_discrete_series], axis = 1)
 
         dimensions = []
         color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
@@ -296,7 +515,105 @@ class InputOutputMappingPlot(InputOutputMapping):
                           width = 1200,
                           height = 600)
 
+        if show:
+            fig.show()
+
+        return fig
+
+class ChoroplethMap:
+    def __init__(self, df, output, scenario, year, lower_bound, upper_bound) -> None:
+        self.df = df
+        self.output = output
+        self.scenario = scenario
+        self.year = year
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    def number_to_ordinal(self, n):
+        """
+        Convert an integer from 1 to 100 into its English ordinal representation.
         
+        Args:
+        n (int): Integer from 1 to 100
+        
+        Returns:
+        str: The ordinal representation of n
+        """
+        if 11 <= n <= 13:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return str(n) + suffix
+
+    def make_plot(self, show = False):
+        # Retrieve the data for the specified parameters
+        lower_bound_column_name = '{} Percentile'.format(self.number_to_ordinal(self.lower_bound))
+        upper_bound_column_name = '{} Percentile'.format(self.number_to_ordinal(self.upper_bound))
+
+        global_min = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].min().min()
+        global_max = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].max().max()
+        
+        # Load the spatial data
+        gdf = gpd.read_file(r"assets\Eppa countries\eppa6_regions_simplified.shp").rename(columns = {"EPPA6_Regi": "Region"})
+        
+        # Merge the data with the spatial data
+        merged_gdf = gdf.merge(self.df, on = "Region")
+        geojson = json.loads(merged_gdf.to_json())
+        for feature in geojson['features']:
+                feature['id'] = feature['properties']['Region']
+
+        # Create a choropleth map
+        lower = go.Choropleth(
+            geojson = geojson,
+            locations = merged_gdf["Region"],
+            z = merged_gdf[lower_bound_column_name],
+            featureidkey = "properties.Region",
+            colorscale = "Viridis",
+            marker_line_color = 'black',
+            marker_line_width = 0.5,
+            zmin = global_min,
+            zmax = global_max,
+            showscale = False
+        )
+        mid = go.Choropleth(
+            geojson = geojson,
+            locations = merged_gdf["Region"],
+            z = merged_gdf['Median'],
+            featureidkey = "properties.Region",
+            colorscale = "Viridis",
+            marker_line_color = 'black',
+            marker_line_width = 0.5,
+            zmin = global_min,
+            zmax = global_max,
+            showscale = False
+        )
+        upper = go.Choropleth(
+            geojson = geojson,
+            locations = merged_gdf["Region"],
+            z = merged_gdf[upper_bound_column_name],
+            featureidkey = "properties.Region",
+            colorscale = "Viridis",
+            marker_line_color = 'black',
+            marker_line_width = 0.5,
+            zmin = global_min,
+            zmax = global_max,            
+            showscale = True,
+            colorbar_title = Readability().naming_dict_long_names_first[self.output],
+            colorbar = dict(orientation = 'h')
+        )
+
+        fig = make_subplots(rows = 1, cols = 3, specs = [[{'type': 'choropleth'} for c in np.arange(3)]])
+        fig.add_trace(lower, row = 1, col = 1)
+        fig.add_trace(mid, row = 1, col = 2)
+        fig.add_trace(upper, row = 1, col = 3)
+        fig.update_geos(dict(
+                showframe = False,
+                showcoastlines = False,
+                projection_type = 'equirectangular'
+            ),
+        )
+        # fig.update_layout(width = 800,
+        #                   height = 1200)
         if show:
             fig.show()
 
@@ -327,10 +644,17 @@ class ParallelCoords:
 
 if __name__ == "__main__":
     # timeseries
-    # df = SQLConnection("jp_data").output_df("total_emissions_CO2_million_ton_CO2", ["USA", "EUR", "CHN"], ["Ref", "2C"])
-    # fig = TimeSeries("total_emissions_CO2_million_ton_CO2", 2050, df).make_plot()
-    # fig.write_image("assets\examples\carbonemissions.svg")
-
+    db_obj = SQLConnection("all_data_jan_2024")
+    # df = DataRetrieval(db_obj, "consumption_billion_usd2007", "GLB", "Ref").single_output_df()
+    # lower = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).lower_bound_trace(None)
+    # upper = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).upper_bound_trace(None)
+    # median = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).median_trace(None)
+    # fig = go.Figure()
+    # fig.add_trace(lower)
+    # fig.add_trace(upper)
+    # fig.add_trace(median)
+    # fig.show()
+    # OutputHistograms("consumption_billion_USD2007", ["GLB", "USA", "EUR"], ["Ref", "Above2C_med"], 2050, db_obj).make_plot(show = True)
     # input dist
     # fig = InputDistribution(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot("WindGas")
     # fig.show()
@@ -338,7 +662,8 @@ if __name__ == "__main__":
 
     # input-output mapping
     # df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)
-    # fig = InputOutputMappingPlot("total_emissions_CO2_million_ton_CO2", df).make_plot()
+    # df = DataRetrieval(db_obj, "emissions_CO2_total_million_ton_CO2", "GLB", "Ref", 2050).input_output_mapping_df()
+    # fig = InputOutputMappingPlot("emissions_CO2_total_million_ton_CO2", "GLB", df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
     # custom parcoords

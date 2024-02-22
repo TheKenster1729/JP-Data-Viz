@@ -10,69 +10,84 @@ from itertools import product
 from styling import Options, Readability
 from google.cloud.sql.connector import Connector, IPTypes
 import sqlalchemy
+import mysql.connector
 
 class SQLConnection:
-    def __init__(self, dbname, engine = None, use_cloud_db = False):
+    def __init__(self, dbname):
         self.dbname = dbname
-        if engine:
-            self.engine = engine
+        self.retrieval_engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/{}'.format(self.dbname))
+        self.engine = mysql.connector.connect(
+                host = "localhost",
+                user = "root",
+                password = "password",
+                database = "all_data_jan_2024"
+            )
+        self.cursor = self.engine.cursor(buffered = True)
+
+class DataRetrieval:
+    def __init__(self, db_connection_obj, output, region, scenario, year = None):
+        self.db = db_connection_obj
+        self.output = output
+        self.region = region
+        self.scenario = scenario
+        self.year = year
+
+    def number_to_ordinal(self, n):
+        """
+        Convert an integer from 1 to 100 into its English ordinal representation.
+        
+        Args:
+        n (int): Integer from 1 to 100
+        
+        Returns:
+        str: The ordinal representation of n
+        """
+        if 11 <= n <= 13:
+            suffix = 'th'
         else:
-            if not use_cloud_db:
-                self.engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/{}'.format(self.dbname))
-            else:
-                # initialize Connector object
-                connector = Connector()
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return str(n) + suffix
 
-                # function to return the database connection
-                def getconn():
-                    conn = connector.connect(
-                        "jp-data-viz:us-central1:jp-data-sql", # Cloud SQL Instance Connection Name
-                        "pg8000",
-                        user="root",
-                        password="u4V2h2hdG`bC-r>}",
-                        db="jp_data",
-                        ip_type= IPTypes.PUBLIC  # IPTypes.PRIVATE for private IP
-                    )
-                    return conn
+    def get_long_name(self):
+        return self.output + "_" + self.region.lower() + "_" + self.scenario.lower()
 
-                # create connection pool
-                pool = sqlalchemy.create_engine(
-                    "mysql+pymysql://",
-                    creator=getconn,
-                )
+    def single_output_df(self):
+        long_name = self.get_long_name()
+        query = "SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`='{}'".format(long_name)
+        self.db.cursor.execute(query)
+        sql_table_name = self.db.cursor.fetchall()[0][0]
+        df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
+        
+        df["Value"] = df["Value"].replace("Eps", 0)
 
-                self.engine = pool
+        return df
 
-    def test_cloud_connection(self):
-        query = "SELECT * FROM jp_data"
-        with self.engine.connect() as db_conn:
-            # insert into database
-            db_conn.execute(query)
+    def single_output_df_to_graph(self, lower_bound, upper_bound):
+        df = self.single_output_df()
+        df_to_graph = df.groupby(["Year"])["Value"].agg([
+            lambda x: np.percentile(x, lower_bound),
+            np.median,
+            lambda x: np.percentile(x, upper_bound)
+            ]
+        )
+        df_to_graph.columns = ['{} Percentile'.format(self.number_to_ordinal(lower_bound)), 'Median', '{} Percentile'.format(self.number_to_ordinal(upper_bound))]
 
-            # commit transaction (SQLAlchemy v2.X.X is commit as you go)
-            db_conn.commit()
-
-            # query database
-            result = db_conn.execute(sqlalchemy.text("SELECT * from my_table")).fetchall()
-
-            # Do something with the results
-            for row in result:
-                print(row)
+        return df_to_graph
 
     def output_df(self, output, regions, scenarios):
         combinations = product(regions, scenarios)
-        sql_table_names = [Options().filenames_to_sql_tables[output] + "_" + x[0].lower() + "_" + x[1].lower() for x in combinations]
 
         df_to_return = pd.DataFrame()
-        for table in sql_table_names:
-            df = pd.read_sql_table(table, con = self.engine).drop(columns = "index")
-            df_to_return = pd.concat([df_to_return, df], ignore_index = True)
+        for combo in combinations:
+            long_name = self.get_long_name(output, combo[0], combo[1])
+            df = self.single_output_df(long_name)  
+        #     df = pd.read_sql_table(table, con = self.engine).drop(columns = "index")
+        #     df_to_return = pd.concat([df_to_return, df], ignore_index = True)
 
-        return df_to_return
+        # return df_to_return
 
-    def input_output_mapping_df(self, output, region, scenario, year):
-        sql_table = Options().filenames_to_sql_tables[output] + "_" + region.lower() + "_" + scenario.lower()
-        df = pd.read_sql_table(sql_table, con = self.engine).query("Year == @year").drop(columns = "index").reset_index()
+    def input_output_mapping_df(self):
+        return self.single_output_df().query("Year==@self.year")
 
         return df
     

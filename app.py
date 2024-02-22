@@ -589,21 +589,21 @@ def update_figure(output, region, scenario, year):
 ###############################################
 
 # callback for choropleth mapping
-@app.callback(
-    Output("choropleth-mapping-figure", "figure"),
-    Input("choropleth-mapping-output", "value"),
-    Input("choropleth-mapping-scenario", "value"),
-    Input("choropleth-mapping-year", "value")
-)
-def update_figure(output, scenario, year):
-    if not scenario or not output or not year:
-        raise PreventUpdate
+# @app.callback(
+#     Output("choropleth-mapping-figure", "figure"),
+#     Input("choropleth-mapping-output", "value"),
+#     Input("choropleth-mapping-scenario", "value"),
+#     Input("choropleth-mapping-year", "value")
+# )
+# def update_figure(output, scenario, year):
+#     if not scenario or not output or not year:
+#         raise PreventUpdate
     
-    df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
-    fig = ChoroplethMap(df, output, scenario, year, 5, 95).make_plot()
-    fig.update_layout(width = 800, height = 1000, margins = dict(l = 20, r = 0, t = 20, b = 0))
+#     df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
+#     fig = ChoroplethMap(df, output, scenario, year, 5, 95).make_plot()
+#     fig.update_layout(width = 800, height = 1000, margins = dict(l = 20, r = 0, t = 20, b = 0))
 
-    return fig
+#     return fig
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

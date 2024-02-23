@@ -7,8 +7,7 @@ from anytree import RenderTree
 import json
 from anytree.search import findall
 from itertools import product
-from styling import Options, Readability
-from google.cloud.sql.connector import Connector, IPTypes
+from styling import Options
 import sqlalchemy
 import mysql.connector
 
@@ -89,18 +88,17 @@ class DataRetrieval:
     def input_output_mapping_df(self):
         return self.single_output_df().query("Year==@self.year")
 
-        return df
-    
-    def custom_parcoords(self, inputs, outputs_list):
-        df_to_return = pd.read_csv(r"Cleaned Data\InputsMaster.csv").rename(columns = {"Unnamed: 0": "Run #"})[["Run #"] + inputs]
-        for output_info in outputs_list:
-            df = self.input_output_mapping_df(output_info["name"], output_info["region"], output_info["scenario"], output_info["year"])
-            assert len(df) == 400 # currently each timeseries has 400 observations per year, and this is necessary for the concatenation to work
-            series_to_concat = pd.Series(df.Value, name = "{} {} {} {}".format(Readability().readability_dict_forward[output_info["name"]], output_info["region"], 
-                                                                            output_info["scenario"], output_info["year"]))
-            df_to_return = pd.concat([df_to_return, series_to_concat], axis = 1)
-        return df_to_return
-    
+    def choropleth_map_df(self, lower_bound, upper_bound):
+        df_to_return = pd.DataFrame(columns = ['Region', '{} Percentile'.format(self.number_to_ordinal(lower_bound)), 'Median', '{} Percentile'.format(self.number_to_ordinal(upper_bound))])
+        for region in Options().region_names[1:]:
+            self.region = region
+            regional_result = self.single_output_df_to_graph(lower_bound, upper_bound).loc[self.year]
+            easy_to_use_data = [self.region] + list(regional_result.values)
+            regional_result_reshaped = pd.DataFrame(data = {'Region': [self.region], '{} Percentile'.format(self.number_to_ordinal(lower_bound)): [easy_to_use_data[1]],
+                                                            'Median': [easy_to_use_data[2]], '{} Percentile'.format(self.number_to_ordinal(upper_bound)): [easy_to_use_data[3]]})
+            df_to_return = pd.concat([df_to_return, regional_result_reshaped])
+
+        return df_to_return.reset_index(drop = True)
 '''
 import os
 import pandas as pd
@@ -128,9 +126,7 @@ for output in outputs:
             scenario_node = Node("{}".format(scenario), parent = region_node, sql_table_name = filename_dict[output] + "_{}_{}".format(region.lower(), scenario.lower()))
 '''
 if __name__ == "__main__":
+    db = SQLConnection("all_data_jan_2024")
+    # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
     # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
-
-    # SQLConnection("jp_data", use_cloud_db = True).test_cloud_connection()
-
-    df = SQLConnection("jp_data").custom_parcoords(["wind", "WindGas", "WindBio"], [{"name": "sectoral_emi_Agriculture_million_ton_CO2e", "region": "GLB", "scenario": "Ref", "year": 2050},
-                                                                                      {"name": "sectoral_emi_Agriculture_million_ton_CO2e", "region": "USA", "scenario": "Ref", "year": 2050}])
+    print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).choropleth_map_df(5, 95))

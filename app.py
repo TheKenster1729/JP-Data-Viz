@@ -1,15 +1,17 @@
 # use venv when running this code
 import dash
 from dash.exceptions import PreventUpdate
-from dash import html, dcc, ctx
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 from sql_utils import SQLConnection, DataRetrieval
 from styling import Options, Readability
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, OutputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap
 import numpy as np
-import dash_mantine_components as dmc
-import plotly.io as pio
+import plotly.graph_objects as go
+from itertools import product
+from pprint import pprint
+from dash_iconify import DashIconify
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BOOTSTRAP])
 
@@ -67,21 +69,7 @@ navbar = dbc.Navbar(
 
 output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
     children = [
-        html.Br(),
-        html.Div("Click the button below to display time series data for a new output.", className = "primary"),
-        dbc.Button('Add New Figure', id = 'add-output-button', n_clicks = 0, color = "primary")
-    ])
-
-input_dists = html.Div(id = "tab-2-content", style = {"padding": 20},
-    children = [
-        html.Br(),
-        html.Div("Click the button below to add a new input visualization plot.", className = "primary"),
-        dbc.Button('Add New Input Distribution', id = 'add-input-dist-button', n_clicks = 0, color = "primary")
-    ])
-
-input_output_mapping = html.Div(id = "tab-4-content",
-    children = [
-        html.Div(style = {"padding": 20, "display": "flex", "flex-direction": "row", "gap": 10},
+        dbc.Row(
             children = [
                 dbc.Col(width = 2,
                     children = [
@@ -435,38 +423,6 @@ examples = html.Div(style = {},
     ]
 )
 
-connect = html.Div(style = {},
-    children = [
-        html.Br(),
-        html.Div(style = {},
-                 children = [
-                     dcc.Graph(id = "scenario-connection-graph")
-                ]
-            ),
-        dbc.Row(children = [
-            dbc.Col(children = [
-                html.P("Add Input", className = "text-primary"),
-                dcc.Dropdown(id = "scenario-connection-inputs", options = [{'label': i, 'value': i} for i in Options().input_names],
-                             value = ["wind"]
-                )
-            ]),
-            dbc.Col(children = [
-                html.P("Add Output", className = "text-primary"),
-                dbc.Row(children = [
-                    dbc.Col(children = [
-                        html.P("Name"),
-                        dcc.Dropdown(id = "scenario-connection-output", options = [{'label': Readability().readability_dict_forward[i], 'value': i} for i in Options().outputs])
-                    ]),
-                    dbc.Col(children = [
-                        html.P("Region"),
-                        dcc.Dropdown(id = "scenario-connection-region", options = [{"label": i, "value": i} for i in Options().region_names])
-                    ])
-                ])
-            ])
-        ])
-    ]
-)
-
 # footer = dbc.Navbar(style = {"border-radius": "30px 30px 0px 0px"},
 #     class_name = "navbar navbar-expand-lg custom-navbar",
 #     color = "#785EF0",
@@ -498,7 +454,7 @@ app.layout = html.Div(
                 dbc.Tab(id = "output-timeseries", label = "Output Distributions", children = [output_timeseries]),
                 dbc.Tab(id = "input-dist", label = "Input Distributions", children = [input_dists]),
                 dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping]),
-                dbc.Tab(id = "connection", label = "Connect", children = connect)
+                dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [choropleth_map])
             ]
             )
         ]
@@ -506,225 +462,15 @@ app.layout = html.Div(
     ]
 )
 
-# graphs and callback for output time series visualization
-@app.callback(Output("tab-1-content", "children"),
-              Input("add-output-button", "n_clicks"),
-              State("tab-1-content", "children"))
-def add_new_graph(n_clicks, children):
-    if not n_clicks:
-        raise PreventUpdate
-    new_element = html.Div(style = {"padding": 20, "display": "flex", "flex-direction": "row"},
-            children = [
-                html.Div(
-                    children = [
-                        html.Div("Region", className = "text-primary"),
-                        dbc.Checklist(
-                            id = {"type": "checklist-region", "index": n_clicks},
-                            options = [{'label': i, 'value': i} for i in Options().region_names],
-                            value = ["GLB"]
-                        )
-                    ]
-                ),
-            html.Div(style = {"flex": 1, "margin-left": 20},
-                children = [
-                    html.Div("Output", className = "text-primary"),
-                    dcc.Dropdown(id = {"type": "output-dropdown", "index": n_clicks},
-                    options = [{'label': Readability().readability_dict_forward[i], 'value': i} for i in Options().outputs],
-                    value = "total_emissions_CO2_million_ton_CO2"
-                ),
-                    dcc.Graph(id = {"type": "chart", "index": n_clicks}),
-                    dbc.Row(
-                        children = 
-                        [
-                            dbc.Col(
-                                children = [
-                                    html.Div("Scenario", className = "text-primary"),
-                                    dbc.Checklist(
-                                        id = {"type": "checklist-scenario", "index": n_clicks},
-                                        options = [{'label': i, 'value': i} for i in Options().scenarios],
-                                        value = ["Ref"],
-                                        inline = True
-                                    ),
-                                    html.Div("Show Uncertainty", className = "text-primary"),
-                                    dbc.Checklist(
-                                        id = {"type": "toggle-uncertainty", "index": n_clicks},
-                                        options = [{"label": "Uncertainty On", "value": True}],
-                                        value = [True],
-                                        inline = True
-                                    )
-                                ]
-                            ),
-                            dbc.Col(
-                                children = [
-                                    html.Div(
-                                        children = [
-                                            html.Div("Year", className = "text-primary"),
-                                            dcc.Slider(
-                                                min = min(Options().years),
-                                                max = max(Options().years),
-                                                step = int((max(Options().years) - min(Options().years))/(len(Options().years) - 1)),
-                                                id = {"type": "output-dist-hist-year", "index": n_clicks},
-                                                marks = {year: str(year) for year in Options().years[::2]},
-                                                value = 2050)
-                                        ]
-                                    )
-                                ]
-                            )
-                        ]
-                        ),
-                        dbc.Accordion(start_collapsed = True,
-                                      children = [
-                                          dbc.AccordionItem(title = "Advanced Options",
-                                                            children = [
-                                                                html.P("Set Uncertainty Range - Upper and Lower Percentiles", className = "text-primary"),
-                                                                html.P("Upper Bound"),
-                                                                dcc.Slider(51, 99, 1, id = {"type": "uncertainty-range-slider-upper", "index": n_clicks}, value = 95,
-                                                                           marks = {label: str(label) for label in range(50, 100, 5)}, tooltip = dict(always_visible = True)),
-                                                                html.P("Lower Bound"),
-                                                                dcc.Slider(1, 49, 1, id = {"type": "uncertainty-range-slider-lower", "index": n_clicks}, value = 5, 
-                                                                           marks = {label: str(label) for label in range(0, 50, 5)}, tooltip = dict(always_visible = True)),
-                                                                dbc.Button("Set Bounds", id = {"type": "regenerate-plot-button", "index": n_clicks}, class_name = "Primary")
-                                                            ]
-                                                        ),
-                                            dbc.AccordionItem(title = "Styling Options",
-                                                              children = [
-                                                                html.P("Adjust Background Color"),
-                                                                dmc.ColorPicker(id = {"type": "timeseries-color-picker", "index": n_clicks},
-                                                                                format = "hex",
-                                                                                value = "#e5ecf5"),
-                                                                html.Br(),
-                                                                dmc.Switch(id = {"type": "toggle-gridlines", "index": n_clicks}, checked = True),
-                                                                dmc.Switch(id = {"type": "smooth-histograms", "index": n_clicks}, checked = False),
-                                                                dbc.Button(id = {"type": "apply-styling-button", "index": n_clicks},
-                                                                        children = [
-                                                                            html.Div("Apply")
-                                                                        ])
-                                                                ]),
-                                            dbc.AccordionItem(title = "Save Options",
-                                                              children = [
-                                                                dbc.Row(children = 
-                                                                [
-                                                                dbc.Col(children = [
-                                                                    html.P("Save Figure Data as CSV", className = "text-primary"),
-                                                                    dbc.Button("Download CSV", id = {"type": "timeseries-data-download-button", "index": n_clicks}, className = "primary"),
-                                                                    dcc.Download(id = {"type": "timeseries-data-download", "index": n_clicks})
-                                                                ]
-                                                                ),
-                                                                dbc.Col(children = [
-                                                                    html.P("Save Figure as High-Res PNG", className = "text-primary"),
-                                                                    dbc.Button("Download PNG", id = {"type": "timeseries-figure-download-button", "index": n_clicks}, className = "primary"),
-                                                                    dcc.Download(id = {"type": "timeseries-figure-download", "index": n_clicks})
-                                                                ]
-                                                                ),
-                                                                dbc.Col(children = [
-                                                                    html.P("Save Figure as SVG", className = "text-primary"),
-                                                                    dbc.Button("Download SVG", id = {"type": "timeseries-svg-download-button", "index": n_clicks}, className = "primary"),
-                                                                    dcc.Download(id = {"type": "timeseries-svg-download", "index": n_clicks})
-                                                                ]
-                                                                )
-                                                                ]                                     
-                                                                ),
-                                                                dbc.Row(children = [
-                                                                    html.P("Note: image and SVG exports may take a few moments.")
-                                                                ])
-                                                              ]
-                                                              )
-                                      ])
-                    ]
-                )
-            ]
-        )
-    children.append(new_element)
-    return children
+# adding slider for histogram when user selects histogram option
 @app.callback(
-    Output({"type": "chart", "index": MATCH}, "figure"),
-    Output({"type": "timeseries-data-download", "index": MATCH}, "data"),
-    Output({"type": "timeseries-figure-download", "index": MATCH}, "data"),
-    Output({"type": "timeseries-svg-download", "index": MATCH}, "data"),
-    Input({"type": "output-dropdown", "index": MATCH}, "value"),
-    Input({"type": "checklist-region", "index": MATCH}, "value"),
-    Input({"type": "checklist-scenario", "index": MATCH}, "value"),
-    Input({"type": "toggle-uncertainty", "index": MATCH}, "value"),
-    Input({"type": "output-dist-hist-year", "index": MATCH}, "value"),
-    Input({"type": "regenerate-plot-button", "index": MATCH}, "n_clicks"),
-    Input({"type": "apply-styling-button", "index": MATCH}, "n_clicks"),
-    Input({"type": "timeseries-data-download-button", "index": MATCH}, "n_clicks"),
-    Input({"type": "timeseries-figure-download-button", "index": MATCH}, "n_clicks"),
-    Input({"type": "timeseries-svg-download-button", "index": MATCH}, "n_clicks"),
-    State({"type": "uncertainty-range-slider-upper", "index": MATCH}, "value"),
-    State({"type": "uncertainty-range-slider-lower", "index": MATCH}, "value"),
-    State({"type": "timeseries-color-picker", "index": MATCH}, "value"),
-    State({"type": "toggle-gridlines", "index": MATCH}, "checked"),
-    State({"type": "smooth-histograms", "index": MATCH}, "checked")
-    )
-def update_graph(output, regions, scenarios, show_uncertainty, year, 
-                num_uncertainty_clicks, num_styling_clicks, num_download_clicks, num_png_clicks, num_svg_clicks,
-                upper_bound, lower_bound, bk_color,
-                gridlines, smooth_histograms):
-    if not output or not regions or not scenarios:
-        raise PreventUpdate
-    df = db.output_df(output, regions, scenarios)
-    figure = TimeSeries(output, year, df).make_plot({"bk_color": bk_color, "gridlines": gridlines, "smooth_histograms": smooth_histograms}, 
-                                                    use_styling = True, show_uncertainty = show_uncertainty, upper = upper_bound, lower = lower_bound)
-    
-    # check which input has been triggered and only download if the download button was pressed
-    try:
-        button_clicked = ctx.triggered_id["type"]
-    except TypeError:
-        button_clicked = None
-
-    if button_clicked == "timeseries-data-download-button":
-        return figure, dcc.send_data_frame(df.to_csv, "data.csv"), dash.no_update, dash.no_update
-    if button_clicked == "timeseries-figure-download-button":
-        img_bytes = pio.to_image(figure, format = "png", scale = 3, width = 2000, height = 1200)
-        return figure, dash.no_update, dcc.send_bytes(img_bytes, filename="figure.png"), dash.no_update
-    if button_clicked == "timeseries-svg-download-button":
-        svg_bytes = pio.to_image(figure, format = "svg")
-        return figure, dash.no_update, dash.no_update, dcc.send_bytes(svg_bytes, filename="figure.svg")
+    Output('slider-area', 'style'),
+    Input('chart-options', 'value'))
+def add_hist_slider(chart_type):
+    if chart_type == 'dist-by-year':
+        return {}
     else:
-        return figure, dash.no_update, dash.no_update, dash.no_update
-    ###############################################
-
-# graphs and callback for input viz
-@app.callback(Output("tab-2-content", "children"),
-              Input("add-input-dist-button", "n_clicks"),
-              State("tab-2-content", "children"))
-def add_input_distribution(n_clicks, children):
-    if not n_clicks:
-        raise PreventUpdate
-    new_element = html.Div(
-            children = [
-                html.Br(),
-                dbc.Row(style = {"padding": 20},
-                        children = [
-                            dbc.Col(
-                                    dcc.Dropdown(
-                                        id = {"type": "checklist-input", "index": n_clicks},
-                                        options = [{'label': i, 'value': i} for i in Options().input_names],
-                                        value = ["wind"],
-                                        multi = True
-                                    ),
-                                ),
-                                dbc.Col(
-                                    children = [
-                                        dcc.Dropdown(style = {"width": 100},
-                                            id = {"type": "checklist-input-histogram", "index": n_clicks},
-                                            options = [{'label': i, 'value': i} for i in Options().input_names],
-                                            value = "wind"
-                                        )
-                                    ]
-                                )
-                                ]
-                            ),
-                html.Div(
-                        children = [
-                            dcc.Graph(id = {"type": "input-dist-graph", "index": n_clicks})
-                        ]
-                )
-            ]
-        )
-    children.append(new_element)
-    return children
+        return {"display": "none"}
 
 # callback for output time series
 @app.callback(
@@ -860,7 +606,7 @@ def update_figure(output, region, scenario, year):
 #     return fig
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "0.0.0.0")
+    app.run(debug = True, host = "localhost")
 
     # discarded components
 

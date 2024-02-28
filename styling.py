@@ -111,7 +111,7 @@ class Color:
         #                       "ANZ": "rgb(0, 67, 206)", "EUR": "rgb(255, 221, 0)", "ROE": "rgb(61, 219, 217)", "RUS": "rgb(1, 39, 73)", "ASI": "rgb(73, 29, 139)",
         #                       "CHN": "rgb(82, 4, 8)", "IND": "rgb(245, 222, 179)", "BRA": "rgb(111, 220, 140)", "AFR": "rgb(166, 200, 255)", "MES": "rgb(212, 187, 255)", 
         #                       "LAM": "rgb(0, 65, 68)", "REA": "rgb(130, 207, 255)", "KOR": "rgb(0, 93, 93)", "IDZ": "rgb(114, 110, 110)"}
-        self.region_colors = {"GLB": "#7F7F7F", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
+        self.region_colors = {"GLB": "#491d8b", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
                               "ANZ": "#1B344A", "EUR": "#679C82", "ROE": "#91C96E", "RUS": "#2B4739", "ASI": "#493B82",
                               "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092", 
                               "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
@@ -140,6 +140,18 @@ class Color:
         new_rgb_int = [min([255, max([0, i])]) for i in new_rgb_int] # make sure new values are between 0 and 255
         # hex() produces "0x88", we want just "88"
         return "#" + "".join([hex(i)[2:] for i in new_rgb_int])
+    
+    def get_color_for_timeseries(self, styling_option, param):
+        if styling_option == "by-region":
+            color = self.region_colors[param]
+        elif styling_option == "by-scenario":
+            color = self.scenario_colors[param]
+        elif styling_option == "standard":
+            base_shade = self.region_colors[param[0]]
+            amount_to_lighten = Options().scenarios.index(param[1])
+            color = self.lighten_hex(base_shade, brightness_offset = amount_to_lighten*8)
+
+        return color
 
 class Readability:
     def __init__(self):
@@ -152,7 +164,7 @@ class Options:
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND", 
                                 "BRA", "AFR", "MES", "LAM", "REA", "KOR", "IDZ"]
         self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt', 'Ref']
-        self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt",
+        self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt", "About15C_med": "About 1.5C Med",
                                        "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes", "Ref": "Ref"}
         self.scenario_display_names_rev = {v:k for k, v in self.scenario_display_names.items()}
         self.outputs = Readability().naming_dict_long_names_first.keys()

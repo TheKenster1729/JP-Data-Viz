@@ -11,6 +11,8 @@ from itertools import product
 from plotly.colors import n_colors
 import geopandas as gpd
 import json
+import os
+import textwrap
 
 class TraceInfo:
     def __init__(self, figure):
@@ -290,53 +292,8 @@ class NewTimeSeries:
         return hist
     
     def make_plot(self, show = False, show_uncertainty = True, upper = 95, lower = 5):
-        timeseries = self.make_timeseries_plot(upper, lower, show_uncertainty = show_uncertainty)
-        hist = self.make_histograms()
-
-        num_rows = len(self.regions)
-        num_columns = len(self.scenarios) * 2
-
-        # Create a new subplot figure with enough rows and columns for all subplots
-        plot = make_subplots(rows = num_rows, cols = num_columns,
-                specs = [[{"colspan": int(num_columns/2), "rowspan": num_rows}, *(None for i in range(int(num_columns/2) - 1))] + [{} for i in range(int(num_columns/2))]] + [[*(None for i in range(int(num_columns/2)))] + [{} for i in range(int(num_columns/2))] for j in range(num_rows - 1)],
-                )
-        # Add the timeseries plot to the first subplot
-        for i in range(len(timeseries.data)):
-            plot.add_trace(timeseries.data[i], row = 1, col = 1)
-
-        # Add each histogram subplot to the new subplot figure
-        for i, trace in enumerate(hist.data):
-            row_and_col = [(row, col) for row in range(1, num_rows + 1) for col in range(int(num_columns/2) + 1, int(num_columns + 1))]          
-            row = row_and_col[i][0]
-            col = row_and_col[i][1]
-            plot.add_trace(trace, row = row, col = col)
-
-        plot.update_layout(title = "{} Timeseries and Distributions for {}".format(Readability().readability_dict_forward[self.output], self.year),
-                        height = 700,
-                        margin = dict(l = 0, r = 0)
-                        )
-        plot.update_xaxes(title = "Year", row = 1, col = 1)
-
-        if len(self.scenarios) % 2 == 1:
-            # odd number of histogram columns, easier case
-            plot.update_xaxes(title = "{}".format(Readability().readability_dict_forward[self.output]), row = num_rows, col = int(num_columns/2) + len(self.regions) % 2)
-        else:
-            # even number of histograms, so must take average
-            x_position = (num_columns / 2 + len(self.scenarios)/2) / num_columns
-            y_position = -0.05
-
-            # add annotation for the x-axis label
-            plot.add_annotation(dict(
-                x = x_position, y = y_position, showarrow = False,
-                text = "{}".format(Readability().readability_dict_forward[self.output]), xref = "paper", yref = "paper",
-                xanchor = "center", yanchor = "top",
-                font = dict(size = 14)
-            ))
-
-        if show:
-            plot.show()
-
-        return plot
+        traces = self.return_traces(show = show, show_uncertainty = show_uncertainty)
+        fig = go.Figure(traces)
 
 class OutputHistograms:
     def __init__(self, output, regions, scenarios, year, db_obj, styling_options = None):
@@ -350,11 +307,22 @@ class OutputHistograms:
     def get_data(self, region, scenario):
         df = DataRetrieval(self.db_obj, self.output, region, scenario).single_output_df()
         return df.query("Year==@self.year")
+    
+    def get_color(self, region, scenario):
+        if self.styling_options["color"] == "by-region":
+            color = Color().region_colors[region]
+        elif self.styling_options["color"] == "by-scenario":
+            color = Color().scenario_colors[scenario]
+        elif self.styling_options["color"] == "standard":
+            base_shade = Color().region_colors[region]
+            amount_to_lighten = Options().scenarios.index(scenario)
+            color = Color().lighten_hex(base_shade, brightness_offset = amount_to_lighten*8)
+        return color
 
     def make_plot(self, show = False):
         # Create an empty figure
-        fig = make_subplots(rows = len(self.regions), cols = len(self.scenarios))
-
+        fig = make_subplots(rows = len(self.regions), cols = len(self.scenarios), subplot_titles = [Options().scenario_display_names[scenario] for scenario in self.scenarios])
+        
         # Loop through each combination of region and scenario
         for i, region in enumerate(self.regions):
             for j, scenario in enumerate(self.scenarios):
@@ -362,17 +330,20 @@ class OutputHistograms:
                 df = self.get_data(region, scenario)
                 
                 # Add a histogram to the figure for this combination
-                fig.add_trace(go.Histogram(x = df['Value'],
+                trace_to_add = go.Histogram(x = df['Value'],
                                         name = f"{region} - {Options().scenario_display_names[scenario]}",
-                                        opacity = 0.75),
+                                        marker_color = self.get_color(region, scenario),
+                                        opacity = 0.75,
+                                        )
+                fig.add_trace(trace_to_add,
                                         row = i + 1,
                                         col = j + 1)
-
+                
+                if j == 0:
+                    fig.update_yaxes(title_text = region, row = i + 1, col = j + 1)
         # Update the layout of the figure
         fig.update_layout(
             title_text = f"Histograms for {Readability().naming_dict_long_names_first[self.output]}, {self.year}",  # Title
-            xaxis_title_text = 'Value',  # X-axis label
-            yaxis_title_text = 'Count'  # Y-axis label
         )
         
         if show:
@@ -473,16 +444,18 @@ class OutputDistribution:
         pass
 
 class InputOutputMappingPlot(InputOutputMapping):
-    def __init__(self, output, region, df):
-        super().__init__(output, region, df)
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True):
+        super().__init__(output, region, scenario, year, df, threshold = threshold, gt = gt)
 
-    def make_plot(self, num_to_plot = 5, show = False):
+    def make_plot(self, num_to_plot = 5, show = False, save = False):
         feature_importances, sorted_labeled_importances, top_n = self.random_forest(num_to_plot = num_to_plot)
-        fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6])
+        fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
+                            subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
 
+        parcoords_df = self.inputs[top_n].copy()
         _, y_discrete = self.preprocess_for_classification()
-        y_discrete_series = pd.Series(y_discrete.ravel(), name = "y_discrete")
-        parcoords_df = pd.concat([self.inputs[top_n], self.y_continuous.reset_index(drop = True), y_discrete_series], axis = 1)
+        parcoords_df["Output"] = self.y_continuous.values
+        parcoords_df["y_discrete"] = y_discrete
 
         dimensions = []
         color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
@@ -491,13 +464,19 @@ class InputOutputMappingPlot(InputOutputMapping):
         fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
                                       dimensions = dimensions, labelside = "bottom"), row = 1, col = 2)
-        fig.update_layout(margin = dict(l = 50, r = 50, t = 50),
-                          title = "Feature Importances and Parallel Plot",
+        fig.update_layout(margin = dict(l = 50, r = 50),
+                          title = f"CART Results for {self.region} {Readability().naming_dict_long_names_first[self.output]} {Options().scenario_display_names[self.scenario]} {self.year}",
                           width = 1200,
-                          height = 600)
+                          height = 600
+                          )
+        fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
+        fig.update_annotations(yshift = 20)
 
         if show:
             fig.show()
+
+        if save:
+            fig.write_image(save + ".png", scale = 2)
 
         return fig
 
@@ -543,58 +522,65 @@ class ChoroplethMap:
         for feature in geojson['features']:
                 feature['id'] = feature['properties']['Region']
 
+        merged_gdf["text"] = "Lower Bound: " + merged_gdf[lower_bound_column_name].apply(lambda x: str(int(x))) + "<br>" + "Upper Bound: " + merged_gdf[upper_bound_column_name].apply(lambda x: str(int(x)))
         # Create a choropleth map
-        lower = go.Choropleth(
+        fig = go.Figure(go.Choropleth(
             geojson = geojson,
             locations = merged_gdf["Region"],
-            z = merged_gdf[lower_bound_column_name],
+            z = merged_gdf["Median"],
             featureidkey = "properties.Region",
             colorscale = "Viridis",
             marker_line_color = 'black',
             marker_line_width = 0.5,
-            zmin = global_min,
-            zmax = global_max,
-            showscale = False
-        )
-        mid = go.Choropleth(
-            geojson = geojson,
-            locations = merged_gdf["Region"],
-            z = merged_gdf['Median'],
-            featureidkey = "properties.Region",
-            colorscale = "Viridis",
-            marker_line_color = 'black',
-            marker_line_width = 0.5,
-            zmin = global_min,
-            zmax = global_max,
-            showscale = False
-        )
-        upper = go.Choropleth(
-            geojson = geojson,
-            locations = merged_gdf["Region"],
-            z = merged_gdf[upper_bound_column_name],
-            featureidkey = "properties.Region",
-            colorscale = "Viridis",
-            marker_line_color = 'black',
-            marker_line_width = 0.5,
-            zmin = global_min,
-            zmax = global_max,            
-            showscale = True,
-            colorbar_title = Readability().naming_dict_long_names_first[self.output],
-            colorbar = dict(orientation = 'h')
-        )
+            hovertext = merged_gdf["text"]
+        ))
+        # lower = go.Figure(go.Choropleth(
+        #     geojson = geojson,
+        #     locations = merged_gdf["Region"],
+        #     z = merged_gdf[lower_bound_column_name],
+        #     featureidkey = "properties.Region",
+        #     colorscale = "Viridis",
+        #     marker_line_color = 'black',
+        #     marker_line_width = 0.5,
+        #     zmin = global_min,
+        #     zmax = global_max,
+        #     showscale = False
+        # ))
+        # mid = go.Figure(go.Choropleth(
+        #     geojson = geojson,
+        #     locations = merged_gdf["Region"],
+        #     z = merged_gdf['Median'],
+        #     featureidkey = "properties.Region",
+        #     colorscale = "Viridis",
+        #     marker_line_color = 'black',
+        #     marker_line_width = 0.5,
+        #     zmin = global_min,
+        #     zmax = global_max,
+        #     showscale = False
+        # ))
+        # upper = go.Figure(go.Choropleth(
+        #     geojson = geojson,
+        #     locations = merged_gdf["Region"],
+        #     z = merged_gdf[upper_bound_column_name],
+        #     featureidkey = "properties.Region",
+        #     colorscale = "Viridis",
+        #     marker_line_color = 'black',
+        #     marker_line_width = 0.5,
+        #     zmin = global_min,
+        #     zmax = global_max,            
+        #     showscale = True,
+        #     colorbar_title = Readability().naming_dict_long_names_first[self.output],
+        #     colorbar = dict(orientation = 'h')
+        # ))
 
-        fig = make_subplots(rows = 1, cols = 3, specs = [[{'type': 'choropleth'} for c in np.arange(3)]])
-        fig.add_trace(lower, row = 1, col = 1)
-        fig.add_trace(mid, row = 1, col = 2)
-        fig.add_trace(upper, row = 1, col = 3)
-        fig.update_geos(dict(
-                showframe = False,
-                showcoastlines = False,
-                projection_type = 'equirectangular'
-            ),
-        )
-        # fig.update_layout(width = 800,
-        #                   height = 1200)
+        fig.update_layout(title_text = "Choropleth Map, {} {} {}".format(Readability().naming_dict_long_names_first[self.output], Options().scenario_display_names[self.scenario], self.year),
+                          geo = dict(showframe = False,
+                            showcoastlines = False,
+                            projection_type = 'equirectangular'
+                        ),
+                        width = 1000, height = 600
+                    )
+
         if show:
             fig.show()
 
@@ -606,6 +592,7 @@ class ParallelCoords:
 if __name__ == "__main__":
     # timeseries
     db_obj = SQLConnection("all_data_jan_2024")
+    # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
     # df = DataRetrieval(db_obj, "consumption_billion_usd2007", "GLB", "Ref").single_output_df()
     # lower = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).lower_bound_trace(None)
     # upper = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).upper_bound_trace(None)
@@ -622,10 +609,12 @@ if __name__ == "__main__":
     # fig.write_image("assets\examples\inputs_windgas_focus.svg")
 
     # input-output mapping
-    # df = SQLConnection("jp_data").input_output_mapping_df("elec_prod_Renewables_TWh", "USA", "2C", 2050)
-    # df = DataRetrieval(db_obj, "emissions_CO2_total_million_ton_CO2", "GLB", "Ref", 2050).input_output_mapping_df()
-    # fig = InputOutputMappingPlot("emissions_CO2_total_million_ton_CO2", "GLB", df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
+
+    # histograms
+    # OutputHistograms("emissions_CO2eq_total_million_ton_CO2eq", ["USA", "CAN", "MEX"], ["Ref", "Above2C_med", "About15C_opt"], 2050, db_obj).make_plot(show = True)
+    
     # choropleth map
-    ChoroplethMap(db_obj, "emissions_CO2eq_total_million_ton_CO2eq", "Ref", 2050, 5, 95).make_plot(show = True)
+    df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
+    ChoroplethMap(df, "percapita_consumption_loss_percent", "2C_pes", 2050, 5, 95).make_plot(show = True)

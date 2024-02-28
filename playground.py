@@ -11,6 +11,7 @@ from itertools import product
 import geopandas as gp
 import matplotlib.pyplot as plt
 import pandas as pd
+<<<<<<< HEAD
 from shapely import wkt
 import plotly.express as px
 
@@ -49,3 +50,7 @@ fig.show()
 # )
 
 # fig.show()
+=======
+
+print("1, 2 \n 3")
+>>>>>>> dev

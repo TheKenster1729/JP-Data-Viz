@@ -7,9 +7,11 @@ from sql_utils import SQLConnection, DataRetrieval
 from styling import Readability
 
 class InputOutputMapping:
-    def __init__(self, output, region, df, threshold = 70, gt = True):
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True):
         self.output = output
         self.df = df
+        self.scenario = scenario
+        self.year = year
         self.y_continuous = self.df["Value"]
         self.threshold = threshold
         self.gt = gt
@@ -22,6 +24,16 @@ class InputOutputMapping:
             if any(signifier in column for signifier in signifiers) and self.region not in column:
                 columns_to_remove.append(column)
         self.inputs = self.inputs.drop(columns = columns_to_remove)
+
+        runs_to_drop_dict = {"percapita_consumption_loss_percent":
+                             {"About15C_pes": [82, 98, 283, 305, 338, 373],
+                             "15C_med": [184, 221, 314, 374, 383]}
+                             }
+        drop_runs = runs_to_drop_dict.get(self.output)
+        if drop_runs:
+            runs_to_drop_for_scenario = drop_runs.get(self.scenario)
+            if runs_to_drop_for_scenario:
+                self.inputs = self.inputs.drop(self.inputs[self.inputs["Run #"].isin(runs_to_drop_for_scenario)].index)
 
     def preprocess_for_classification(self):
         X = self.inputs[self.inputs.columns[1:]]

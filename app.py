@@ -1,10 +1,10 @@
 # use venv when running this code
 import dash
 from dash.exceptions import PreventUpdate
-from dash import html, dcc
+from dash import html, dcc, callback_context
 import dash_bootstrap_components as dbc
 from sql_utils import SQLConnection, DataRetrieval
-from styling import Options, Readability
+from styling import Options, Readability, Color
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, OutputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap
 import numpy as np
@@ -71,21 +71,21 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
     children = [
         dbc.Row(
             children = [
-                dbc.Col(width = 2,
-                    children = [
-                        dbc.Card(
-                            className = "card text-white bg-primary mb-3",
-                            children = [
-                                html.Div(style = {'display': 'flex'},
-                                    children = [
-                                        html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Output Visualization"),
-                                        DashIconify(icon = "feather:info", width = 60, style = {"padding": 10, "color": "#9AC1F4"})
-                                    ]
-                                )
-                            ]
-                        )                    
-                    ]
-                ),
+            dbc.Col(width = 2,
+                children = [
+                    dbc.Card(
+                        className = "card text-white bg-primary mb-3",
+                        children = [
+                            html.Div(style = {'display': 'flex'},
+                                children = [
+                                    html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Output Visualization"),
+                                    DashIconify(icon = "feather:info", width = 60, style = {"padding": 10, "color": "#9AC1F4"})
+                                ]
+                            )
+                        ]
+                    )                    
+                ]
+            ),
             dbc.Col(width = 10,
                     children = [
                         dbc.Card(
@@ -127,7 +127,7 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
                 )
             ]
         ),
-        dbc.Row(
+        dbc.Row(align = "end",
             children = [
                 dbc.Col(width = {"size": 1, "offset": 1},
                     children = [
@@ -299,7 +299,7 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                 ),
                 dbc.Row(
                     children = [
-                        dbc.Col(
+                        dbc.Col(width = 2,
                             children = [
                                 html.Div("Region", className = "text-primary"),
                                 dcc.Dropdown(
@@ -310,7 +310,7 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                                 html.Div("Scenario", className = "text-primary"),
                                 dcc.Dropdown(
                                     id = "input-output-mapping-scenario",
-                                    options = [{'label': i, 'value': i} for i in Options().scenarios],
+                                    options = [{'label': Options().scenario_display_names[i], 'value': i} for i in Options().scenarios],
                                     value = "Ref"
                                 ),
                                 html.Div("Year", className = "text-primary"),
@@ -320,7 +320,7 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                                     value = 2050)
                                 ]
                             ),
-                        dbc.Col(
+                        dbc.Col(width = 10,
                             children = [
                                 dcc.Loading([dcc.Graph(id = "input-output-mapping-figure")]),
                                 ]
@@ -384,7 +384,9 @@ choropleth_map = html.Div(style = {"padding": 20},
                             ),
                         dbc.Col(
                             children = [
-                                dcc.Loading([dcc.Graph(id = "choropleth-mapping-figure")]),
+                                dbc.Row(
+                                    children = [dcc.Loading([dcc.Graph(id = "choropleth-mapping-figure")])]
+                                    )
                                 ]
                             )
                         ]
@@ -484,6 +486,8 @@ def add_hist_slider(chart_type):
     [State('output-time-series-plot', 'figure')]
 )
 def update_graph(output_name, selected_regions, selected_scenarios, chart_type, year, color_scheme, existing_figure):
+    ctx = callback_context
+    trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
     if chart_type == "time-series":
         if not selected_regions or not selected_scenarios:
             raise PreventUpdate
@@ -496,8 +500,11 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
 
             fig = go.Figure(traces_to_add)
             fig.update_layout(
-                height = 650,
-                margin = dict(t = 20, b = 20, l = 10)
+                height = 625,
+                margin = dict(t = 40, b = 0, l = 10),
+                title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+                yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
             )
             return fig
 
@@ -509,12 +516,14 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
 
             fig = go.Figure(traces_to_add)
             fig.update_layout(
-                height = 650,
-                margin = dict(t = 20, b = 20, l = 10)
+                height = 625,
+                margin = dict(t = 40, b = 0, l = 10),
+                title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+                yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
             )
             return fig
         else:
-            combos = list(product(selected_regions, selected_scenarios))
             combos_with_trace_name = list(product(selected_regions, selected_scenarios, ["lower", "median", "upper"]))
             current_traces = current_trace_info.traces
             custom_data_just_strings = [i[0] for i in current_trace_info.custom_data]
@@ -522,6 +531,22 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
             all_selections = set(["{} {} {} {}".format(output_name, reg, sce, trace_name) for reg, sce, trace_name in combos_with_trace_name])
 
             # changes to make
+            if trigger_id == "output-color-scheme":
+                # without this logic, the color of the figure will not update when the color scheme is changed
+                # what this does is take all existing plots and changes color according to what the new color scheme dictates
+                existing_figure_data = existing_figure["data"]
+                for i in existing_figure_data:
+                    trace_name = i["customdata"][0]
+                    output, region, scenario, kind = trace_name.split(' ')
+                    if color_scheme == "by-region":
+                        color = Color().get_color_for_timeseries(color_scheme, region)
+                    elif color_scheme == "by-scenario":
+                        color = Color().get_color_for_timeseries(color_scheme, scenario)
+                    elif color_scheme == "standard":
+                        color = Color().get_color_for_timeseries(color_scheme, [region, scenario])
+
+                    i["line"]["color"] = color
+
             no_change = existing_selections.intersection(all_selections)
             to_delete = existing_selections.difference(all_selections)
             to_add = all_selections.difference(existing_selections)
@@ -542,8 +567,11 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
 
             fig = go.Figure(data = current_traces + new_traces)
             fig.update_layout(
-                height = 650,
-                margin = dict(t = 20, b = 20, l = 10)
+                height = 625,
+                margin = dict(t = 40, b = 0, l = 10),
+                title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+                yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
             )
             return fig
 
@@ -551,10 +579,11 @@ def update_graph(output_name, selected_regions, selected_scenarios, chart_type, 
         if not selected_regions or not selected_scenarios:
             raise PreventUpdate
         
-        fig = OutputHistograms(output_name, selected_regions, selected_scenarios, year, db).make_plot()
+        styling_options = {"color": color_scheme}
+        fig = OutputHistograms(output_name, selected_regions, selected_scenarios, year, db, styling_options = styling_options).make_plot()
         fig.update_layout(
-            height = 600,
-            margin = dict(t = 30, b = 20, l = 10)
+            height = 550,
+            margin = dict(t = 50, b = 20, l = 10)
         )
         return fig
 
@@ -583,27 +612,26 @@ def update_figure(output, region, scenario, year):
         raise PreventUpdate
     
     df = DataRetrieval(db, output, region, scenario, year).input_output_mapping_df()
-    fig = InputOutputMappingPlot(output, region, df).make_plot()
+    fig = InputOutputMappingPlot(output, region, scenario, year, df).make_plot()
 
     return fig
 ###############################################
 
 # callback for choropleth mapping
-# @app.callback(
-#     Output("choropleth-mapping-figure", "figure"),
-#     Input("choropleth-mapping-output", "value"),
-#     Input("choropleth-mapping-scenario", "value"),
-#     Input("choropleth-mapping-year", "value")
-# )
-# def update_figure(output, scenario, year):
-#     if not scenario or not output or not year:
-#         raise PreventUpdate
+@app.callback(
+    Output("choropleth-mapping-figure", "figure"),
+    Input("choropleth-mapping-output", "value"),
+    Input("choropleth-mapping-scenario", "value"),
+    Input("choropleth-mapping-year", "value")
+)
+def update_figure(output, scenario, year):
+    if not scenario or not output or not year:
+        raise PreventUpdate
     
-#     df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
-#     fig = ChoroplethMap(df, output, scenario, year, 5, 95).make_plot()
-#     fig.update_layout(width = 800, height = 1000, margins = dict(l = 20, r = 0, t = 20, b = 0))
+    df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
+    fig = ChoroplethMap(df, output, scenario, year, 5, 95).make_plot()
 
-#     return fig
+    return fig
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

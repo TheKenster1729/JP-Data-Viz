@@ -9,7 +9,9 @@ from anytree.search import findall
 from itertools import product
 from styling import Options
 import sqlalchemy
+from sqlalchemy import Integer, Float
 import mysql.connector
+from random import choices
 
 class SQLConnection:
     def __init__(self, dbname):
@@ -22,6 +24,62 @@ class SQLConnection:
                 database = "all_data_jan_2024"
             )
         self.cursor = self.engine.cursor(buffered = True)
+
+class DatabaseModification(SQLConnection):
+    def __init__(self, dbname, path_to_scenarios = r"Raw Data\Scenarios", scenarios = "all", files = "all"):
+        super().__init__(dbname)
+        self.path_to_scenarios = path_to_scenarios
+        if scenarios == "all":
+            self.scenarios = os.listdir(path_to_scenarios)
+        else: # expects a list of scenario folders
+            self.scenarios = scenarios
+        self.files = files
+
+    def name_table(self):
+        alphabet = 'abcdefghijklmnopqrstuvwxyz'
+
+        c = choices(alphabet, k = 20)
+        return ''.join(c)
+
+    def update_name_mapping_table(self, full_output_name, assigned_name):
+        mapping_df = pd.DataFrame({
+            "Full Output Name": [full_output_name],
+            "Assigned Name": [assigned_name]
+        })
+        mapping_df.to_sql(name = 'name_mappings', con = self.retrieval_engine, if_exists = 'append')
+        print(f"Updated name mapping: {full_output_name} -> {assigned_name}")
+
+    def main(self):
+        for folder in self.scenarios:
+            path_to_this_folder = os.path.join(self.path_to_scenarios, folder)
+            for filename in os.listdir(path_to_this_folder):
+                if filename.endswith('.xlsx') or filename.endswith('.xls'):
+                    # Define the table name based on the filename (without the extension)
+                    for region in Options().region_names:
+                        table_name = self.name_table()
+
+                        # Load the Excel file into a Pandas DataFrame
+                        file_path = os.path.join(path_to_this_folder, filename)
+                        if self.files == "all":
+                            df = pd.read_excel(file_path, sheet_name = region, usecols = "B:S").rename(columns = {"Unnamed: 1": "Run #"})
+                            df_to_use = df.melt(id_vars = "Run #", value_name = "Value", var_name = "Year")
+                        else:
+                            if filename in self.files:
+                                df = pd.read_excel(file_path, sheet_name = region, usecols = "B:S").rename(columns = {"Unnamed: 1": "Run #"})
+                                df_to_use = df.melt(id_vars = "Run #", value_name = "Value", var_name = "Year")
+
+                                cleaned_spreadsheet_name = '_'.join(filename.split('.')[0].split('_')[1:])
+                                folder_no_period = folder.replace('.', '')
+                                full_output_name = cleaned_spreadsheet_name[:-len(folder_no_period)] + region + "_" + cleaned_spreadsheet_name[-len(folder_no_period):]
+
+                                sql_dtypes = {
+                                    "Run #": Integer,
+                                    "Year": Integer,
+                                    "Value": Float
+                                }
+                                df_to_use.to_sql(name = table_name, con = self.retrieval_engine, if_exists = 'replace', index = False, dtype = sql_dtypes)
+                                self.update_name_mapping_table(full_output_name, table_name)
+                                print(f"Loaded {filename} into {table_name} table in the database.")
 
 class DataRetrieval:
     def __init__(self, db_connection_obj, output, region, scenario, year = None):
@@ -55,8 +113,16 @@ class DataRetrieval:
         query = "SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`='{}'".format(long_name)
         self.db.cursor.execute(query)
         sql_table_name = self.db.cursor.fetchall()[0][0]
-        df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
+        # a new table implementation resulted in some tables not having the index_name column
+        try:
+            df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
+        except KeyError:
+            df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine)
         
+        df = df.dropna()
+        if self.output == "percapita_consumption_loss_percent":
+            df["Value"] = df["Value"]*100
+
         df["Value"] = df["Value"].replace("Eps", 0)
 
         return df
@@ -129,4 +195,6 @@ if __name__ == "__main__":
     db = SQLConnection("all_data_jan_2024")
     # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
     # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
-    print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).choropleth_map_df(5, 95))
+    # DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
+    DataRetrieval(db, "percapita_consumption_loss_percent", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
+    # DatabaseModification("all_data_jan_2024", scenarios = ["About1.5C_pes", "15C_med", "2C_pes"], files = ["1_percapita_consumption_loss_percent_About15C_pes.xlsx", "1_percapita_consumption_loss_percent_15C_med.xlsx", "1_percapita_consumption_loss_percent_2C_pes.xlsx"]).main()

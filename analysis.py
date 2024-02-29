@@ -5,6 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sql_utils import SQLConnection, DataRetrieval
 from styling import Readability
+from tslearn.clustering import TimeSeriesKMeans
+from tslearn.generators import random_walks
 
 class InputOutputMapping:
     def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True):
@@ -63,11 +65,23 @@ class InputOutputMapping:
 
         return feature_importances, sorted_labeled_importances, top_n
 
-if __name__ == "__main__":
-    db = SQLConnection("all_data_jan_2024")
-    df1 = DataRetrieval(db, "primary_energy_use_Total_EJ", "GLB", "Ref", 2050).input_output_mapping_df()
-    df2 = DataRetrieval(db, "primary_energy_use_Renewables_EJ", "USA", "Ref", 2050).input_output_mapping_df()
-    df = df2/df1
+class TimeSeriesClustering:
+    def __init__(self, df, output, region, scenario, n_clusters = 3):
+        self.df = df
+        self.output = output
+        self.region = region
+        self.scenario = scenario
+        self.n_clusters = n_clusters
 
-    top_n = InputOutputMapping("primary_energy_use_Total_EJ", "GLB", df2).random_forest()
-    print(top_n)
+    def generate_clusters(self):
+        pass
+
+if __name__ == "__main__":
+    from tslearn.utils import to_time_series
+    db = SQLConnection("all_data_jan_2024")
+    time_series_clustering_df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").single_output_df()
+    time_series_clustering_numpy = time_series_clustering_df.pivot(columns = "Year", index = "Run #").to_numpy()
+    time_series_clustering_formatted = to_time_series(time_series_clustering_numpy)
+
+    clusters = TimeSeriesKMeans().fit(time_series_clustering_formatted)
+    print(clusters.cluster_centers_)

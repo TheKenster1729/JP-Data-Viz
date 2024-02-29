@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, MetaData, Table
 import os
 from anytree.importer import DictImporter
 from anytree import RenderTree
@@ -23,7 +23,7 @@ class SQLConnection:
                 password = "password",
                 database = "all_data_jan_2024"
             )
-        self.cursor = self.engine.cursor(buffered = True)
+        self.cursor = self.engine.cursor()
 
 class DatabaseModification(SQLConnection):
     def __init__(self, dbname, path_to_scenarios = r"Raw Data\Scenarios", scenarios = "all", files = "all"):
@@ -110,9 +110,11 @@ class DataRetrieval:
 
     def single_output_df(self):
         long_name = self.get_long_name()
-        query = "SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`='{}'".format(long_name)
-        self.db.cursor.execute(query)
-        sql_table_name = self.db.cursor.fetchall()[0][0]
+        query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name")
+
+        with self.db.retrieval_engine.connect() as conn:
+            sql_table_name = conn.execute(query, parameters = {"long_name": long_name}).fetchall()[0][0]
+
         # a new table implementation resulted in some tables not having the index_name column
         try:
             df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
@@ -196,5 +198,6 @@ if __name__ == "__main__":
     # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
     # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
     # DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
-    DataRetrieval(db, "percapita_consumption_loss_percent", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
+    df = DataRetrieval(db, "percapita_consumption_loss_percent", "GLB", "15C_med", 2050).input_output_mapping_df()
+    print(df)
     # DatabaseModification("all_data_jan_2024", scenarios = ["About1.5C_pes", "15C_med", "2C_pes"], files = ["1_percapita_consumption_loss_percent_About15C_pes.xlsx", "1_percapita_consumption_loss_percent_15C_med.xlsx", "1_percapita_consumption_loss_percent_2C_pes.xlsx"]).main()

@@ -396,6 +396,8 @@ choropleth_map = html.Div(style = {"padding": 20},
         ]
     )
 
+timeseries_clustering = html.Div()
+
 examples = html.Div(style = {},
     children = [
         html.Br(),
@@ -605,7 +607,8 @@ def update_input_dist(inputs, focus_input):
     Input("input-output-mapping-output", "value"),
     Input("input-output-mapping-regions", "value"),
     Input("input-output-mapping-scenario", "value"),
-    Input("input-output-mapping-year", "value")
+    Input("input-output-mapping-year", "value"),
+    prevent_initial_callack = True
 )
 def update_figure(output, region, scenario, year):
     if not region or not output or not year:
@@ -622,7 +625,8 @@ def update_figure(output, region, scenario, year):
     Output("choropleth-mapping-figure", "figure"),
     Input("choropleth-mapping-output", "value"),
     Input("choropleth-mapping-scenario", "value"),
-    Input("choropleth-mapping-year", "value")
+    Input("choropleth-mapping-year", "value"),
+    prevent_initial_callack = True
 )
 def update_figure(output, scenario, year):
     if not scenario or not output or not year:
@@ -634,7 +638,7 @@ def update_figure(output, scenario, year):
     return fig
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "0.0.0.0")
+    app.run(debug = True, host = "localhost")
 
     # discarded components
 

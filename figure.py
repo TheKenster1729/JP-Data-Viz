@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from analysis import InputOutputMapping
+from analysis import InputOutputMapping, TimeSeriesClustering
 from styling import Color, Options, Readability
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -13,6 +13,10 @@ import geopandas as gpd
 import json
 import os
 import textwrap
+
+class DashboardFigure:
+    def __init__(self, figure_type) -> None:
+        self.figure_type = figure_type
 
 class TraceInfo:
     def __init__(self, figure):
@@ -189,9 +193,10 @@ class OldTimeSeries:
             plot.show()
 
         return plot
-    
-class NewTimeSeries:
+
+class NewTimeSeries(DashboardFigure):
     def __init__(self, output, region, scenario, year, df, styling_options = {"color": "by-scenario"}):
+        super().__init__("output-time-series")
         self.output = output
         self.df = df
         self.lower = df[df.columns[0]]
@@ -203,6 +208,8 @@ class NewTimeSeries:
         self.data_for_histogram = self.df.query("Year==@self.year")
         self.styling_options = styling_options
 
+        self.return_figure()
+
     def get_color(self):
         if self.styling_options["color"] == "by-region":
             color = Color().region_colors[self.region]
@@ -213,7 +220,7 @@ class NewTimeSeries:
             amount_to_lighten = Options().scenarios.index(self.scenario)
             color = Color().lighten_hex(base_shade, brightness_offset = amount_to_lighten*8)
         return color
-    
+
     def lower_bound_trace(self, group, marker = "dash"):
         color = self.get_color()
         trace = go.Scatter(
@@ -259,23 +266,17 @@ class NewTimeSeries:
 
         return trace
 
-    def return_traces(self, show = False, show_uncertainty = True):
+    def return_traces(self):
         group = "{} {}".format(self.region, self.scenario)
         lower = self.lower_bound_trace(group)
         median = self.median_trace(group)
         upper = self.upper_bound_trace(group)
 
-        # fig.update_layout(
-        #     yaxis_title = '{}'.format(self.output),
-        #     hovermode = "x",
-        #     title = '{}'.format(Readability().readability_dict_forward[self.output])
-        # )
-
-        # if show:
-        #     fig.show()
-
         return [lower, upper, median]
     
+    def return_figure(self):
+        self.figure = go.Figure(data = self.return_traces())
+
     def make_histograms(self, show = False):
         hist = make_subplots(rows = len(self.scenarios), cols = len(self.regions))
         for i, region in enumerate(self.regions):
@@ -443,12 +444,16 @@ class OutputDistribution:
     def create_full_figure(regions, scenarios, year):
         pass
 
-class InputOutputMappingPlot(InputOutputMapping):
-    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True):
+class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5):
         super().__init__(output, region, scenario, year, df, threshold = threshold, gt = gt)
+        DashboardFigure.__init__(self, "input-output-mapping-main")
+        self.num_to_plot = num_to_plot
 
-    def make_plot(self, num_to_plot = 5, show = False, save = False):
-        feature_importances, sorted_labeled_importances, top_n = self.random_forest(num_to_plot = num_to_plot)
+        self.fig = self.make_plot()
+
+    def make_plot(self, show = False, save = False):
+        feature_importances, sorted_labeled_importances, top_n = self.random_forest(num_to_plot = self.num_to_plot)
         fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
                             subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
 
@@ -464,14 +469,6 @@ class InputOutputMappingPlot(InputOutputMapping):
         fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
                                       dimensions = dimensions, labelside = "bottom"), row = 1, col = 2)
-        fig.update_layout(margin = dict(l = 50, r = 50),
-                          title = f"CART Results for {self.region} {Readability().naming_dict_long_names_first[self.output]} {Options().scenario_display_names[self.scenario]} {self.year}",
-                          width = 1200,
-                          height = 600
-                          )
-        fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
-        fig.update_annotations(yshift = 20)
-
         if show:
             fig.show()
 
@@ -480,14 +477,18 @@ class InputOutputMappingPlot(InputOutputMapping):
 
         return fig
 
-class ChoroplethMap:
+class ChoroplethMap(DashboardFigure):
     def __init__(self, df, output, scenario, year, lower_bound, upper_bound) -> None:
+        super().__init__("choropleth-map")
         self.df = df
         self.output = output
         self.scenario = scenario
+        self.region = "GLB"
         self.year = year
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+        
+        self.fig = self.make_plot()
 
     def number_to_ordinal(self, n):
         """
@@ -573,13 +574,56 @@ class ChoroplethMap:
         #     colorbar = dict(orientation = 'h')
         # ))
 
-        fig.update_layout(title_text = "Choropleth Map, {} {} {}".format(Readability().naming_dict_long_names_first[self.output], Options().scenario_display_names[self.scenario], self.year),
-                          geo = dict(showframe = False,
-                            showcoastlines = False,
-                            projection_type = 'equirectangular'
-                        ),
-                        width = 1000, height = 600
-                    )
+        if show:
+            fig.show()
+
+        return fig
+
+class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
+    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean"):
+        super().__init__(df, output, region, scenario, n_clusters, metric = metric)
+        DashboardFigure.__init__(self, "ts-clustering")
+        self.colors = ["#648fff", "#491d8b", "#FFB000", "#a2191f", "#00539a", "#0e6027", "#565151"]
+        self.fig = self.make_plot()
+
+    def single_trace(self, data, cluster, color, showlegend = False):
+        opacity = 1 if showlegend else 0.3
+        line_thickness = 4 if showlegend else 0.5
+        mode = "lines+markers" if showlegend else "lines"
+        trace = go.Scatter(
+            x = Options().years,
+            y = data,
+            legendgroup = cluster,
+            mode = mode,
+            line = dict(color = color, width = line_thickness),
+            showlegend = showlegend,
+            name = cluster,
+            opacity = opacity
+        )
+
+        return trace
+
+    def make_plot(self, show = False):
+        clusters = self.generate_clusters()
+        fig = go.Figure()
+        cluster_labels = ["Cluster {}".format(str(i)) for i in range(1, self.n_clusters + 1)]
+
+        assert len(clusters.labels_) == len(self.df_for_clustering)
+        for i in range(len(self.df_for_clustering)):
+            inidvidual_time_series = self.df_for_clustering.iloc[i].values
+            cluster_number = clusters.labels_[i]
+            cluster_label = cluster_labels[cluster_number]
+            color = self.colors[cluster_number]
+
+            trace = self.single_trace(inidvidual_time_series, cluster_label, color)
+
+            fig.add_trace(trace)
+
+        cluster_centers = clusters.cluster_centers_
+        for i, yi in enumerate(cluster_centers):
+            color = self.colors[i]
+            trace = self.single_trace(yi.ravel(), cluster_labels[i], color, showlegend = True)
+            fig.add_trace(trace)
 
         if show:
             fig.show()
@@ -593,15 +637,11 @@ if __name__ == "__main__":
     # timeseries
     db_obj = SQLConnection("all_data_jan_2024")
     # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
-    # df = DataRetrieval(db_obj, "consumption_billion_usd2007", "GLB", "Ref").single_output_df()
-    # lower = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).lower_bound_trace(None)
-    # upper = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).upper_bound_trace(None)
-    # median = TimeSeries("consumption_billion_usd2007", "GLB", "Ref", 2050, df).median_trace(None)
-    # fig = go.Figure()
-    # fig.add_trace(lower)
-    # fig.add_trace(upper)
-    # fig.add_trace(median)
+    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref").single_output_df_to_graph(5, 95)
+    # traces = NewTimeSeries("consumption_billion_USD2007", "GLB", "Ref", 2050, df).return_traces()
+    # fig = go.Figure(data = traces)
     # fig.show()
+
     # OutputHistograms("consumption_billion_USD2007", ["GLB", "USA", "EUR"], ["Ref", "Above2C_med"], 2050, db_obj).make_plot(show = True)
     # input dist
     # fig = InputDistribution(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot("WindGas")
@@ -609,6 +649,8 @@ if __name__ == "__main__":
     # fig.write_image("assets\examples\inputs_windgas_focus.svg")
 
     # input-output mapping
+    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df()
+    InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
 
@@ -616,5 +658,9 @@ if __name__ == "__main__":
     # OutputHistograms("emissions_CO2eq_total_million_ton_CO2eq", ["USA", "CAN", "MEX"], ["Ref", "Above2C_med", "About15C_opt"], 2050, db_obj).make_plot(show = True)
     
     # choropleth map
-    df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
-    ChoroplethMap(df, "percapita_consumption_loss_percent", "2C_pes", 2050, 5, 95).make_plot(show = True)
+    # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
+    # ChoroplethMap(df, "percapita_consumption_loss_percent", "2C_pes", 2050, 5, 95).make_plot(show = True)
+
+    # time series clustering
+    # df = DataRetrieval(db_obj, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").single_output_df()
+    # TimeSeriesClusteringPlot(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").make_plot(show = True)

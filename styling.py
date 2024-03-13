@@ -299,10 +299,66 @@ class Options:
                 ]
         # in case
         # name = str(bound) + {1: 'st', 2: 'nd', 3: 'rd'}.get(4 if 10 <= bound % 100 < 20 else bound % 10, "th")
-        
+
+class FinishedFigure(Color, Readability, Options):
+    def __init__(self, fig_object):
+        Color.__init__(self)
+        Readability.__init__(self)
+        Options.__init__(self)
+        self.figure_object = fig_object
+        self.display_names_for_figure_type = {"output-timeseries": "Time Series for ", "input-output-mapping-main": "CART Results for ",
+                                              "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for "}
+
+    def style_figure(self):
+        # this logic block handles the output display name portion of titling figures
+        if self.figure_object.output in self.outputs:
+            output_name_for_title = self.naming_dict_long_names_first[self.figure_object.output]
+        else:
+            # assume this covers all cases, as an output not present in the data set originally
+            # nor present as a custom output should not occur
+            output_name_for_title = self.figure_object.output.split("-")[-1]
+
+        # define overall title
+        title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + self.scenario_display_names[self.figure_object.scenario]
+        self.figure_object.fig.update_layout(title_text = title,
+                                      margin = dict(l = 20, r = 20),
+                                      title = title,
+                                      height = 600)
+        # plot-specific changes
+        if self.figure_object.figure_type == "input-output-mapping-main":
+            self.figure_object.fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
+            self.figure_object.fig.update_annotations(yshift = 20)
+
+        if self.figure_object.figure_type == "choropleth-map":
+            self.figure_object.fig.update_layout(
+                            geo = dict(showframe = False,
+                                showcoastlines = False,
+                                projection_type = 'equirectangular'
+                            ),
+                            height = 600,
+                            width = 1200
+                        )
+        if self.figure_object.figure_type == "ts-clustering":
+            self.figure_object.fig.update_layout(
+                yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+            )
+
+    def make_finished_figure(self):
+        self.style_figure()
+        return self.figure_object.fig
+    
 if __name__ == "__main__":
     region_colors = {"GLB": "#7F7F7F", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
                             "ANZ": "#1B344A", "EUR": "#679C82", "ROE": "#91C96E", "RUS": "#2B4739", "ASI": "#493B82",
                             "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092", 
                             "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
-    print(list(region_colors.values()))
+
+    from figure import InputOutputMappingPlot
+    from sql_utils import SQLConnection, DataRetrieval
+    
+    db_obj = SQLConnection("all_data_jan_2024")
+    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df()
+    fig = InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df)
+    ff = FinishedFigure(fig).make_finished_figure()
+    ff.show()

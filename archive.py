@@ -178,3 +178,21 @@
 #         )
 #     children.append(new_element)
 #     return children
+
+# addition block for custom variables
+# dbc.Row(align = "center", justify = "between", style = {"padding": 20},
+#     children = [
+#         dbc.Col(width = {"size": 1, "offset": 1}, children = html.Div("Adding"), className = "text-info"),
+#         dbc.Col(width = 4, 
+#             children = 
+#                 dcc.Dropdown(id = "custom-vars-output-1-dropdown-add", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+#                             placeholder = "Output 1")
+#         ),
+#         dbc.Col(width = 1, children = html.Div("and"), className = "text-info"),
+#         dbc.Col(width = 4, 
+#             children = 
+#                 dcc.Dropdown(id = "custom-vars-output-2-dropdown-add", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+#                             placeholder = "Output 2")
+#         )
+#     ]
+# ),

@@ -1,139 +1,104 @@
-import pandas as pd
-import numpy as np
-from sql_utils import SQLConnection
-from itertools import product
-import plotly.graph_objects as go
-from styling import Options
+import dash
+from dash import html, dcc, Input, State, Output, callback_context
+from dash.exceptions import PreventUpdate
+import dash_bootstrap_components as dbc
+from styling import Readability
 
-class TraceInfo:
-    def __init__(self, figure):
-        self.fig = figure
-        self.traces = self.__traces()
-        self.number = self.__len__()
-        self.names = self.__trace_names()
-        self.colors = self.__trace_colors()
+readability_obj = Readability()
+# Initialize the Dash app
+app = dash.Dash(__name__, suppress_callback_exceptions = True)
 
-    def __getitem__(self, index):
-        return self.traces[index]
-
-    def __len__(self):
-        return len(self.traces)
-
-    def __traces(self):
-        return self.fig.get('data', [])
-
-    def __trace_colors(self):
-        return [trace.get('marker', {}).get('color') for trace in self.traces]
-
-    def __trace_names(self):
-        return [trace.get('name') for trace in self.traces]
-
-def number_to_ordinal(n):
-    """
-    Convert an integer from 1 to 100 into its English ordinal representation.
-    
-    Args:
-    n (int): Integer from 1 to 100
-    
-    Returns:
-    str: The ordinal representation of n
-    """
-    if 11 <= n <= 13:
-        suffix = 'th'
-    else:
-        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
-    return str(n) + suffix
-
-def get_data(output, region, scenario, lower_bound, upper_bound):
-    df = SQLConnection("all_data_jan_2024").single_output_df(output, region, scenario)
-    df_to_graph = df.groupby(["Year"])["Value"].agg([
-        lambda x: np.percentile(x, lower_bound),
-        np.median,
-        lambda x: np.percentile(x, upper_bound)
-    ])
-    df_to_graph.columns = ['Lower Bound', 'Median', 'Upper Bound']
-
-    return df_to_graph
-
-def add_new_trace(output, region, scenario, lower_bound, upper_bound):
-    df = get_data(output, region, scenario, lower_bound, upper_bound)
-    return go.Scatter(
-            x = df.index,
-            y = df["Median"],
-            name = "{} {}".format(region, scenario)
-        )
-
-from dash import Dash, dcc, html
-from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
-
-# Initialize the Dash app.
-app = Dash(__name__)
-
-app.layout = html.Div([
-    dcc.Dropdown(
-        id='output-dropdown',
-        options=[{'label': r, 'value': r} for r in Options().outputs],
-        value='consumption_billion_USD2007'  # Default value
-    ),
-    dcc.Dropdown(
-        id='region-dropdown',
-        options=[{'label': r, 'value': r} for r in ['USA', 'GLB', 'EUR']],
-        value=['GLB'],  # Default value
-        multi=True
-    ),
-    dcc.Dropdown(
-        id='scenario-dropdown',
-        options=[{'label': s, 'value': s} for s in ['Above2C_med', '15C_med', 'Ref']],
-        value=['Ref'],  # Default value
-        multi=True
-    ),
-    dcc.Graph(id='scatter-plot')
-])
+app.layout = custom_variables = html.Div(children = 
+    [
+        html.Div(style = {'display': 'flex', 'align-items': 'center', 'padding': '20px'},
+            children = [
+                html.Span("I would like to create a custom variable called ", style = {'margin-right': '10px'}, className = "text-info"),
+                dcc.Input(id = "custom-vars-var-name", style = {"margin-right": "10px", 'width': '200px'}),
+                html.Span("by", className = "text-info")
+            ]
+        ),
+        html.Div(id = "custom-vars-fill-area", style = {'display': 'flex', 'align-items': 'center', "margin-left": "100px"},
+            children = [
+                dcc.Dropdown(
+                    id = "custom-vars-operation", 
+                    options = [{"label": "Dividing", "value": "division"}],
+                    placeholder = "Operation",
+                    style = {"width": "200px", "margin-right": "10px"}
+                )
+            ]
+        ),
+        html.Div(style = {"padding": 20},
+            children = [
+                dbc.Button(id = "create-custom-variable-button", children = "Create", className = "btn btn-primary btn-lg"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("Success!"), close_button = True),
+                        dbc.ModalFooter(
+                            dbc.Button(
+                                "Close",
+                                id = "close-centered",
+                                className = "ms-auto",
+                                n_clicks = 0,
+                            )
+                        ),
+                    ],
+                    id = "custom-variable-created-modal",
+                    is_open = False,
+                )
+            ]
+        ),
+        dcc.Store(id = "stored-custom-variables", storage_type = "session")
+    ]
+)
 
 @app.callback(
-    Output('scatter-plot', 'figure'),
-    [Input('output-dropdown', 'value'),
-     Input('region-dropdown', 'value'),
-     Input('scenario-dropdown', 'value')],
-    [State('scatter-plot', 'figure')]
+    Output("custom-vars-fill-area", "children"),
+    Output("custom-vars-var-name", "value"),
+    Output("custom-vars-operation", "value"),
+    Input("custom-vars-operation", "value"),
+    Input("create-custom-variable-button", "n_clicks"),
+    State("custom-vars-fill-area", "children"),
+    State("custom-vars-var-name", "value"),
+    State("custom-vars-operation", "value")
 )
-def update_graph(output_name, selected_regions, selected_scenarios, existing_figure):
-    if not existing_figure or len(existing_figure.get('data')) == 0:
-        df = get_data(output_name, "GLB", "Ref", 5, 95)
-        trace = go.Scatter(
-            x = df.index,
-            y = df["Median"],
-            name = "GLB Ref"
-        )
-
-        return go.Figure(data = trace)
+def dynamic_custom_variables_fill(operation_type, n_clicks, current_fill_area, text_box_value, current_operation):
+    if not operation_type:
+        raise PreventUpdate
+    ctx = callback_context
+    trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+    
+    if trigger_id == "custom-vars-operation":
+        if operation_type == "division":
+            print(current_fill_area)
+            if len(current_fill_area) == 4:
+                return current_fill_area, text_box_value, current_operation
+            else:
+                return (current_fill_area + [
+                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                        placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
+                        html.Span("by", style = {'margin-right': '10px'}),
+                        dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                                    placeholder = "Output 2",
+                                    style = {"width": "500px"})
+                            ], text_box_value, current_operation)
     else:
-        combos = list(product(selected_regions, selected_scenarios))
-        current_trace_info = TraceInfo(existing_figure)
-        current_traces = current_trace_info.traces
-        existing_selections = set(current_trace_info.names)
-        new_selections = set([reg + " " + sce for reg, sce in combos])
+        return ([current_fill_area[0]], "", None)
 
-        # changes to make
-        no_change = existing_selections.intersection(new_selections)
-        to_delete = existing_selections.difference(new_selections)
-        to_add = new_selections.difference(existing_selections)
+@app.callback(
+    Output("stored-custom-variables", "data"),
+    State("stored-custom-variables", "data"),
+    State("custom-vars-var-name", "value"),
+    State("custom-vars-output-1-dropdown-div", "value"),
+    State("custom-vars-output-2-dropdown-div", "value"),
+    Input("create-custom-variable-button", "n_clicks")
+)
+def update_custom_variables(current_data, var_name, output_1, output_2, n_clicks):
+    if n_clicks is None:
+        raise PreventUpdate
+    current_data = current_data or {}
+    current_data[var_name] = {"operation": "division", "output1": output_1, "output2": output_2}
 
-        # removing traces
-        indices_to_delete = [current_trace_info.names.index(i) for i in to_delete]
-        for i in sorted(indices_to_delete, reverse = True):
-            current_traces.pop(i)
-
-        # adding traces
-        new_traces = []
-        for i in list(to_add):
-            l = i.split(" ")
-            reg, sce = l[0], l[1]
-            new_trace = add_new_trace(output_name, reg, sce, 5, 95)
-            new_traces.append(new_trace)
-        
-        return go.Figure(data = current_trace_info.traces + new_traces)
+    return current_data
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, host = "localhost")

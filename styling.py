@@ -109,11 +109,11 @@ class Color:
         self.hex_palette = {key: '#' + value for key, value in self.palette.items()}
         # self.region_colors = {"GLB": "rgb(127, 127, 127)", "USA": "rgb(0, 83, 154)", "CAN": "rgb(162, 25, 31)", "MEX": "rgb(4, 67, 23)", "JPN": "rgb(250, 77, 86)",
         #                       "ANZ": "rgb(0, 67, 206)", "EUR": "rgb(255, 221, 0)", "ROE": "rgb(61, 219, 217)", "RUS": "rgb(1, 39, 73)", "ASI": "rgb(73, 29, 139)",
-        #                       "CHN": "rgb(82, 4, 8)", "IND": "rgb(245, 222, 179)", "BRA": "rgb(111, 220, 140)", "AFR": "rgb(166, 200, 255)", "MES": "rgb(212, 187, 255)", 
+        #                       "CHN": "rgb(82, 4, 8)", "IND": "rgb(245, 222, 179)", "BRA": "rgb(111, 220, 140)", "AFR": "rgb(166, 200, 255)", "MES": "rgb(212, 187, 255)",
         #                       "LAM": "rgb(0, 65, 68)", "REA": "rgb(130, 207, 255)", "KOR": "rgb(0, 93, 93)", "IDZ": "rgb(114, 110, 110)"}
         self.region_colors = {"GLB": "#491d8b", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
                               "ANZ": "#1B344A", "EUR": "#679C82", "ROE": "#91C96E", "RUS": "#2B4739", "ASI": "#493B82",
-                              "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092", 
+                              "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092",
                               "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
         self.scenario_colors = {"15C_med": "#750e13", "15C_opt": "#ffb3b8", "About15C_pes": "#740937", "About15C_med": "#ffafd2",
                                 "About15C_opt": "#491d8b", "2C_pes": "#d4bbff", "2C_med": "#002d9c", "2C_opt": "#a6c8ff",
@@ -125,13 +125,13 @@ class Color:
     def generate_palette(self, n):
         rgb_colors = convert_dict_colors_to_same_type(self.hex_palette)
         return n_colors(rgb_colors["Red 80"], rgb_colors["Cool Gray 50"], n, colortype = "rgb")
-    
+
     def convert_to_fill(self, color, alpha = 0.3):
         # add alpha channel
         rgb = ImageColor.getcolor(color, "RGB")
         rgba = tuple(list(rgb) + [alpha])
         return "rgba" + str(rgba)
-    
+
     def lighten_hex(self, hex_color, brightness_offset = 1):
         if len(hex_color) != 7:
             raise Exception("Passed %s into color_variant(), needs to be in #87c95f format." % hex_color)
@@ -140,7 +140,7 @@ class Color:
         new_rgb_int = [min([255, max([0, i])]) for i in new_rgb_int] # make sure new values are between 0 and 255
         # hex() produces "0x88", we want just "88"
         return "#" + "".join([hex(i)[2:] for i in new_rgb_int])
-    
+
     def get_color_for_timeseries(self, styling_option, param):
         if styling_option == "by-region":
             color = self.region_colors[param]
@@ -161,7 +161,7 @@ class Readability:
 
 class Options:
     def __init__(self):
-        self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND", 
+        self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND",
                                 "BRA", "AFR", "MES", "LAM", "REA", "KOR", "IDZ"]
         self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt', 'Ref']
         self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt", "About15C_med": "About 1.5C Med",
@@ -307,7 +307,8 @@ class FinishedFigure(Color, Readability, Options):
         Options.__init__(self)
         self.figure_object = fig_object
         self.display_names_for_figure_type = {"output-timeseries": "Time Series for ", "input-output-mapping-main": "CART Results for ",
-                                              "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for "}
+                                              "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for ",
+                                              "output-output-mapping-main": "Output-Output Mapping for "}
 
     def style_figure(self):
         # this logic block handles the output display name portion of titling figures
@@ -325,7 +326,7 @@ class FinishedFigure(Color, Readability, Options):
                                       title = title,
                                       height = 600)
         # plot-specific changes
-        if self.figure_object.figure_type == "input-output-mapping-main":
+        if self.figure_object.figure_type == "input-output-mapping-main" or self.figure_object.figure_type == "output-output-mapping-main":
             self.figure_object.fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
             self.figure_object.fig.update_annotations(yshift = 20)
 
@@ -343,22 +344,41 @@ class FinishedFigure(Color, Readability, Options):
                 yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
                 xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
             )
+        if self.figure_object.figure_type == "output-output-mapping-main":
+            def new_name_for_bar_graph(current_name):
+                if current_name in self.outputs:
+                    new_name = self.naming_dict_long_names_first[current_name]
+                else:
+                    new_name = current_name
+
+                return new_name
+            self.figure_object.fig.data[0]["x"] = [new_name_for_bar_graph(name) for name in self.figure_object.fig.data[0]["x"]]
+
+            for dimension in self.figure_object.fig.data[1]["dimensions"]:
+                current_name = dimension.label
+                if current_name in self.outputs:
+                    new_name = self.naming_dict_long_names_first[current_name]
+                else:
+                    new_name = current_name
+                dimension.label = new_name
+
+            self.figure_object.fig.data[1].labelangle = 30
 
     def make_finished_figure(self):
         self.style_figure()
         return self.figure_object.fig
-    
+
 if __name__ == "__main__":
     region_colors = {"GLB": "#7F7F7F", "USA": "#5492C5", "CAN": "#1D4971", "MEX": "#80CDDF", "JPN": "#6E37A3",
                             "ANZ": "#1B344A", "EUR": "#679C82", "ROE": "#91C96E", "RUS": "#2B4739", "ASI": "#493B82",
-                            "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092", 
+                            "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092",
                             "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
 
-    from figure import InputOutputMappingPlot
+    from figure import OutputOutputMappingPlot
     from sql_utils import SQLConnection, DataRetrieval
-    
+
     db_obj = SQLConnection("all_data_jan_2024")
-    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df()
-    fig = InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df)
-    ff = FinishedFigure(fig).make_finished_figure()
-    ff.show()
+    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
+    fig = OutputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df, db_obj)
+    finished_fig = FinishedFigure(fig).make_finished_figure()
+    finished_fig.show()

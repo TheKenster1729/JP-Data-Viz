@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from analysis import InputOutputMapping, TimeSeriesClustering
+from analysis import InputOutputMapping, TimeSeriesClustering, OutputOutputMapping
 from styling import Color, Options, Readability
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -273,7 +273,7 @@ class NewTimeSeries(DashboardFigure):
         upper = self.upper_bound_trace(group)
 
         return [lower, upper, median]
-    
+
     def return_figure(self):
         self.figure = go.Figure(data = self.return_traces())
 
@@ -446,20 +446,55 @@ class OutputDistribution:
 
 class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
     def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5):
-        super().__init__(output, region, scenario, year, df, threshold = threshold, gt = gt)
+        super().__init__(output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
         DashboardFigure.__init__(self, "input-output-mapping-main")
-        self.num_to_plot = num_to_plot
 
         self.fig = self.make_plot()
 
     def make_plot(self, show = False, save = False):
-        feature_importances, sorted_labeled_importances, top_n = self.random_forest(num_to_plot = self.num_to_plot)
+        feature_importances, sorted_labeled_importances, top_n = self.random_forest()
         fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
                             subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
 
         parcoords_df = self.inputs[top_n].copy()
         _, y_discrete = self.preprocess_for_classification()
         parcoords_df["Output"] = self.y_continuous.values
+        parcoords_df["y_discrete"] = y_discrete
+
+        dimensions = []
+        color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
+        for col in parcoords_df.columns[:-1]:
+            dimensions.append(dict(label = col, values = parcoords_df[col]))
+        fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
+        fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
+                                      dimensions = dimensions, labelside = "bottom"), row = 1, col = 2)
+        if show:
+            fig.show()
+
+        if save:
+            fig.write_image(save + ".png", scale = 2)
+
+        return fig
+    
+class OutputOutputMappingPlot(OutputOutputMapping, DashboardFigure):
+    def __init__(self, output, region, scenario, year, df, db_obj, threshold = 70, gt = True, num_to_plot = 5):
+        super().__init__(output, region, scenario, year, df, db_obj, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
+        DashboardFigure.__init__(self, "output-output-mapping-main")
+
+        self.fig = self.make_plot()
+
+    def make_plot(self, show = False, save = False):
+        result = self.random_forest()
+        if type(result) is str:
+            return result
+        
+        feature_importances, sorted_labeled_importances, top_n = result[0], result[1], result[2]
+        fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
+                            subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
+
+        parcoords_df = self.main_df[top_n].copy()
+        y_discrete = self.preprocess_for_classification()
+        parcoords_df[self.output] = self.y_continuous.values
         parcoords_df["y_discrete"] = y_discrete
 
         dimensions = []
@@ -630,16 +665,55 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
 
         return fig
 
+class PlotTree(DashboardFigure, InputOutputMapping):
+    def __init__(self, output, region, scenario, year, df, threshold, gt, num_to_plot):
+        super().__init__("cart-tree-diagram")
+        InputOutputMapping.__init__(self, output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
+
+    def get_params(self):
+        fit_tree_model = self.CART().tree_
+
+        return fit_tree_model.n_nodes, fit_tree_model.children_left, fit_tree_model.children_right, fit_tree_model.feature, fit_tree_model.threshold, fit_tree_model.values
+
+    def make_tree_structure(self):
+        # adopted from https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py
+        self.n_nodes, self.children_left, self.children_right, self.feature, self.threshold, self.values = self.get_params()
+        self.node_depth = np.zeros(shape = self.n_nodes, dtype = np.int64)
+        self.is_leaves = np.zeros(shape = self.n_nodes, dtype = bool)
+        stack = [(0, 0)]
+        while len(stack) > 0:
+            node_id, depth = stack.pop()
+            self.node_depth[node_id] = depth
+
+            is_split_node = self.children_left[node_id] != self.children_right[node_id]
+            if is_split_node:
+                stack.append((self.children_left[node_id], depth + 1))
+                stack.append((self.children_right[node_id], depth + 1))
+            else:
+                self.is_leaves[node_id] = True        
+
+    def make_plot(self):
+        self.make_tree_structure()
+        fig = go.Figure()
+        for i in range(self.n_nodes):
+            if i == 0:
+                fig.add_trace()
+            if self.is_leaves[i]:
+                # leaf nodes have already been plotted
+                pass
+
 class ParallelCoords:
     pass
 
 if __name__ == "__main__":
-    # timeseries
     db_obj = SQLConnection("all_data_jan_2024")
+
+    # timeseries
     # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
-    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref").single_output_df_to_graph(5, 95)
-    # traces = NewTimeSeries("consumption_billion_USD2007", "GLB", "Ref", 2050, df).return_traces()
-    # fig = go.Figure(data = traces)
+    df = DataRetrieval(db_obj, "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref").single_output_df_to_graph(5, 95)
+    traces = NewTimeSeries("elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref", 2050, df).return_traces()
+    fig = go.Figure(data = traces)
+    print(fig["data"])
     # fig.show()
 
     # OutputHistograms("consumption_billion_USD2007", ["GLB", "USA", "EUR"], ["Ref", "Above2C_med"], 2050, db_obj).make_plot(show = True)
@@ -649,10 +723,13 @@ if __name__ == "__main__":
     # fig.write_image("assets\examples\inputs_windgas_focus.svg")
 
     # input-output mapping
-    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df()
-    InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df).make_plot(show = True)
+    # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
+    # InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
+    # output-output mapping
+    # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
+    # fig = OutputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df, db_obj).make_plot()
 
     # histograms
     # OutputHistograms("emissions_CO2eq_total_million_ton_CO2eq", ["USA", "CAN", "MEX"], ["Ref", "Above2C_med", "About15C_opt"], 2050, db_obj).make_plot(show = True)

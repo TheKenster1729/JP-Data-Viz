@@ -3,15 +3,18 @@ import dash
 from dash.exceptions import PreventUpdate
 from dash import html, dcc, callback_context
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from sql_utils import SQLConnection, DataRetrieval
 from styling import Options, Readability, Color, FinishedFigure
 from dash.dependencies import Input, Output, State, MATCH
-from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot
+from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot, \
+                        OutputOutputMappingPlot
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
 from pprint import pprint
 from dash_iconify import DashIconify
+import pandas as pd
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BOOTSTRAP],
                 suppress_callback_exceptions = True)
@@ -186,6 +189,51 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
                     ]
                 )
             ]
+        ),
+        dbc.Row(style = {"margin-top": 20}, children = [
+                dbc.Col(width = {"size": 10, "offset": 1},
+                    children = [
+                        dbc.Accordion(start_collapsed = True,
+                            children = [
+                                dbc.AccordionItem(title = "Plot Options",
+                                    children = [
+                                        html.P("Set Uncertainty Range - Upper and Lower Percentiles", className = "text-primary"),
+                                        html.P("Upper Bound"),
+                                        dcc.Slider(51, 99, 1, id = "time-series-plot-upper-bound", value = 95,
+                                                    marks = {label: str(label) for label in range(50, 100, 5)}, tooltip = dict(always_visible = True)),
+                                        html.P("Lower Bound"),
+                                        dcc.Slider(1, 49, 1, id = "time-series-plot-lower-bound", value = 5, 
+                                                    marks = {label: str(label) for label in range(0, 50, 5)}, tooltip = dict(always_visible = True)),
+                                        dbc.Button("Set Bounds", id = "time-series-plot-apply-bound-changes", class_name = "Primary")
+                                    ]
+                                ),
+                                dbc.AccordionItem(title = "Styling Options",
+                                    children = [
+                                        html.P("Set Plot Background Color", className = "text-primary"),
+                                        dmc.ColorPicker(id = "time-series-plot-color-picker", format = "hex", value = "#e5ecf5"),
+                                        html.Br(),
+                                        html.P("Toggle Gridlines", className = "text-primary"),
+                                        dmc.Switch(label = "Toggle Gridlines", onLabel = "On", offLabel = "Off", size = "lg", radius = "sm", id = "time-series-plot-toggle-gridlines", checked = True),
+                                        html.Br(),
+                                        dbc.Button("Apply Changes", id = "time-series-plot-apply-styling-changes", class_name = "Primary")
+                                    ]
+                                ),
+                                dbc.AccordionItem(title = "Save Options",
+                                    children = [
+                                        html.P("Note: downloads may take a few seconds to complete.", className = "text-info"),
+                                        dbc.Button("Download Data as CSV", id = "time-series-plot-download-data-button"),
+                                        dbc.Button("Download Plot as High-Res Image", id = "time-series-plot-download-image-button", style = {"margin-left": 20, "margin-right": 20}),
+                                        dbc.Button("Download Plot as SVG", id = "time-series-plot-download-svg-button"),
+                                        dcc.Download(id = "time-series-plot-download-csv"),
+                                        dcc.Download(id = "time-series-plot-download-image"),
+                                        dcc.Download(id = "time-series-plot-download-svg")
+                                    ]
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
         )
     ]
 )
@@ -297,7 +345,7 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                             children = [
                                 html.Div("Region", className = "text-primary"),
                                 dcc.Dropdown(
-                                    id = "input-output-mapping-regions",
+                                    id = "input-output-mapping-region",
                                     options = [{'label': i, 'value': i} for i in Options().region_names],
                                     value = "GLB"
                                 ),
@@ -326,7 +374,73 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
         ]
     )
 
-output_output_mapping = html.Div()
+output_output_mapping = html.Div(id = "output-output-mapping-content", style = {"padding": 20},
+    children = [
+        html.Div(
+            children = [
+                dbc.Row(
+                    children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                dbc.Card(
+                                    className = "card text-white bg-primary mb-3",
+                                    children = [
+                                        html.Div(style = {'display': 'flex'},
+                                            children = [
+                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Output/Output Mapping"),
+                                                DashIconify(icon = "feather:info", width = 60, style = {"color": "#9AC1F4"})
+                                            ]
+                                        )
+                                    ]
+                                )                    
+                            ]
+                        ),
+                        dbc.Col(
+                            children = [
+                                dbc.Row(html.Div("Output Name", className = "text-primary")),
+                                dbc.Row(
+                                dcc.Dropdown(id = "output-output-mapping-output",
+                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                    value = "emissions_CO2eq_total_million_ton_CO2eq")
+                                )
+                            ]
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                html.Div("Region", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "output-output-mapping-region",
+                                    options = [{'label': i, 'value': i} for i in Options().region_names],
+                                    value = "GLB"
+                                ),
+                                html.Div("Scenario", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "output-output-mapping-scenario",
+                                    options = [{'label': Options().scenario_display_names[i], 'value': i} for i in Options().scenarios],
+                                    value = "Ref"
+                                ),
+                                html.Div("Year", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "output-output-mapping-year",
+                                    options = [{'label': i, 'value': i} for i in Options().years],
+                                    value = 2050)
+                                ]
+                            ),
+                        dbc.Col(width = 10,
+                            children = [
+                                dcc.Loading([dcc.Graph(id = "output-output-mapping-figure")]),
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
 
 choropleth_map = html.Div(style = {"padding": 20},
     children = [
@@ -528,53 +642,6 @@ custom_variables = html.Div(children =
     ]
 )
 
-# custom_variables = html.Div(style = {"padding": 20},
-#     children = [
-#         dbc.Row(className = "text-primary", children = [
-#                 dbc.Col(width = 4, children = html.Div("I would like to create a variable called")),
-#                 dbc.Col(width = 3, children = dcc.Input(id = "custom-vars-var-name")),
-#                 dbc.Col(width = 1, children = html.Div("by"))
-#             ]
-#         ),
-#         dbc.Row(align = "center", justify = "between", style = {"padding": 20},
-#             children = [
-#                 dbc.Col(width = {"size": 1, "offset": 1}, 
-#                         children = [
-#                             dcc.Dropdown()
-#                         ]),
-#                 dbc.Col(width = 4, 
-#                     children = 
-#                         dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-#                                     placeholder = "Output 1")
-#                 ),
-#                 dbc.Col(width = 1, children = html.Div("by"), className = "text-info"),
-#                 dbc.Col(width = 4, 
-#                     children = 
-#                         dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-#                                     placeholder = "Output 2")
-#                 )
-#             ]
-#         ),
-#         dbc.Button(id = "create-custom-variable-button", children = "Create", className = "btn btn-primary btn-lg"),
-#         dbc.Modal(
-#             [
-#                 dbc.ModalHeader(dbc.ModalTitle("Success!"), close_button = True),
-#                 dbc.ModalFooter(
-#                     dbc.Button(
-#                         "Close",
-#                         id = "close-centered",
-#                         className = "ms-auto",
-#                         n_clicks = 0,
-#                     )
-#                 ),
-#             ],
-#             id = "custom-variable-created-modal",
-#             is_open = False,
-#         ),
-
-#     ]
-# )
-
 examples = html.Div(style = {},
     children = [
         html.Br(),
@@ -635,6 +702,7 @@ app.layout = html.Div(
                     dbc.Tab(id = "output-timeseries", label = "Output Distributions", children = [output_timeseries]),
                     dbc.Tab(id = "input-dist", label = "Input Distributions", children = [input_dists]),
                     dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping]),
+                    dbc.Tab(id = "output-output-mapping", label = "Output-Output Mapping", children = [output_output_mapping]),
                     dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [choropleth_map]),
                     dbc.Tab(id = "ts-clustering-tab", label = "Time Series Clustering", children = [time_series_clustering]),
                     dbc.Tab(id = "custom-variables-tab", label = "Custom Variables", children = [custom_variables])
@@ -664,10 +732,17 @@ def add_hist_slider(chart_type):
      Input('scenario-dropdown', 'value'),
      Input('chart-options', 'value'),
      Input('year-slider', 'value'),
-     Input('output-color-scheme', 'value')],
-    [State('output-time-series-plot', 'figure')]
+     Input('output-color-scheme', 'value'),
+     Input("time-series-plot-apply-bound-changes", "n_clicks"),
+     Input("time-series-plot-apply-styling-changes", "n_clicks")],
+    [State('output-time-series-plot', 'figure'),
+     State("time-series-plot-upper-bound", "value"),
+     State("time-series-plot-lower-bound", "value"),
+     State("time-series-plot-color-picker", "value"),
+     State("time-series-plot-toggle-gridlines", "checked")]
 )
-def update_timeseries_graph(output_name, selected_regions, selected_scenarios, chart_type, year, color_scheme, existing_figure):
+def update_timeseries_graph(output_name, selected_regions, selected_scenarios, chart_type, year, color_scheme, n_clicks_bound_changes, 
+                            n_clicks_styling_changes, existing_figure, upper_bound, lower_bound, plot_bgcolor, toggle_gridlines):
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
     if chart_type == "time-series":
@@ -677,7 +752,7 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
         if not existing_figure or len(existing_figure.get('data')) == 0:
             region = selected_regions[0]
             scenario = selected_scenarios[0]
-            new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(5, 95)
+            new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
             traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
 
             fig = go.Figure(traces_to_add)
@@ -686,14 +761,17 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
                 margin = dict(t = 40, b = 0, l = 10),
                 title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
                 yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+                plot_bgcolor = plot_bgcolor
             )
+            fig.update_xaxes(showgrid = toggle_gridlines)
+            fig.update_yaxes(showgrid = toggle_gridlines)
             return fig
 
         current_trace_info = TraceInfo(existing_figure)
         if current_trace_info.type[0] == "histogram": # means active figure is histogram, so need to generate scatter 
             for region, scenario in product(selected_regions, selected_scenarios):
-                new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(5, 95)
+                new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
                 traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
 
             try:
@@ -707,8 +785,11 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
                 margin = dict(t = 40, b = 0, l = 10),
                 title_text = title_text,
                 # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+                plot_bgcolor = plot_bgcolor
             )
+            fig.update_xaxes(showgrid = toggle_gridlines)
+            fig.update_yaxes(showgrid = toggle_gridlines)
             return fig
         else:
             combos_with_trace_name = list(product(selected_regions, selected_scenarios, ["lower", "median", "upper"]))
@@ -749,7 +830,7 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
             decomposed_traces_to_add = set([i.split("|")[0] + "|" + i.split("|")[1] + "|" + i.split("|")[2] for i in to_add])
             for i in decomposed_traces_to_add:
                 output, reg, sce = tuple(i.split("|"))
-                new_trace_df = DataRetrieval(db, output_name, reg, sce).single_output_df_to_graph(5, 95)
+                new_trace_df = DataRetrieval(db, output_name, reg, sce).single_output_df_to_graph(lower_bound, upper_bound)
                 traces_to_add = NewTimeSeries(output_name, reg, sce, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
                 new_traces += traces_to_add
 
@@ -764,14 +845,17 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
                 margin = dict(t = 40, b = 0, l = 10),
                 title_text = title_text,
                 # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+                plot_bgcolor = plot_bgcolor
             )
+            fig.update_xaxes(showgrid = toggle_gridlines)
+            fig.update_yaxes(showgrid = toggle_gridlines)
             return fig
 
     else:
         if not selected_regions or not selected_scenarios:
             raise PreventUpdate
-        
+
         styling_options = {"color": color_scheme}
         fig = OutputHistograms(output_name, selected_regions, selected_scenarios, year, db, styling_options = styling_options).make_plot()
         fig.update_layout(
@@ -779,6 +863,45 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
             margin = dict(t = 50, b = 20, l = 10)
         )
         return fig
+
+# callback for data download - doing this separately helps make everything more organized
+@app.callback(
+    Output("time-series-plot-download-csv", "data"),
+    Input("time-series-plot-download-data-button", "n_clicks"),
+    State('output-dropdown', 'value'),
+    State('region-dropdown', 'value'),
+    State('scenario-dropdown', 'value'),
+    State("time-series-plot-upper-bound", "value"),
+    State("time-series-plot-lower-bound", "value")
+)
+def timeseries_data_download(n_clicks, output, regions, scenarios, upper_bound, lower_bound):
+    if not output or not regions or not scenarios or not n_clicks:
+        raise PreventUpdate
+    
+    if n_clicks > 0:
+        full_data_df = pd.DataFrame()
+        for reg in regions:
+            for sce in scenarios:
+                df = DataRetrieval(db, output, reg, sce).single_output_df()
+                df["Region"] = [reg] * len(df)
+                df["Scenario"] = [sce] * len(df)
+                full_data_df = pd.concat([full_data_df, df], axis = 0)
+        
+        return dcc.send_data_frame(full_data_df.to_csv, "eppa_dashboard_data_{}.csv".format(output))
+
+# callback for high-res image download
+@app.callback(
+    Output("time-series-plot-download-image", "data"),
+    Input("time-series-plot-download-image-button", "n_clicks"),
+    State('output-time-series-plot', 'figure')
+)
+def timeseries_plot_image_download(n_clicks, figure_data):
+    if not n_clicks:
+        raise PreventUpdate
+    
+    figure = go.Figure(figure_data)
+
+    return dcc.send_bytes(figure.to_image(format = "png", scale = 3), "high_res_plot.png")
 
 # callback for inputs
 @app.callback(
@@ -796,7 +919,7 @@ def update_input_dist(inputs, focus_input):
 @app.callback(
     Output("input-output-mapping-figure", "figure"),
     Input("input-output-mapping-output", "value"),
-    Input("input-output-mapping-regions", "value"),
+    Input("input-output-mapping-region", "value"),
     Input("input-output-mapping-scenario", "value"),
     Input("input-output-mapping-year", "value")
 )
@@ -804,8 +927,26 @@ def update_figure(output, region, scenario, year):
     if not region or not output or not year:
         raise PreventUpdate
     
-    df = DataRetrieval(db, output, region, scenario, year).input_output_mapping_df()
+    df = DataRetrieval(db, output, region, scenario, year).mapping_df()
     unstyled_figure = InputOutputMappingPlot(output, region, scenario, year, df)
+    finished_figure = FinishedFigure(unstyled_figure).make_finished_figure()
+
+    return finished_figure
+
+# callback for o/o mapping
+@app.callback(
+    Output("output-output-mapping-figure", "figure"),
+    Input("output-output-mapping-output", "value"),
+    Input("output-output-mapping-region", "value"),
+    Input("output-output-mapping-scenario", "value"),
+    Input("output-output-mapping-year", "value")
+)
+def update_figure(output, region, scenario, year):
+    if not region or not output or not year:
+        raise PreventUpdate
+    
+    df = DataRetrieval(db, output, region, scenario, year).mapping_df()
+    unstyled_figure = OutputOutputMappingPlot(output, region, scenario, year, df, db)
     finished_figure = FinishedFigure(unstyled_figure).make_finished_figure()
 
     return finished_figure
@@ -929,7 +1070,7 @@ for dropdown in output_dropdowns_to_update_ids:
         return current_options
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "0.0.0.0")
+    app.run(debug = True, host = "localhost")
 
     # discarded components
 
@@ -949,3 +1090,4 @@ if __name__ == '__main__':
         children = ["Data Visualization Dashboard"]
     )
     '''
+    

@@ -194,7 +194,7 @@ class DataRetrieval:
 
         # return df_to_return
 
-    def input_output_mapping_df(self):
+    def mapping_df(self):
         return self.single_output_df().query("Year==@self.year")
 
     def choropleth_map_df(self, lower_bound, upper_bound):
@@ -240,6 +240,9 @@ if __name__ == "__main__":
     # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
     # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
     # DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
-    df = DataRetrieval(db, "elec_prod_Renewables_TWh_pol-division-elec_prod_Total_TWh_pol-Renewable Share", "GLB", "15C_med", 2050).single_output_df()
-    print(df)
+    # for output in Options().outputs:
+    #     df = DataRetrieval(db, output, "GLB", "15C_med", 2050).input_output_mapping_df()
+    #     print(len(df) > 350)
+
+    print(list(Options().outputs).pop("emissions_CO2eq_total_million_ton_CO2eq"))
     # DatabaseModification("all_data_jan_2024", scenarios = ["About1.5C_pes", "15C_med", "2C_pes"], files = ["1_percapita_consumption_loss_percent_About15C_pes.xlsx", "1_percapita_consumption_loss_percent_15C_med.xlsx", "1_percapita_consumption_loss_percent_2C_pes.xlsx"]).main()

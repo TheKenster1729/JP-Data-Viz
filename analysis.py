@@ -66,7 +66,8 @@ class InputOutputMapping:
 
     def CART(self):
         X, y = self.preprocess_for_classification()
-        fit_model = DecisionTreeClassifier().fit(X, y)
+        fit_model = DecisionTreeClassifier()
+        fit_model.fit(X, y)
 
         return fit_model
 

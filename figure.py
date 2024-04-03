@@ -11,8 +11,6 @@ from itertools import product
 from plotly.colors import n_colors
 import geopandas as gpd
 import json
-import os
-import textwrap
 
 class DashboardFigure:
     def __init__(self, figure_type) -> None:
@@ -665,17 +663,89 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
 
         return fig
 
-class PlotTree(DashboardFigure, InputOutputMapping):
-    def __init__(self, output, region, scenario, year, df, threshold, gt, num_to_plot):
+class TreeNode:
+    def __init__(self, id, feature=None, threshold=None, left=None, right=None, value=None):
+        self.id = id
+        self.feature = feature
+        self.threshold = threshold
+        self.left = left
+        self.right = right
+        self.value = value
+        self.x = 0  # x-coordinate in the plot
+        self.y = 0  # y-coordinate in the plot
+
+class PlotTree(DashboardFigure):
+    def __init__(self, output, region, scenario, year, df, fit_model):
         super().__init__("cart-tree-diagram")
-        InputOutputMapping.__init__(self, output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
+        self.fit_model = fit_model
+        self.fit_tree_model = self.fit_model.tree_
+
+    def layout_binary_tree(self, root, x=0, y=0, level_height=1, node_spacing=2):
+        if root is None:
+            return 0
+        
+        left_width = self.layout_binary_tree(root.left, x, y-1, level_height, node_spacing) if root.left else 0
+        root.x = x + left_width
+        root.y = y
+        right_width = self.layout_binary_tree(root.right, root.x + node_spacing, y-1, level_height, node_spacing) if root.right else 0
+        
+        return left_width + node_spacing + right_width
+
+    def build_tree_from_CART(self, tree_, node_id=0, depth=0):
+        if tree_.children_left[node_id] == tree_.children_right[node_id]:  # Leaf node
+            value = tree_.value[node_id]
+            return TreeNode(node_id, value=value, feature="leaf", threshold=0, left=None, right=None)
+        left_child = self.build_tree_from_CART(tree_, tree_.children_left[node_id], depth + 1)
+        right_child = self.build_tree_from_CART(tree_, tree_.children_right[node_id], depth + 1)
+        feature = features[node_id]
+        threshold = tree_.threshold[node_id]
+        return TreeNode(node_id, feature=feature, threshold=threshold, left=left_child, right=right_child)
+
+    def add_annotations(self, fig, node):
+        if node is not None:
+            # Add annotation with feature and threshold or leaf value
+            if node.feature == "leaf":
+                text = f"Leaf\nSamples: {np.sum(node.value)}"
+            else:
+                text = f"{node.feature}\n< {node.threshold:.2f}"
+            fig.add_annotation(x=node.x, y=node.y, text=text, showarrow=False, font=dict(color="blue", size=12))
+            if node.left:
+                self.add_annotations(fig, node.left)
+            if node.right:
+                self.add_annotations(fig, node.right)
+
+    def draw_tree_with_data(root):
+        node_x, node_y, edge_x, edge_y = [], [], [], []
+        
+        def traverse(node):
+            if node:
+                node_x.append(node.x)
+                node_y.append(node.y)
+                if node.left:
+                    edge_x.extend([node.x, node.left.x, None])  # None to stop drawing the line
+                    edge_y.extend([node.y, node.left.y, None])
+                    traverse(node.left)
+                if node.right:
+                    edge_x.extend([node.x, node.right.x, None])
+                    edge_y.extend([node.y, node.right.y, None])
+                    traverse(node.right)
+                    
+        traverse(root)
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', name='Edges'))
+        fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers', name='Nodes'))
+        
+        # Add annotations for each node
+        add_annotations(fig, root)
+        
+        fig.update_layout(showlegend=False)
+        fig.show()
 
     def get_params(self):
-        fit_tree_model = self.CART().tree_
+        return self.fit_tree_model.node_count, self.fit_tree_model.children_left, self.fit_tree_model.children_right, self.fit_tree_model.feature, self.fit_tree_model.threshold, self.fit_tree_model.value
 
-        return fit_tree_model.n_nodes, fit_tree_model.children_left, fit_tree_model.children_right, fit_tree_model.feature, fit_tree_model.threshold, fit_tree_model.values
-
-    def make_tree_structure(self):
+    def create_tree_information(self):
         # adopted from https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py
         self.n_nodes, self.children_left, self.children_right, self.feature, self.threshold, self.values = self.get_params()
         self.node_depth = np.zeros(shape = self.n_nodes, dtype = np.int64)
@@ -690,17 +760,90 @@ class PlotTree(DashboardFigure, InputOutputMapping):
                 stack.append((self.children_left[node_id], depth + 1))
                 stack.append((self.children_right[node_id], depth + 1))
             else:
-                self.is_leaves[node_id] = True        
+                self.is_leaves[node_id] = True
+
+    def draw_child_nodes(self, fig, id, spacing = 2, radius = 1):
+        node_depth = self.node_depth[id]
+        left_child_x = self.pos_x[id] - 2**(self.max_depth - node_depth)
+        right_child_x = self.pos_x[id] + 2**(self.max_depth - node_depth)
+
+        # edges
+        # fig.add_trace(go.Scatter(x = [self.pos_x[id], center_x], y = [self.node_depth[id], center_y],
+        #                          mode = "lines"))
+        # left child
+        fig.add_trace(go.Scatter(x = [left_child_x], y = [-node_depth], 
+                                mode = 'markers',
+                                name = id,
+                                marker = dict(symbol = "circle",
+                                            color = '#6175c1'),
+                                opacity = 0)
+                            )
+        fig.add_shape(type = "circle", x0 = left_child_x - radius, y0 = -node_depth - radius, x1 = left_child_x + radius, y1 = -node_depth + radius)
+
+        # right child
+        fig.add_trace(go.Scatter(x = [right_child_x], y = [-node_depth], 
+                                mode = 'markers',
+                                name = id,
+                                marker = dict(symbol = "circle",
+                                            color = '#6175c1'),
+                                opacity = 0)
+                            )
+        fig.add_shape(type = "circle", x0 = right_child_x - radius, y0 = -node_depth - radius, x1 = right_child_x + radius, y1 = -node_depth + radius)
+        # fig.add_annotation(ax = center_x, axref = 'x', ay = center_y, ayref = 'y', x = 1, arrowcolor = 'red', xref = 'x', y = 1, yref='y', arrowwidth = 2.5, arrowside = 'end', arrowsize = 1, arrowhead = 4)
 
     def make_plot(self):
-        self.make_tree_structure()
+        self.create_tree_information()
+        # find max number of nodes
+        
         fig = go.Figure()
+        feature_names = self.fit_model.feature_names_in_
+        self.max_depth = max(self.node_depth)
+        print(self.max_depth)
+        self.pos_x = {}
+
         for i in range(self.n_nodes):
+            left_child = self.children_left[i]
+            right_child = self.children_right[i]
+            depth = self.node_depth[i]
+            self.pos_x[left_child] = -2**(self.max_depth - 1)
+            self.pos_x[right_child] = 2**(self.max_depth - 1)
+
             if i == 0:
-                fig.add_trace()
-            if self.is_leaves[i]:
-                # leaf nodes have already been plotted
-                pass
+                fig.add_trace(go.Scatter(x = [0], y = [0], 
+                                        mode = 'markers',
+                                        marker = dict(symbol = "circle",
+                                                    color = '#6175c1'))
+                                    )
+                # left child
+                fig.add_trace(go.Scatter(x = [-2**(self.max_depth - 1)], y = [-1], 
+                                        mode = 'markers',
+                                        marker = dict(symbol = "circle",
+                                                    color = '#6175c1'))
+                                    )
+                # right child
+                fig.add_trace(go.Scatter(x = [2**(self.max_depth - 1)], y = [-1], 
+                                        mode = 'markers',
+                                        marker = dict(symbol = "circle",
+                                                    color = '#6175c1'))
+                                    )
+            else:
+                if self.is_leaves[i]:
+                    # Leaf node
+                    continue
+                else:
+                    # Decision node
+                    self.draw_child_nodes(fig, i)
+
+
+        # Customize layout
+        fig.update_layout(title = 'Decision Tree Visualization',
+                        showlegend = False)
+        fig.update_yaxes(
+            scaleanchor="x",
+            scaleratio=1,
+        )
+        fig.show()
+        return fig
 
 class ParallelCoords:
     pass
@@ -710,10 +853,10 @@ if __name__ == "__main__":
 
     # timeseries
     # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
-    df = DataRetrieval(db_obj, "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref").single_output_df_to_graph(5, 95)
-    traces = NewTimeSeries("elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref", 2050, df).return_traces()
-    fig = go.Figure(data = traces)
-    print(fig["data"])
+    # df = DataRetrieval(db_obj, "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref").single_output_df_to_graph(5, 95)
+    # traces = NewTimeSeries("elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref", 2050, df).return_traces()
+    # fig = go.Figure(data = traces)
+    # print(fig["data"])
     # fig.show()
 
     # OutputHistograms("consumption_billion_USD2007", ["GLB", "USA", "EUR"], ["Ref", "Above2C_med"], 2050, db_obj).make_plot(show = True)
@@ -741,3 +884,8 @@ if __name__ == "__main__":
     # time series clustering
     # df = DataRetrieval(db_obj, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").single_output_df()
     # TimeSeriesClusteringPlot(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").make_plot(show = True)
+
+    # tree
+    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
+    tree = InputOutputMapping("consumption_billion_USD2007", "GLB", "Ref", 2050, df).CART()
+    PlotTree("consumption_billion_USD2007", "GLB", "Ref", 2050, df, tree).make_plot()

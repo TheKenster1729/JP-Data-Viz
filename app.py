@@ -8,13 +8,14 @@ from sql_utils import SQLConnection, DataRetrieval
 from styling import Options, Readability, Color, FinishedFigure
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot, \
-                        OutputOutputMappingPlot
+                        OutputOutputMappingPlot, PlotTree, RegionalHeatmaps
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
 from pprint import pprint
 from dash_iconify import DashIconify
 import pandas as pd
+from analysis import InputOutputMapping
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BOOTSTRAP],
                 suppress_callback_exceptions = True)
@@ -362,11 +363,31 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                                     value = 2050)
                                 ]
                             ),
-                        dbc.Col(width = 10,
-                            children = [
-                                dcc.Loading([dcc.Graph(id = "input-output-mapping-figure")]),
+                            dbc.Col(width = 10,
+                                children = [
+                                    dcc.Loading([dcc.Graph(id = "input-output-mapping-figure")]),
+                                    dbc.Accordion(
+                                        children=[
+                                            dbc.AccordionItem(
+                                                title="Full Tree",
+                                                children=[
+                                                    dbc.Row(html.Div("Tree Depth", className = "text-primary")),
+                                                    dbc.Row(style={'maxWidth': '200px'}, children = dcc.Dropdown(id = "full-cart-tree-depth-dropdown", 
+                                                                options = [{"label": i, "value": i} for i in range(1, 10)], value = 4)),
+                                                    dbc.Row(
+                                                        children=[
+                                                            dbc.Col(
+                                                                dcc.Loading([dcc.Graph(id="full-cart-tree")]),
+                                                                width=10
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
                                 ]
-                            )
+                            )                        
                         ]
                     )
                 ]
@@ -433,6 +454,71 @@ output_output_mapping = html.Div(id = "output-output-mapping-content", style = {
                         dbc.Col(width = 10,
                             children = [
                                 dcc.Loading([dcc.Graph(id = "output-output-mapping-figure")]),
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
+
+regional_heatmaps = html.Div(id = "regional-heatmaps", style = {"padding": 20},
+    children = [
+        html.Div(
+            children = [
+                dbc.Row(
+                    children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                dbc.Card(
+                                    className = "card text-white bg-primary mb-3",
+                                    children = [
+                                        html.Div(style = {'display': 'flex'},
+                                            children = [
+                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Regional Heatmaps"),
+                                                DashIconify(icon = "feather:info", width = 40, style = {"color": "#9AC1F4"})
+                                            ]
+                                        )
+                                    ]
+                                )                    
+                            ]
+                        ),
+                        dbc.Col(
+                            children = [
+                                dbc.Row(html.Div("Output Name", className = "text-primary")),
+                                dbc.Row(
+                                dcc.Dropdown(id = "regional-heatmaps-output",
+                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                    value = "emissions_CO2eq_total_million_ton_CO2eq")
+                                )
+                            ]
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    children = [
+                        dbc.Col(width = 2,
+                            children = [
+                                html.Div("Regions", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "regional-heatmaps-region",
+                                    options = [{'label': i, 'value': i} for i in Options().region_names],
+                                    value = ["GLB"], multi = True
+                                ),
+                                html.Div("Scenarios", className = "text-primary"),
+                                dcc.Dropdown(
+                                    id = "regional-heatmaps-scenario",
+                                    options = [{'label': Options().scenario_display_names[i], 'value': i} for i in Options().scenarios],
+                                    value = ["Ref"], multi = True
+                                    ),
+                                html.Br(),
+                                dbc.Button("Apply", id = "regional-heatmaps-apply-button", className = "btn btn-primary")
+                                ]
+                            ),
+                        dbc.Col(width = 10,
+                            children = [
+                                dcc.Loading([dcc.Graph(id = "regional-heatmaps-figure")]),
                                 ]
                             )
                         ]
@@ -705,6 +791,7 @@ app.layout = html.Div(
                     dbc.Tab(id = "output-output-mapping", label = "Output-Output Mapping", children = [output_output_mapping]),
                     dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [choropleth_map]),
                     dbc.Tab(id = "ts-clustering-tab", label = "Time Series Clustering", children = [time_series_clustering]),
+                    dbc.Tab(id = "regional-heatmaps-figure", label = "Regional Heatmaps", children = [regional_heatmaps]),
                     dbc.Tab(id = "custom-variables-tab", label = "Custom Variables", children = [custom_variables])
                 ]
                 )
@@ -923,7 +1010,7 @@ def update_input_dist(inputs, focus_input):
     Input("input-output-mapping-scenario", "value"),
     Input("input-output-mapping-year", "value")
 )
-def update_figure(output, region, scenario, year):
+def update_io_mapping_figure(output, region, scenario, year):
     if not region or not output or not year:
         raise PreventUpdate
     
@@ -933,6 +1020,23 @@ def update_figure(output, region, scenario, year):
 
     return finished_figure
 
+# callback for i/o tree
+@app.callback(Output("full-cart-tree", "figure"), 
+              Input("input-output-mapping-output", "value"),
+              Input("input-output-mapping-region", "value"),
+              Input("input-output-mapping-scenario", "value"),
+              Input("input-output-mapping-year", "value"),
+              Input("full-cart-tree-depth-dropdown", "value"))
+def update_tree(output, region, scenario, year, depth):
+    if not depth or not output or not region or not scenario or not year:
+        raise PreventUpdate
+    
+    df = DataRetrieval(db, output, region, scenario, year).mapping_df()
+    tree = InputOutputMapping(output, region, scenario, year, df, cart_depth = depth).CART()
+    fig = PlotTree(output, region, scenario, year, df, tree).make_plot(show = False)
+
+    return fig
+
 # callback for o/o mapping
 @app.callback(
     Output("output-output-mapping-figure", "figure"),
@@ -941,7 +1045,7 @@ def update_figure(output, region, scenario, year):
     Input("output-output-mapping-scenario", "value"),
     Input("output-output-mapping-year", "value")
 )
-def update_figure(output, region, scenario, year):
+def update_oo_mapping_figure(output, region, scenario, year):
     if not region or not output or not year:
         raise PreventUpdate
     
@@ -950,6 +1054,36 @@ def update_figure(output, region, scenario, year):
     finished_figure = FinishedFigure(unstyled_figure).make_finished_figure()
 
     return finished_figure
+
+# callback for regional heatmaps
+@app.callback(Output("regional-heatmaps-figure", "figure"),
+              Input("regional-heatmaps-apply-button", "n_clicks"),
+              State("regional-heatmaps-output", "value"),
+              State("regional-heatmaps-region", "value"),
+              State("regional-heatmaps-scenario", "value"))
+def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios):
+    if not regions or not output or not scenarios:
+        raise PreventUpdate
+    
+    df = pd.DataFrame()
+    for reg in regions:
+        for sce in scenarios:
+            for year in Options().years:
+                mapping_df = DataRetrieval(db, output, reg, sce, year).mapping_df()
+                importances, sorted_importances, top_n = InputOutputMapping(output, reg, sce, year, mapping_df).random_forest()
+                results_to_add = sorted_importances[top_n]
+                df_to_add = pd.DataFrame()
+                df_to_add["Year"] = [year]*len(results_to_add)
+                df_to_add["Region"] = [reg]*len(results_to_add)
+                df_to_add["Scenario"] = [sce]*len(results_to_add)
+                df_to_add["Input"] = results_to_add.index
+                df_to_add["Importance"] = results_to_add.values
+                df = pd.concat([df, df_to_add])
+
+    fig = RegionalHeatmaps(output, regions, scenarios, df).make_plot()
+
+    return fig
+
 
 # callback for choropleth mapping
 @app.callback(

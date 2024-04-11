@@ -11,6 +11,7 @@ from itertools import product
 from plotly.colors import n_colors
 import geopandas as gpd
 import json
+from itertools import product
 
 class DashboardFigure:
     def __init__(self, figure_type) -> None:
@@ -548,7 +549,7 @@ class ChoroplethMap(DashboardFigure):
         global_max = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].max().max()
         
         # Load the spatial data
-        gdf = gpd.read_file(r"assets\Eppa countries\eppa6_regions_simplified.shp").rename(columns = {"EPPA6_Regi": "Region"})
+        gdf = gpd.read_file(r"assets/Eppa countries/eppa6_regions_simplified.shp").rename(columns = {"EPPA6_Regi": "Region"})
         
         # Merge the data with the spatial data
         merged_gdf = gdf.merge(self.df, on = "Region")
@@ -680,14 +681,25 @@ class PlotTree(DashboardFigure):
         self.fit_model = fit_model
         self.fit_tree_model = self.fit_model.tree_
 
-    def layout_binary_tree(self, root, x=0, y=0, level_height=1, node_spacing=2):
+    def layout_binary_tree(self, root, depth=0, x=0, y=0, level_height=10, node_spacing=5):
+        """
+        Layout binary tree with dynamic spacing based on depth to avoid label overlap.
+        :param root: TreeNode, the root of the binary tree.
+        :param depth: int, current depth of the node (root is 0).
+        :param x: float, x-coordinate of the current node.
+        :param y: float, y-coordinate of the current node.
+        :param level_height: float, the vertical spacing between levels of the tree.
+        :param base_spacing: float, the base horizontal spacing between nodes.
+        :param depth_factor: float, the factor by which the base_spacing is increased at each depth level.
+        :return: float, the total width of the subtree rooted at the current node.
+        """
         if root is None:
             return 0
         
-        left_width = self.layout_binary_tree(root.left, x, y-1, level_height, node_spacing) if root.left else 0
+        left_width = self.layout_binary_tree(root.left, depth + 1, x, y - level_height, level_height, node_spacing) if root.left else 0
         root.x = x + left_width
         root.y = y
-        right_width = self.layout_binary_tree(root.right, root.x + node_spacing, y-1, level_height, node_spacing) if root.right else 0
+        right_width = self.layout_binary_tree(root.right, depth + 1, root.x + node_spacing, y - level_height, level_height, node_spacing) if root.right else 0
         
         return left_width + node_spacing + right_width
 
@@ -697,24 +709,27 @@ class PlotTree(DashboardFigure):
             return TreeNode(node_id, value=value, feature="leaf", threshold=0, left=None, right=None)
         left_child = self.build_tree_from_CART(tree_, tree_.children_left[node_id], depth + 1)
         right_child = self.build_tree_from_CART(tree_, tree_.children_right[node_id], depth + 1)
-        feature = features[node_id]
+        feature_id = self.fit_tree_model.feature[node_id]
+        feature = self.fit_model.feature_names_in_[feature_id]
         threshold = tree_.threshold[node_id]
-        return TreeNode(node_id, feature=feature, threshold=threshold, left=left_child, right=right_child)
+        value = tree_.value[node_id]
+        return TreeNode(node_id, feature=feature, threshold=threshold, left=left_child, right=right_child, value = value)
 
     def add_annotations(self, fig, node):
         if node is not None:
             # Add annotation with feature and threshold or leaf value
-            if node.feature == "leaf":
-                text = f"Leaf\nSamples: {np.sum(node.value)}"
+            if not node.feature == "leaf":
+                text = "{}<br><={:.2f}</br>".format(node.feature, node.threshold)
             else:
-                text = f"{node.feature}\n< {node.threshold:.2f}"
-            fig.add_annotation(x=node.x, y=node.y, text=text, showarrow=False, font=dict(color="blue", size=12))
+                text = "Leaf"
+            hover_text = "Samples: {}<br>Non-interest Cases: {}, Interest Cases: {}".format(int(node.value[0][0] + node.value[0][1]), int(node.value[0][0]), int(node.value[0][1]))
+            fig.add_annotation(x=node.x, y=node.y, text=text, showarrow=False, font=dict(size=10), hovertext = hover_text)
             if node.left:
                 self.add_annotations(fig, node.left)
             if node.right:
                 self.add_annotations(fig, node.right)
 
-    def draw_tree_with_data(root):
+    def draw_tree_with_data(self, root):
         node_x, node_y, edge_x, edge_y = [], [], [], []
         
         def traverse(node):
@@ -729,18 +744,40 @@ class PlotTree(DashboardFigure):
                     edge_x.extend([node.x, node.right.x, None])
                     edge_y.extend([node.y, node.right.y, None])
                     traverse(node.right)
-                    
+
         traverse(root)
         
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', name='Edges'))
-        fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers', name='Nodes'))
+        fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', hoverinfo = "skip"))
         
+        # Replace markers scatterplot with circle shapes
+        radius = 4
+        for x, y in zip(node_x, node_y):
+            fig.add_shape(type="circle",
+                        x0=x - radius, y0=y - radius,
+                        x1=x + radius, y1=y + radius,
+                        # xref = "paper", yref = "paper",
+                        line_color="#a185ff",
+                        fillcolor="#a185ff")
+
         # Add annotations for each node
-        add_annotations(fig, root)
+        self.add_annotations(fig, root)
         
         fig.update_layout(showlegend=False)
-        fig.show()
+        fig.update_layout(
+            xaxis=dict(
+                constrain='domain',  # This could also help in some cases
+            ),
+            yaxis=dict(
+                scaleanchor="x",
+                scaleratio=1,
+            ),
+            plot_bgcolor="white",  # Makes grid more visible
+        )
+        fig.update_yaxes(showticklabels = False)
+        fig.update_xaxes(showticklabels = False)
+
+        return fig
 
     def get_params(self):
         return self.fit_tree_model.node_count, self.fit_tree_model.children_left, self.fit_tree_model.children_right, self.fit_tree_model.feature, self.fit_tree_model.threshold, self.fit_tree_model.value
@@ -791,62 +828,102 @@ class PlotTree(DashboardFigure):
         fig.add_shape(type = "circle", x0 = right_child_x - radius, y0 = -node_depth - radius, x1 = right_child_x + radius, y1 = -node_depth + radius)
         # fig.add_annotation(ax = center_x, axref = 'x', ay = center_y, ayref = 'y', x = 1, arrowcolor = 'red', xref = 'x', y = 1, yref='y', arrowwidth = 2.5, arrowside = 'end', arrowsize = 1, arrowhead = 4)
 
-    def make_plot(self):
-        self.create_tree_information()
-        # find max number of nodes
-        
-        fig = go.Figure()
-        feature_names = self.fit_model.feature_names_in_
-        self.max_depth = max(self.node_depth)
-        print(self.max_depth)
-        self.pos_x = {}
+    def make_plot(self, show = False):
+        # Build the binary tree from the sklearn CART model
+        root = self.build_tree_from_CART(self.fit_tree_model)
 
-        for i in range(self.n_nodes):
-            left_child = self.children_left[i]
-            right_child = self.children_right[i]
-            depth = self.node_depth[i]
-            self.pos_x[left_child] = -2**(self.max_depth - 1)
-            self.pos_x[right_child] = 2**(self.max_depth - 1)
+        # Layout and visualize the binary tree with sklearn CART data
+        self.layout_binary_tree(root)
+        fig = self.draw_tree_with_data(root)
 
-            if i == 0:
-                fig.add_trace(go.Scatter(x = [0], y = [0], 
-                                        mode = 'markers',
-                                        marker = dict(symbol = "circle",
-                                                    color = '#6175c1'))
-                                    )
-                # left child
-                fig.add_trace(go.Scatter(x = [-2**(self.max_depth - 1)], y = [-1], 
-                                        mode = 'markers',
-                                        marker = dict(symbol = "circle",
-                                                    color = '#6175c1'))
-                                    )
-                # right child
-                fig.add_trace(go.Scatter(x = [2**(self.max_depth - 1)], y = [-1], 
-                                        mode = 'markers',
-                                        marker = dict(symbol = "circle",
-                                                    color = '#6175c1'))
-                                    )
-            else:
-                if self.is_leaves[i]:
-                    # Leaf node
-                    continue
-                else:
-                    # Decision node
-                    self.draw_child_nodes(fig, i)
+        if show:
+            fig.show()
 
-
-        # Customize layout
-        fig.update_layout(title = 'Decision Tree Visualization',
-                        showlegend = False)
-        fig.update_yaxes(
-            scaleanchor="x",
-            scaleratio=1,
-        )
-        fig.show()
         return fig
 
-class ParallelCoords:
-    pass
+        # self.create_tree_information()
+        # # find max number of nodes
+        
+        # fig = go.Figure()
+        # feature_names = self.fit_model.feature_names_in_
+        # self.max_depth = max(self.node_depth)
+        # print(self.max_depth)
+        # self.pos_x = {}
+
+        # for i in range(self.n_nodes):
+        #     left_child = self.children_left[i]
+        #     right_child = self.children_right[i]
+        #     depth = self.node_depth[i]
+        #     self.pos_x[left_child] = -2**(self.max_depth - 1)
+        #     self.pos_x[right_child] = 2**(self.max_depth - 1)
+
+        #     if i == 0:
+        #         fig.add_trace(go.Scatter(x = [0], y = [0], 
+        #                                 mode = 'markers',
+        #                                 marker = dict(symbol = "circle",
+        #                                             color = '#6175c1'))
+        #                             )
+        #         # left child
+        #         fig.add_trace(go.Scatter(x = [-2**(self.max_depth - 1)], y = [-1], 
+        #                                 mode = 'markers',
+        #                                 marker = dict(symbol = "circle",
+        #                                             color = '#6175c1'))
+        #                             )
+        #         # right child
+        #         fig.add_trace(go.Scatter(x = [2**(self.max_depth - 1)], y = [-1], 
+        #                                 mode = 'markers',
+        #                                 marker = dict(symbol = "circle",
+        #                                             color = '#6175c1'))
+        #                             )
+        #     else:
+        #         if self.is_leaves[i]:
+        #             # Leaf node
+        #             continue
+        #         else:
+        #             # Decision node
+        #             self.draw_child_nodes(fig, i)
+
+
+        # # Customize layout
+        # fig.update_layout(title = 'Decision Tree Visualization',
+        #                 showlegend = False)
+        # fig.update_yaxes(
+        #     scaleanchor="x",
+        #     scaleratio=1,
+        # )
+        # fig.show()
+        # return fig
+
+class RegionalHeatmaps(DashboardFigure):
+    def __init__(self, output, regions, scenarios, df):
+        super().__init__("regional-heatmaps")
+        self.output = output
+        self.regions = regions
+        self.scenarios = scenarios
+        self.df = df
+
+    def run_random_forest(self, reg, sce, year):
+        importances, sorted_importances, top_n = InputOutputMapping(self.output, reg, sce, year, self.df).random_forest()
+        return importances, sorted_importances, top_n
+
+    def make_plot(self, show = False):
+        fig = make_subplots(rows = len(self.regions), cols = len(self.scenarios), shared_xaxes = True,
+                            subplot_titles = [f"{sce}" for sce in self.scenarios])
+
+        for j, reg in enumerate(self.regions):
+            for k, sce in enumerate(self.scenarios):
+                df_to_plot = self.df[self.df["Region"].isin([reg]) & self.df["Scenario"].isin([sce])]
+                fig.add_trace(go.Heatmap(y = df_to_plot["Input"], x = df_to_plot["Year"], z = df_to_plot["Importance"], zmin=0, zmid = 0.1, zmax=1, colorscale=[(0, "#f1e5ff"), (0.4, "#732bf0"), (1, "#ff2b24")]), row = j + 1, col = k + 1)
+
+                if k == 0:
+                    fig.update_yaxes(title_text = reg, row = j + 1, col = 1)
+
+        fig.update_layout(title = self.output, showlegend = False, plot_bgcolor = "white")
+
+        if show:
+            fig.show()
+
+        return fig
 
 if __name__ == "__main__":
     db_obj = SQLConnection("all_data_jan_2024")
@@ -886,6 +963,28 @@ if __name__ == "__main__":
     # TimeSeriesClusteringPlot(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").make_plot(show = True)
 
     # tree
-    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
-    tree = InputOutputMapping("consumption_billion_USD2007", "GLB", "Ref", 2050, df).CART()
-    PlotTree("consumption_billion_USD2007", "GLB", "Ref", 2050, df, tree).make_plot()
+    # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
+    # tree = InputOutputMapping("consumption_billion_USD2007", "GLB", "Ref", 2050, df).CART()
+    # PlotTree("consumption_billion_USD2007", "GLB", "Ref", 2050, df, tree).make_plot(show = True)
+
+    # global heatmaps
+    output = "emissions_CO2eq_total_million_ton_CO2eq"
+    regions = ["USA", "CAN", "MEX"]
+    scenarios = ["Ref", "15C_med", "2C_med"]
+    df = pd.DataFrame()
+    for reg in regions:
+        for sce in scenarios:
+            for year in Options().years:
+                mapping_df = DataRetrieval(db_obj, output, reg, sce, year).mapping_df()
+                importances, sorted_importances, top_n = InputOutputMapping(output, reg, sce, year, mapping_df).random_forest()
+                results_to_add = sorted_importances[top_n]
+                df_to_add = pd.DataFrame()
+                df_to_add["Year"] = [year]*len(results_to_add)
+                df_to_add["Region"] = [reg]*len(results_to_add)
+                df_to_add["Scenario"] = [sce]*len(results_to_add)
+                df_to_add["Input"] = results_to_add.index
+                df_to_add["Importance"] = results_to_add.values
+                df = pd.concat([df, df_to_add])
+
+    RegionalHeatmaps("consumption_billion_USD2007", regions, scenarios, df).make_plot()
+

@@ -8,7 +8,7 @@ from styling import Readability, Options
 from tslearn.clustering import TimeSeriesKMeans
 
 class InputOutputMapping:
-    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5):
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4):
         self.output = output
         self.df = df
         self.scenario = scenario
@@ -18,6 +18,7 @@ class InputOutputMapping:
         self.gt = gt
         self.inputs = pd.read_csv(r"Cleaned Data/InputsMaster.csv")
         self.num_to_plot = num_to_plot
+        self.cart_depth = cart_depth
 
         # need to remove input pop/gdp not relevant to this region
         self.region = region
@@ -66,7 +67,7 @@ class InputOutputMapping:
 
     def CART(self):
         X, y = self.preprocess_for_classification()
-        fit_model = DecisionTreeClassifier()
+        fit_model = DecisionTreeClassifier(max_depth = self.cart_depth)
         fit_model.fit(X, y)
 
         return fit_model

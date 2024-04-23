@@ -159,6 +159,17 @@ class Readability:
         self.naming_dict_long_names_first = {i["Full Output Name"]:i["Display Name"] for i in self.naming_df.to_dict("records")}
         self.naming_dict_display_names_first = {v:k for k, v in self.naming_dict_long_names_first.items()}
 
+    def ordinal(self, n):
+        """
+        Returns the ordinal number string of an integer, n
+        e.g. 1 -> '1st', 2 -> '2nd', 3 -> '3rd', 11 -> '11th'
+        """
+        if 10 <= n % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        return f"{n}{suffix}"
+
 class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND",
@@ -308,7 +319,8 @@ class FinishedFigure(Color, Readability, Options):
         self.figure_object = fig_object
         self.display_names_for_figure_type = {"output-timeseries": "Time Series for ", "input-output-mapping-main": "CART Results for ",
                                               "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for ",
-                                              "output-output-mapping-main": "Output-Output Mapping for "}
+                                              "output-output-mapping-main": "Output-Output Mapping for ", "regional-heatmaps": "Regional Heatmap for ",
+                                              "permutation-importance": "Permutation Importance for "}
 
     def style_figure(self):
         # this logic block handles the output display name portion of titling figures
@@ -320,7 +332,10 @@ class FinishedFigure(Color, Readability, Options):
             output_name_for_title = self.figure_object.output.split("-")[-1]
 
         # define overall title
-        title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + self.scenario_display_names[self.figure_object.scenario]
+        if self.figure_object.year:
+            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + self.scenario_display_names[self.figure_object.scenario] + " " + str(self.figure_object.year)
+        else:
+            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + self.scenario_display_names[self.figure_object.scenario]
         self.figure_object.fig.update_layout(title_text = title,
                                       margin = dict(l = 20, r = 20),
                                       title = title,
@@ -329,6 +344,25 @@ class FinishedFigure(Color, Readability, Options):
         if self.figure_object.figure_type == "input-output-mapping-main" or self.figure_object.figure_type == "output-output-mapping-main":
             self.figure_object.fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
             self.figure_object.fig.update_annotations(yshift = 20)
+            
+            def new_name_for_bar_graph(current_name):
+                if current_name in self.outputs:
+                    new_name = self.naming_dict_long_names_first[current_name]
+                else:
+                    new_name = current_name
+
+                return new_name
+            self.figure_object.fig.data[0]["x"] = [new_name_for_bar_graph(name) for name in self.figure_object.fig.data[0]["x"]]
+
+            for dimension in self.figure_object.fig.data[1]["dimensions"]:
+                current_name = dimension.label
+                if current_name in self.outputs:
+                    new_name = self.naming_dict_long_names_first[current_name]
+                else:
+                    new_name = current_name
+                dimension.label = new_name
+
+            self.figure_object.fig.data[1].labelangle = 30
 
         if self.figure_object.figure_type == "choropleth-map":
             self.figure_object.fig.update_layout(
@@ -343,6 +377,12 @@ class FinishedFigure(Color, Readability, Options):
             self.figure_object.fig.update_layout(
                 yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
                 xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+            )
+
+        if self.figure_object.figure_type == "permutation-importance":
+            self.figure_object.fig.update_layout(
+                yaxis = dict(title = dict(text = "Importance", font = dict(size = 16))),
+                xaxis = dict(title = dict(text = "Feature", font = dict(size = 16)))
             )
         if self.figure_object.figure_type == "output-output-mapping-main":
             def new_name_for_bar_graph(current_name):
@@ -363,6 +403,12 @@ class FinishedFigure(Color, Readability, Options):
                 dimension.label = new_name
 
             self.figure_object.fig.data[1].labelangle = 30
+
+        if self.figure_object.figure_type == "regional-heatmap":
+            self.figure_object.fig.update_layout(
+                height = 600,
+                width = 1200
+            )
 
     def make_finished_figure(self):
         self.style_figure()

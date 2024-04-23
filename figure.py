@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from analysis import InputOutputMapping, TimeSeriesClustering, OutputOutputMapping
+from analysis import InputOutputMapping, TimeSeriesClustering, OutputOutputMapping, FilteredOutputOutputMapping
 from styling import Color, Options, Readability
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -295,8 +295,9 @@ class NewTimeSeries(DashboardFigure):
         traces = self.return_traces(show = show, show_uncertainty = show_uncertainty)
         fig = go.Figure(traces)
 
-class OutputHistograms:
+class OutputHistograms(DashboardFigure):
     def __init__(self, output, regions, scenarios, year, db_obj, styling_options = None):
+        super().__init__("output-histograms")
         self.output = output
         self.db_obj = db_obj
         self.regions = regions
@@ -342,9 +343,6 @@ class OutputHistograms:
                 if j == 0:
                     fig.update_yaxes(title_text = region, row = i + 1, col = j + 1)
         # Update the layout of the figure
-        fig.update_layout(
-            title_text = f"Histograms for {Readability().naming_dict_long_names_first[self.output]}, {self.year}",  # Title
-        )
         
         if show:
             fig.show()
@@ -403,6 +401,63 @@ class InputDistribution:
 
         return plot
 
+class InputDistributionAlternate:
+    def __init__(self, inputs):
+        self.inputs = inputs
+        self.input_df_with_run = pd.read_csv(r"Cleaned Data/InputsMaster.csv").rename(columns = {"Unnamed: 0": "Run #"})
+        self.input_df_no_run = self.input_df_with_run.drop(columns = "Run #")
+        if len(self.inputs) > 1:
+            self.colors = n_colors("rgb(173, 216, 230)", "rgb(128, 0, 128)", len(self.inputs), colortype = "rgb")
+        else:
+            self.colors = ["lightblue"]
+
+    def create_input_distribution(self):
+        fig = go.Figure()
+        for i, inp in enumerate(self.inputs):
+            fig.add_trace(go.Violin(x = self.input_df_no_run[inp], name = inp, line = dict(color = self.colors[i])))
+
+        fig.update_traces(orientation = 'h', side = 'positive', width = 3, points = False)
+
+        return fig
+
+    def create_input_histogram(self, input_name):
+        fig = go.Figure()
+        fig.add_trace(go.Histogram(x = self.input_df_no_run[input_name], name = input_name, showlegend = False))
+
+        return fig
+
+    def make_plot(self, show = False):
+        # Create a figure with subplots for each input
+        num_inputs = len(self.inputs)
+        cols = 3  # Define the number of columns for the subplot grid
+        rows = -(-num_inputs // cols)  # Calculate rows needed, round up division
+        subplot_titles = [f"{input}" for input in self.inputs]
+        
+        plot = make_subplots(rows=rows, cols=cols, subplot_titles=subplot_titles)
+        
+        # Iterate over inputs to create a histogram for each
+        for i, input in enumerate(self.inputs, start=1):
+            hist_data = self.input_df_no_run[input]
+            row = (i - 1) // cols + 1
+            col = (i - 1) % cols + 1
+
+            plot.add_trace(
+                go.Histogram(x=hist_data, name=input, showlegend=False, marker_color = self.colors[i-1]),
+                row=row, col=col
+            )
+        
+        # Update layout to adjust for the number of subplots
+        plot.update_layout(
+            title_text="Input Distributions",
+            height=300 * rows,  # Adjust height based on the number of rows
+            width=1000
+        )
+
+        if show:
+            plot.show()
+
+        return plot
+    
 class OutputDistribution:
     def __init__(self, output):
         self.output = output
@@ -444,8 +499,8 @@ class OutputDistribution:
         pass
 
 class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
-    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5):
-        super().__init__(output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, n_estimators = 100, max_depth = 4):
+        super().__init__(output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot, n_estimators = n_estimators, max_depth = max_depth)
         DashboardFigure.__init__(self, "input-output-mapping-main")
 
         self.fig = self.make_plot()
@@ -460,13 +515,25 @@ class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
         parcoords_df["Output"] = self.y_continuous.values
         parcoords_df["y_discrete"] = y_discrete
 
+        first_sign = ">" if self.gt else "<"
+        second_sign = "<" if self.gt else ">"
+        ending = Readability().ordinal(self.threshold)
+        
         dimensions = []
         color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
         for col in parcoords_df.columns[:-1]:
             dimensions.append(dict(label = col, values = parcoords_df[col]))
         fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
-        fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
-                                      dimensions = dimensions, labelside = "bottom"), row = 1, col = 2)
+        fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale, showscale = True,
+                                    colorbar=dict(
+                                    title='Group',
+                                    tickvals=[0.25, 0.75],  # Positions at which ticks should be displayed
+                                    ticktext=[f'{second_sign}{ending} Percentile', f'{first_sign}{ending} Percentile'],  # Text displayed at the ticks
+                                    len=0.25,  # Makes the colorbar shorter
+                                    y=0.5,   # Position the colorbar in the middle of the plot
+                                    yanchor='middle')),
+                                    dimensions = dimensions, labelside = "bottom"), 
+                                    row = 1, col = 2)
         if show:
             fig.show()
 
@@ -476,8 +543,8 @@ class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
         return fig
     
 class OutputOutputMappingPlot(OutputOutputMapping, DashboardFigure):
-    def __init__(self, output, region, scenario, year, df, db_obj, threshold = 70, gt = True, num_to_plot = 5):
-        super().__init__(output, region, scenario, year, df, db_obj, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
+    def __init__(self, db_obj, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5):
+        super().__init__(db_obj, output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
         DashboardFigure.__init__(self, "output-output-mapping-main")
 
         self.fig = self.make_plot()
@@ -503,6 +570,37 @@ class OutputOutputMappingPlot(OutputOutputMapping, DashboardFigure):
         fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
                                       dimensions = dimensions, labelside = "bottom"), row = 1, col = 2)
+        if show:
+            fig.show()
+
+        if save:
+            fig.write_image(save + ".png", scale = 2)
+
+        return fig
+
+class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigure):
+    def __init__(self, db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = 5):
+        super().__init__(db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = num_to_plot)
+        DashboardFigure.__init__(self, "filtered-output-output-mapping-main")
+
+        self.fig = self.make_plot()
+
+    def make_plot(self, show = False, save = False):
+        sorted_labeled_importances, top_n = self.run_analysis()
+        fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
+                            subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
+
+        parcoords_df = self.df_to_use[top_n].copy()
+        parcoords_df["y_discrete"] = self.in_constraint_range
+
+        dimensions = []
+        color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
+        for col in parcoords_df.columns[:-1]:
+            dimensions.append(dict(label = col, values = parcoords_df[col]))
+        fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
+        fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
+                                      dimensions = dimensions, labelside = "bottom", labelangle = 30), row = 1, col = 2)
+        fig.update_annotations(yshift = 20)
         if show:
             fig.show()
 
@@ -614,11 +712,12 @@ class ChoroplethMap(DashboardFigure):
         return fig
 
 class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
-    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean"):
+    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean", year = None):
         super().__init__(df, output, region, scenario, n_clusters, metric = metric)
         DashboardFigure.__init__(self, "ts-clustering")
         self.colors = ["#648fff", "#491d8b", "#FFB000", "#a2191f", "#00539a", "#0e6027", "#565151"]
         self.fig = self.make_plot()
+        self.year = year # this may never become relevant, it is just included to prevent errors during the styling process
 
     def single_trace(self, data, cluster, color, showlegend = False):
         opacity = 1 if showlegend else 0.3
@@ -895,12 +994,15 @@ class PlotTree(DashboardFigure):
         # return fig
 
 class RegionalHeatmaps(DashboardFigure):
-    def __init__(self, output, regions, scenarios, df):
+    def __init__(self, output, regions, scenarios, df, year = None):
         super().__init__("regional-heatmaps")
         self.output = output
         self.regions = regions
         self.scenarios = scenarios
         self.df = df
+        self.year = year # adding for consistency with other figures
+
+        self.fig = self.make_plot()
 
     def run_random_forest(self, reg, sce, year):
         importances, sorted_importances, top_n = InputOutputMapping(self.output, reg, sce, year, self.df).random_forest()
@@ -917,8 +1019,32 @@ class RegionalHeatmaps(DashboardFigure):
 
                 if k == 0:
                     fig.update_yaxes(title_text = reg, row = j + 1, col = 1)
+        
+        fig.update_layout(showlegend = False, title = "Regional Heatmaps")
 
-        fig.update_layout(title = self.output, showlegend = False, plot_bgcolor = "white")
+        if show:
+            fig.show()
+
+        return fig
+
+class PermutationImportance(DashboardFigure):
+    def __init__(self, df, output, region, scenario, year, n_estimators = 100, max_depth = 4):
+        super().__init__("permutation-importance")
+        self.df = df
+        self.output = output
+        self.region = region
+        self.scenario = scenario
+        self.year = year
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+
+        self.fig = self.make_plot()
+
+    def make_plot(self, show = False):
+        results = InputOutputMapping(self.output, self.region, self.scenario, self.year, self.df, n_estimators = self.n_estimators, max_depth = self.max_depth).permutation_importance()
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x = [k["variable"] for k in results], y = [k["mean"] for k in results], error_y = dict(type = "data", array = [k["std"] for k in results])))
+        fig.update_layout(showlegend = False)
 
         if show:
             fig.show()
@@ -942,9 +1068,12 @@ if __name__ == "__main__":
     # fig.show()
     # fig.write_image("assets\examples\inputs_windgas_focus.svg")
 
+    # alternate input distributions
+    # InputDistributionAlternate(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot(show = True)
+
     # input-output mapping
-    # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
-    # InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df).make_plot(show = True)
+    df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
+    InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df).make_plot(show = True)
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
     # output-output mapping
@@ -968,23 +1097,23 @@ if __name__ == "__main__":
     # PlotTree("consumption_billion_USD2007", "GLB", "Ref", 2050, df, tree).make_plot(show = True)
 
     # global heatmaps
-    output = "emissions_CO2eq_total_million_ton_CO2eq"
-    regions = ["USA", "CAN", "MEX"]
-    scenarios = ["Ref", "15C_med", "2C_med"]
-    df = pd.DataFrame()
-    for reg in regions:
-        for sce in scenarios:
-            for year in Options().years:
-                mapping_df = DataRetrieval(db_obj, output, reg, sce, year).mapping_df()
-                importances, sorted_importances, top_n = InputOutputMapping(output, reg, sce, year, mapping_df).random_forest()
-                results_to_add = sorted_importances[top_n]
-                df_to_add = pd.DataFrame()
-                df_to_add["Year"] = [year]*len(results_to_add)
-                df_to_add["Region"] = [reg]*len(results_to_add)
-                df_to_add["Scenario"] = [sce]*len(results_to_add)
-                df_to_add["Input"] = results_to_add.index
-                df_to_add["Importance"] = results_to_add.values
-                df = pd.concat([df, df_to_add])
+    # output = "emissions_CO2eq_total_million_ton_CO2eq"
+    # regions = ["USA", "CAN", "MEX"]
+    # scenarios = ["Ref", "15C_med", "2C_med"]
+    # df = pd.DataFrame()
+    # for reg in regions:
+    #     for sce in scenarios:
+    #         for year in Options().years:
+    #             mapping_df = DataRetrieval(db_obj, output, reg, sce, year).mapping_df()
+    #             importances, sorted_importances, top_n = InputOutputMapping(output, reg, sce, year, mapping_df).random_forest()
+    #             results_to_add = sorted_importances[top_n]
+    #             df_to_add = pd.DataFrame()
+    #             df_to_add["Year"] = [year]*len(results_to_add)
+    #             df_to_add["Region"] = [reg]*len(results_to_add)
+    #             df_to_add["Scenario"] = [sce]*len(results_to_add)
+    #             df_to_add["Input"] = results_to_add.index
+    #             df_to_add["Importance"] = results_to_add.values
+    #             df = pd.concat([df, df_to_add])
 
-    RegionalHeatmaps("consumption_billion_USD2007", regions, scenarios, df).make_plot()
+    # RegionalHeatmaps("consumption_billion_USD2007", regions, scenarios, df).make_plot()
 

@@ -12,6 +12,7 @@ import sqlalchemy
 from sqlalchemy import Integer, Float
 import mysql.connector
 from random import choices
+from styling import Readability
 
 class SQLConnection:
     def __init__(self, dbname):
@@ -85,6 +86,30 @@ class DatabaseModification(SQLConnection):
                                 self.update_name_mapping_table(full_output_name, table_name)
                                 print(f"Loaded {filename} into {table_name} table in the database.")
 
+class MultiOutputRetrieval:
+    def __init__(self, db_connection_obj, outputs, region, scenario, year = None):
+        self.db = db_connection_obj
+        self.outputs = outputs
+        self.region = region
+        self.scenario = scenario
+        self.year = year
+
+    def construct_df(self):
+        self.df = pd.DataFrame()
+        for output in self.outputs:
+            df_to_add = pd.DataFrame()
+            df = DataRetrieval(self.db, output, self.region, self.scenario, self.year).mapping_df()
+            df_to_add["Run #"] = df["Run #"]
+            df_to_add[Readability().naming_dict_long_names_first[output]] = df["Value"]
+            if len(self.df) == 0:
+                self.df = df_to_add
+            else:
+                new_run_numbers = set(df["Run #"])
+                self.df = self.df[self.df["Run #"].isin(new_run_numbers)]
+                self.df[Readability().naming_dict_long_names_first[output]] = df["Value"]
+        
+        return self.df 
+    
 class DataRetrieval:
     def __init__(self, db_connection_obj, output, region, scenario, year = None):
         self.db = db_connection_obj
@@ -244,5 +269,9 @@ if __name__ == "__main__":
     #     df = DataRetrieval(db, output, "GLB", "15C_med", 2050).input_output_mapping_df()
     #     print(len(df) > 350)
 
-    print(list(Options().outputs).pop("emissions_CO2eq_total_million_ton_CO2eq"))
+    # print(list(Options().outputs).pop("emissions_CO2eq_total_million_ton_CO2eq"))
     # DatabaseModification("all_data_jan_2024", scenarios = ["About1.5C_pes", "15C_med", "2C_pes"], files = ["1_percapita_consumption_loss_percent_About15C_pes.xlsx", "1_percapita_consumption_loss_percent_15C_med.xlsx", "1_percapita_consumption_loss_percent_2C_pes.xlsx"]).main()
+
+    m = MultiOutputRetrieval(db, ["sectoral_output_Electricity_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq", "consumption_billion_USD2007"], "GLB", "15C_med", 2050)
+    m.construct_df()
+    print(m.df)

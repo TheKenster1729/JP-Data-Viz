@@ -1,97 +1,67 @@
-from sklearn.tree import DecisionTreeClassifier
-import numpy as np
 import plotly.graph_objects as go
-import pandas as pd
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+import numpy as np
+from dash.dependencies import Output, Input, State
+from dash import callback_context
 
-# Assuming `X` and `y` are your features and target variable respectively
-data = np.random.rand(100, 10)
-X = pd.DataFrame(data, columns = ['x'+str(i) for i in range(1, 11)])
-y = np.random.randint(0, 2, size = 100)
+app = dash.Dash(__name__)
 
-# Train a simple CART model
-clf = DecisionTreeClassifier(max_depth=3)  # Limit depth for simplicity
-clf.fit(X, y)
+values1 = np.random.randint(100, 400, 100)
+values2 = np.random.randint(100, 400, 100)
+values3 = np.random.randint(100, 400, 100)
+values4 = np.random.randint(100, 400, 100)
 
-# Access the tree properties
-tree_ = clf.tree_
-features = [f"{i}" if i == -2 else clf.feature_names_in_[i] for i in tree_.feature]
+app.layout = html.Div([
+    dcc.Graph(
+        id='parallel-coordinates-plot',
+        figure={
+            'data': [
+                go.Parcoords(
+                    line=dict(color='blue'),
+                    dimensions=list([
+                        dict(range=[100,400],
+                             constraintrange=[100,200],
+                             label='Dimension 1', values=values1),
+                        dict(range=[100,400],
+                             label='Dimension 2', values=values2),
+                        dict(range=[100,400],
+                             label='Dimension 3', values=values3),
+                        dict(range=[100,400],
+                             label='Dimension 4', values=values4)
+                    ])
+                )
+            ],
+            'layout': go.Layout(
+                title='Parallel Coordinates Plot',
+                plot_bgcolor = 'white'
+            )
+        }
+    ),
+    html.Div([
+        dcc.RangeSlider(
+            id='my-slider',
+            min=100,
+            max=400,
+            step=1,
+            value=[250, 300],
+            marks={i: '{}'.format(i) for i in range(100, 401, 50)}
+        ),
+        html.Div(id='slider-output-container')
+    ])
+])
 
-class TreeNode:
-    def __init__(self, id, feature=None, threshold=None, left=None, right=None, value=None):
-        self.id = id
-        self.feature = feature
-        self.threshold = threshold
-        self.left = left
-        self.right = right
-        self.value = value
-        self.x = 0  # x-coordinate in the plot
-        self.y = 0  # y-coordinate in the plot
+@app.callback(
+    Output('parallel-coordinates-plot', 'figure'),
+    Input('my-slider', 'value'),
+    Input('parallel-coordinates-plot', 'figure')
+)
+def constraintrange(value, figure):
+    figure['data'][0]['dimensions'][1]['constraintrange'] = value
+    print(callback_context.triggered[0]["prop_id"])
+    print(figure['data'][0]['dimensions'][2].get('constraintrange'))
+    return figure
 
-def layout_binary_tree(root, x=0, y=0, level_height=1, node_spacing=2):
-    if root is None:
-        return 0
-    
-    left_width = layout_binary_tree(root.left, x, y-1, level_height, node_spacing) if root.left else 0
-    root.x = x + left_width
-    root.y = y
-    right_width = layout_binary_tree(root.right, root.x + node_spacing, y-1, level_height, node_spacing) if root.right else 0
-    
-    return left_width + node_spacing + right_width
-
-def build_tree_from_CART(tree_, node_id=0, depth=0):
-    if tree_.children_left[node_id] == tree_.children_right[node_id]:  # Leaf node
-        value = tree_.value[node_id]
-        return TreeNode(node_id, value=value, feature="leaf", threshold=0, left=None, right=None)
-    left_child = build_tree_from_CART(tree_, tree_.children_left[node_id], depth + 1)
-    right_child = build_tree_from_CART(tree_, tree_.children_right[node_id], depth + 1)
-    feature = features[node_id]
-    threshold = tree_.threshold[node_id]
-    return TreeNode(node_id, feature=feature, threshold=threshold, left=left_child, right=right_child)
-
-def add_annotations(fig, node):
-    if node is not None:
-        # Add annotation with feature and threshold or leaf value
-        if node.feature == "leaf":
-            text = f"Leaf\nSamples: {np.sum(node.value)}"
-        else:
-            text = f"{node.feature}\n< {node.threshold:.2f}"
-        fig.add_annotation(x=node.x, y=node.y, text=text, showarrow=False, font=dict(color="blue", size=12))
-        if node.left:
-            add_annotations(fig, node.left)
-        if node.right:
-            add_annotations(fig, node.right)
-
-def draw_tree_with_data(root):
-    node_x, node_y, edge_x, edge_y = [], [], [], []
-    
-    def traverse(node):
-        if node:
-            node_x.append(node.x)
-            node_y.append(node.y)
-            if node.left:
-                edge_x.extend([node.x, node.left.x, None])  # None to stop drawing the line
-                edge_y.extend([node.y, node.left.y, None])
-                traverse(node.left)
-            if node.right:
-                edge_x.extend([node.x, node.right.x, None])
-                edge_y.extend([node.y, node.right.y, None])
-                traverse(node.right)
-                
-    traverse(root)
-    
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode='lines', name='Edges'))
-    fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers', name='Nodes'))
-    
-    # Add annotations for each node
-    add_annotations(fig, root)
-    
-    fig.update_layout(showlegend=False)
-    fig.show()
-
-# Build the binary tree from the sklearn CART model
-root = build_tree_from_CART(clf.tree_)
-
-# Layout and visualize the binary tree with sklearn CART data
-layout_binary_tree(root)
-draw_tree_with_data(root)
+if __name__ == '__main__':
+    app.run_server(debug=True)

@@ -6,9 +6,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sql_utils import SQLConnection, DataRetrieval
 from styling import Readability, Options
 from tslearn.clustering import TimeSeriesKMeans
+from sklearn.inspection import permutation_importance
 
 class InputOutputMapping:
-    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4):
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
         self.output = output
         self.df = df
         self.scenario = scenario
@@ -19,6 +20,8 @@ class InputOutputMapping:
         self.inputs = pd.read_csv(r"Cleaned Data/InputsMaster.csv")
         self.num_to_plot = num_to_plot
         self.cart_depth = cart_depth
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
 
         # need to remove input pop/gdp not relevant to this region
         self.region = region
@@ -74,7 +77,7 @@ class InputOutputMapping:
 
     def random_forest(self):
         X, y = self.preprocess_for_classification()
-        fit_model = RandomForestClassifier(n_estimators = 100).fit(X, y)
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth).fit(X, y)
 
         # get the average feature importances
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = X.columns)
@@ -82,15 +85,28 @@ class InputOutputMapping:
         top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()
 
         return feature_importances, sorted_labeled_importances, top_n
+    
+    def permutation_importance(self):
+        X, y = self.preprocess_for_classification()
+
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth).fit(X, y)
+        permutation_importance_results = permutation_importance(fit_model, X, y, n_repeats = 10)
+
+        important = []
+        for i in permutation_importance_results.importances_mean.argsort()[::-1]:
+            if permutation_importance_results.importances_mean[i] - 3*permutation_importance_results.importances_std[i] > 0:
+                important.append({"variable": X.columns[i], "mean": permutation_importance_results.importances_mean[i], "std": permutation_importance_results.importances_std[i]})
+
+        return important
 
 class OutputOutputMapping:
-    def __init__(self, output, region, scenario, year, df, db, threshold = 70, gt = True, num_to_plot = 5, other_outputs = []):
+    def __init__(self, db_obj, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, other_outputs = []):
+        self.db_obj = db_obj
         self.output = output
         self.region = region
         self.scenario = scenario
         self.year = year
         self.df = df
-        self.db_obj = db
         self.y_continuous = self.df["Value"]
         self.threshold = threshold
         self.gt = gt
@@ -151,7 +167,42 @@ class OutputOutputMapping:
         top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()
 
         return feature_importances, sorted_labeled_importances, top_n
-    
+
+class FilteredOutputOutputMapping:
+    def __init__(self, db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = 5):
+        self.db_obj = db_obj
+        self.outputs_to_use = outputs_to_use
+        self.run_numbers = run_numbers
+        self.in_constraint_range = in_constraint_range
+        self.region = region
+        self.scenario = scenario
+        self.year = year
+        self.num_to_plot = num_to_plot
+
+    def create_dataframe(self):
+        self.df_to_use = pd.DataFrame()
+        # TODO: there could be less run numbers in the output,
+        # need to handle this edge case
+        for output in self.outputs_to_use:
+            df = DataRetrieval(self.db_obj, output, self.region, self.scenario, self.year).mapping_df()
+            temp_df = pd.DataFrame()
+            temp_df[Readability().naming_dict_long_names_first[output]] = df["Value"]
+            self.df_to_use = pd.concat([self.df_to_use, temp_df], axis = 1)
+
+    def run_analysis(self):
+        self.create_dataframe()        
+        X = self.df_to_use
+        y = self.in_constraint_range
+        print(X)
+        print(y)
+
+        random_forest = RandomForestClassifier(n_estimators = 100).fit(X, y)
+        feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in random_forest.estimators_], columns = X.columns)
+        sorted_labeled_importances = feature_importances.mean().sort_values(ascending = False)
+        top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()
+
+        return sorted_labeled_importances, top_n
+
 class TimeSeriesClustering:
     def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean"):
         self.df = df
@@ -182,6 +233,12 @@ if __name__ == "__main__":
     # clusters = time_series.plot_clusters()
 
     # output/output mapping
-    df = DataRetrieval(db, "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).mapping_df()
-    res = OutputOutputMapping("primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050, df, other_outputs = [custom_output_example]).random_forest()
-    print(res[1])
+    # df = DataRetrieval(db, "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).mapping_df()
+    # res = OutputOutputMapping("primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050, df, other_outputs = [custom_output_example]).random_forest()
+    # print(res[1])
+
+    # permutation importances
+    df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
+    io = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).permutation_importance()
+    print(io)
+

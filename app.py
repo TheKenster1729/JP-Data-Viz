@@ -1709,7 +1709,7 @@ for dropdown in output_dropdowns_to_update_ids:
         return current_options
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "localhost")
+    app.run(debug = True, host = "0.0.0.0")
 
     # discarded components
 

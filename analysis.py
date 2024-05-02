@@ -168,6 +168,76 @@ class OutputOutputMapping:
 
         return feature_importances, sorted_labeled_importances, top_n
 
+class FilteredInputOutputMapping:
+    def __init__(self, constraint_df, region, scenario, year, num_to_plot = 5, cart_depth = 4, n_estimators = 100, random_forest_depth = 4):
+        self.constraint_df = constraint_df
+        self.region = region
+        self.scenario = scenario
+        self.year = year
+        self.inputs = pd.read_csv(r"Cleaned Data/InputsMaster.csv")
+        self.num_to_plot = num_to_plot
+        self.cart_depth = cart_depth
+        self.n_estimators = n_estimators
+        self.random_forest_depth = random_forest_depth
+
+        # need to remove input pop/gdp not relevant to this region
+        columns_to_remove = []
+        for column in self.inputs.columns:
+            signifiers = [" GDP", "Non-{} GDP".format(self.region), " Pop", "Non-{} Pop".format(self.region)]
+            if any(signifier in column for signifier in signifiers) and self.region not in column:
+                columns_to_remove.append(column)
+        self.inputs = self.inputs.drop(columns = columns_to_remove)
+
+    def preprocess_for_classification(self):
+
+        # try:
+        #     assert len(self.inputs) == len(self.y_continuous)
+        # except AssertionError:
+        #     # will happen when runs have been removed, e.g. because of creating a custom variable
+        #     # that produced a division by 0 error
+        #     # infer missing run numbers and remove them
+        #     existing_output_run_numbers_set = set(self.df["Run #"].values)
+        #     existing_input_run_numbers_set = set(self.inputs["Run #"].values)
+        #     inputs_to_keep = existing_input_run_numbers_set.intersection(existing_output_run_numbers_set)
+        #     self.y_continuous = self.df[self.df["Run #"].isin(inputs_to_keep)]["Value"]
+        #     self.inputs = self.inputs[self.inputs["Run #"].isin(inputs_to_keep)]
+
+        self.X = self.inputs[self.inputs.columns[1:]]
+        self.y_discrete = self.constraint_df["in_constraint_range"]
+
+        assert len(self.X) == len(self.y_discrete) # need to write edge cases for this
+
+    def CART(self):
+        self.preprocess_for_classification()
+        fit_model = DecisionTreeClassifier(max_depth = self.cart_depth)
+        fit_model.fit(self.X, self.y_discrete)
+
+        return fit_model
+
+    def random_forest(self):
+        self.preprocess_for_classification()
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.random_forest_depth).fit(self.X, self.y_discrete)
+
+        # get the average feature importances
+        feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = self.X.columns)
+        sorted_labeled_importances = feature_importances.mean().sort_values(ascending = False)
+        top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()
+
+        return feature_importances, sorted_labeled_importances, top_n
+
+    def permutation_importance(self):
+        X, y = self.preprocess_for_classification()
+
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth).fit(X, y)
+        permutation_importance_results = permutation_importance(fit_model, X, y, n_repeats = 10)
+
+        important = []
+        for i in permutation_importance_results.importances_mean.argsort()[::-1]:
+            if permutation_importance_results.importances_mean[i] - 3*permutation_importance_results.importances_std[i] > 0:
+                important.append({"variable": X.columns[i], "mean": permutation_importance_results.importances_mean[i], "std": permutation_importance_results.importances_std[i]})
+
+        return important
+
 class FilteredOutputOutputMapping:
     def __init__(self, db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = 5):
         self.db_obj = db_obj
@@ -193,8 +263,6 @@ class FilteredOutputOutputMapping:
         self.create_dataframe()        
         X = self.df_to_use
         y = self.in_constraint_range
-        print(X)
-        print(y)
 
         random_forest = RandomForestClassifier(n_estimators = 100).fit(X, y)
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in random_forest.estimators_], columns = X.columns)

@@ -8,7 +8,8 @@ from sql_utils import SQLConnection, DataRetrieval, MultiOutputRetrieval
 from styling import Options, Readability, Color, FinishedFigure
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot, \
-                        OutputOutputMappingPlot, PlotTree, RegionalHeatmaps, InputDistributionAlternate, PermutationImportance, FilteredOutputOutputMappingPlot
+                        OutputOutputMappingPlot, PlotTree, RegionalHeatmaps, InputDistributionAlternate, PermutationImportance, FilteredOutputOutputMappingPlot, \
+                        FilteredInputOutputMappingPlot
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
@@ -328,13 +329,37 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                                 )                    
                             ]
                         ),
-                        dbc.Col(
+                        dbc.Col(width = 10,
                             children = [
-                                dbc.Row(html.Div("Output Name", className = "text-primary")),
-                                dbc.Row(
-                                dcc.Dropdown(id = "input-output-mapping-output",
-                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
-                                    value = "emissions_CO2eq_total_million_ton_CO2eq")
+                                dbc.Card(
+                                    dbc.CardBody(
+                                        children = [
+                                            dbc.Row(
+                                                children = [
+                                                    dbc.Col(
+                                                        children = [
+                                                            dbc.Row(html.Div("Output Name", className = "text-primary")),
+                                                            dbc.Row(
+                                                            dcc.Dropdown(id = "input-output-mapping-output",
+                                                                options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                                value = "emissions_CO2eq_total_million_ton_CO2eq")
+                                                            )
+                                                        ]
+                                                    ),
+                                                    dbc.Col(width = 2, 
+                                                        children = [
+                                                            dbc.Row(html.Div("Mode", className = "text-primary")),
+                                                            dbc.Row(
+                                                                dcc.Dropdown(id = "input-output-mapping-mode",
+                                                                    options = [{'label': "Standard", 'value': "standard"}, {'label': "Filtered", 'value': "filtered"}],
+                                                                    value = "standard")
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
                                 )
                             ]
                         )
@@ -376,12 +401,88 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                                     id = "input-output-mapping-setting",
                                     options = [{"label": "Above Threshold", "value": "above"}, {"label": "Below Threshold", "value": "below"}],
                                     value = "above"
-                                )
+                                    ),
+                                html.Br(),
+                                dbc.Button("Update", id = "input-output-mapping-update-all-settings", className = "Primary")
                                 ]
                             ),
                             dbc.Col(width = 10,
                                 children = [
-                                    dcc.Loading([dcc.Graph(id = "input-output-mapping-figure")]),
+                                    html.Div(id = "input-output-mapping-figure-container", children = [
+                                    html.Br(),
+                                    dbc.Row(
+                                        children = [
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id = "custom-io-mapping-dropdown-1",
+                                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                    value = "emissions_CO2eq_total_million_ton_CO2eq"
+                                                )
+                                            ),
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id = "custom-io-mapping-dropdown-2",
+                                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                    value = "elec_prod_Renewables_TWh_pol"
+                                                )
+                                            ),
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id = "custom-io-mapping-dropdown-3",
+                                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                    value = "sectoral_output_Electricity_billion_USD2007"
+                                                )
+                                            )
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    dbc.Row(
+                                        children = [
+                                            dbc.Col(
+                                                dcc.RangeSlider(
+                                                        id = "slider-custom-io-mapping-1",
+                                                        min = 0,
+                                                        max = 100,
+                                                        step = 1,
+                                                        value = [0, 33],
+                                                        marks = {i: str(i) for i in range(10, 99, 10)},
+                                                        tooltip = dict(always_visible = True)
+                                                    )
+                                            ),
+                                            dbc.Col(
+                                                dcc.RangeSlider(
+                                                        id = "slider-custom-io-mapping-2",
+                                                        min = 0,
+                                                        max = 100,
+                                                        step = 1,
+                                                        value = [66, 100],
+                                                        marks = {i: str(i) for i in range(10, 99, 10)},
+                                                        tooltip = dict(always_visible = True)
+                                                    )
+                                                ),
+                                                dbc.Col(
+                                                dcc.RangeSlider(
+                                                        id = "slider-custom-io-mapping-3",
+                                                        min = 0,
+                                                        max = 100,
+                                                        step = 1,
+                                                        value = [33, 66],
+                                                        marks = {i: str(i) for i in range(10, 99, 10)},
+                                                        tooltip = dict(always_visible = True)
+                                                    ),
+                                                )
+                                            ]
+                                        ),
+                                        dbc.Row(dbc.Col(width = 2, children = [dbc.Button("Apply Constraints", className = "btn btn-primary", id = "input-output-mapping-apply-constraints")]))
+                                    ],
+                                    hidden = True
+                                ),
+                                html.Div(id = "input-output-mapping-parallel-coords-div", children = dcc.Graph(id = "input-output-mapping-parallel-coords-visualize"), hidden = True),
+                                dcc.Loading([dcc.Graph(id = "input-output-mapping-figure")])
+                                ]
+                            ),
+                            dbc.Col(width = {"size": 10, "offset": 2},
+                                children = [
                                     dbc.Accordion(
                                         start_collapsed = True,
                                         children=[
@@ -398,8 +499,7 @@ input_output_mapping = html.Div(id = "tab-4-content", style = {"padding": 20},
                                                                   dbc.Row(
                                                                       dcc.Slider(1, 10, 1, id = "input-output-mapping-max-depth", value = 4,
                                                                                 marks = {i: str(i) for i in range(1, 10, 1)}, tooltip = dict(always_visible = True))
-                                                                  ),
-                                                                  dbc.Button("Apply", id = "input-output-mapping-apply-hyperparameters", className = "Primary")
+                                                                  )
                                                               ]),
                                             dbc.AccordionItem(
                                                 title="Full Tree",
@@ -518,77 +618,77 @@ output_output_mapping = html.Div(id = "output-output-mapping-content", style = {
                         dbc.Col(width = 10,
                             children = [
                                 html.Div(),
-                                    html.Div(id = "output-output-mapping-figure-container", children = [
-                                        html.Br(),
-                                        dbc.Row(
-                                            children = [
-                                                dbc.Col(
-                                                    dcc.Dropdown(
-                                                        id = "custom-oo-mapping-dropdown-1",
-                                                        options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
-                                                        value = "emissions_CO2eq_total_million_ton_CO2eq"
+                                html.Div(id = "output-output-mapping-figure-container", children = [
+                                    html.Br(),
+                                    dbc.Row(
+                                        children = [
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id = "custom-oo-mapping-dropdown-1",
+                                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                    value = "emissions_CO2eq_total_million_ton_CO2eq"
+                                                )
+                                            ),
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id = "custom-oo-mapping-dropdown-2",
+                                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                    value = "elec_prod_Renewables_TWh_pol"
+                                                )
+                                            ),
+                                            dbc.Col(
+                                                dcc.Dropdown(
+                                                    id = "custom-oo-mapping-dropdown-3",
+                                                    options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                                                    value = "sectoral_output_Electricity_billion_USD2007"
+                                                )
+                                            )
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    dbc.Row(
+                                        children = [
+                                            dbc.Col(
+                                                dcc.RangeSlider(
+                                                        id = "slider-custom-oo-mapping-1",
+                                                        min = 0,
+                                                        max = 100,
+                                                        step = 1,
+                                                        value = [0, 33],
+                                                        marks = {i: str(i) for i in range(10, 99, 10)},
+                                                        tooltip = dict(always_visible = True)
+                                                    )
+                                            ),
+                                            dbc.Col(
+                                                dcc.RangeSlider(
+                                                        id = "slider-custom-oo-mapping-2",
+                                                        min = 0,
+                                                        max = 100,
+                                                        step = 1,
+                                                        value = [66, 100],
+                                                        marks = {i: str(i) for i in range(10, 99, 10)},
+                                                        tooltip = dict(always_visible = True)
                                                     )
                                                 ),
                                                 dbc.Col(
-                                                    dcc.Dropdown(
-                                                        id = "custom-oo-mapping-dropdown-2",
-                                                        options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
-                                                        value = "elec_prod_Renewables_TWh_pol"
-                                                    )
-                                                ),
-                                                dbc.Col(
-                                                    dcc.Dropdown(
-                                                        id = "custom-oo-mapping-dropdown-3",
-                                                        options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
-                                                        value = "sectoral_output_Electricity_billion_USD2007"
-                                                    )
+                                                dcc.RangeSlider(
+                                                        id = "slider-custom-oo-mapping-3",
+                                                        min = 0,
+                                                        max = 100,
+                                                        step = 1,
+                                                        value = [33, 66],
+                                                        marks = {i: str(i) for i in range(10, 99, 10)},
+                                                        tooltip = dict(always_visible = True)
+                                                    ),
                                                 )
                                             ]
                                         ),
-                                        html.Br(),
-                                        dbc.Row(
-                                            children = [
-                                                dbc.Col(
-                                                    dcc.RangeSlider(
-                                                            id = "slider-custom-oo-mapping-1",
-                                                            min = 0,
-                                                            max = 100,
-                                                            step = 1,
-                                                            value = [0, 33],
-                                                            marks = {i: str(i) for i in range(10, 99, 10)},
-                                                            tooltip = dict(always_visible = True)
-                                                        )
-                                                ),
-                                                dbc.Col(
-                                                    dcc.RangeSlider(
-                                                            id = "slider-custom-oo-mapping-2",
-                                                            min = 0,
-                                                            max = 100,
-                                                            step = 1,
-                                                            value = [66, 100],
-                                                            marks = {i: str(i) for i in range(10, 99, 10)},
-                                                            tooltip = dict(always_visible = True)
-                                                        )
-                                                    ),
-                                                    dbc.Col(
-                                                    dcc.RangeSlider(
-                                                            id = "slider-custom-oo-mapping-3",
-                                                            min = 0,
-                                                            max = 100,
-                                                            step = 1,
-                                                            value = [33, 66],
-                                                            marks = {i: str(i) for i in range(10, 99, 10)},
-                                                            tooltip = dict(always_visible = True)
-                                                        ),
-                                                    )
-                                                ]
-                                            ),
-                                            dbc.Row(dbc.Col(width = 2, children = [dbc.Button("Apply Constraints", className = "btn btn-primary", id = "output-output-mapping-apply-constraints")]))
-                                        ],
-                                        hidden = True
-                                    ),
-                                    html.Div(id = "input-output-mapping-parallel-coords-div", children = dcc.Graph(id = "output-output-mapping-parallel-coords-visualize"), hidden = True),
-                                    dcc.Loading([dcc.Graph(id = "output-output-mapping-figure")]),
+                                        dbc.Row(dbc.Col(width = 2, children = [dbc.Button("Apply Constraints", className = "btn btn-primary", id = "output-output-mapping-apply-constraints")]))
+                                    ],
+                                    hidden = True
+                                ),
+                                html.Div(id = "output-output-mapping-parallel-coords-div", children = dcc.Graph(id = "output-output-mapping-parallel-coords-visualize"), hidden = True),
+                                dcc.Loading([dcc.Graph(id = "output-output-mapping-figure")]),
                                 ]
                             )
                         ]
@@ -830,14 +930,17 @@ custom_variables = html.Div(children =
                     placeholder = "Operation",
                     style = {"width": "200px", "margin-right": "10px"}
                 ),
-                dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", 
-                    options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-                    placeholder = "Output 1", 
-                    style = {"display": "none"}),
-                dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", 
-                    options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-                    placeholder = "Output 1", 
-                    style = {"display": "none"})
+                html.Div(id = "custom-vars-output-dropdown-div",
+                    children = [
+                        dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", 
+                            options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                            placeholder = "Output 1", 
+                            style = {"display": "none"}),
+                        dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", 
+                            options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                            placeholder = "Output 1", 
+                            style = {"display": "none"})
+                ])
             ]
         ),
         html.Div(style = {"padding": 20},
@@ -853,7 +956,7 @@ custom_variables = html.Div(children =
                                 className = "ms-auto",
                                 n_clicks = 0,
                             )
-                        ),
+                        )
                     ],
                     id = "custom-variable-created-modal",
                     is_open = False,
@@ -1145,57 +1248,155 @@ def update_input_dist(inputs, focus_input):
 
 # callback for i/o mapping
 @app.callback(
+    Output("input-output-mapping-parallel-coords-visualize", "figure"),
+    Output("input-output-mapping-figure-container", "hidden"),
+    Output("input-output-mapping-parallel-coords-div", "hidden"),
     Output("input-output-mapping-figure", "figure"),
-    Input("input-output-mapping-output", "value"),
-    Input("input-output-mapping-region", "value"),
-    Input("input-output-mapping-scenario", "value"),
-    Input("input-output-mapping-year", "value"),    
-    Input("input-output-mapping-percentile", "value"),
-    Input("input-output-mapping-setting", "value"),
+    Output("input-output-mapping-output", "disabled"),
+    Output("input-output-mapping-percentile", "disabled"),
+    Output("input-output-mapping-setting", "disabled"),
+    State("input-output-mapping-output", "value"),
+    State("input-output-mapping-region", "value"),
+    State("input-output-mapping-scenario", "value"),
+    State("input-output-mapping-year", "value"),    
+    State("input-output-mapping-percentile", "value"),
+    State("input-output-mapping-setting", "value"),
     State("input-output-mapping-n-estimators", "value"),
     State("input-output-mapping-max-depth", "value"),
-    Input("input-output-mapping-apply-hyperparameters", "n_clicks")
+    Input("input-output-mapping-apply-constraints", "n_clicks"),
+    Input("input-output-mapping-mode", "value"),
+    Input("slider-custom-oo-mapping-1", "value"),
+    Input("slider-custom-oo-mapping-2", "value"),
+    Input("slider-custom-oo-mapping-3", "value"),
+    Input("custom-io-mapping-dropdown-1", "value"),
+    Input("custom-io-mapping-dropdown-2", "value"),
+    Input("custom-io-mapping-dropdown-3", "value"),
+    Input("input-output-mapping-update-all-settings", "n_clicks")
 )
-def update_io_mapping_figure(output, region, scenario, year, percentile, setting, n_estimators, max_depth, n_clicks):
+def update_io_mapping_figure(output, region, scenario, year, percentile, setting, n_estimators, max_depth, n_clicks, mode, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, update_all_settings):
     if not region or not output or not year:
         raise PreventUpdate
-    
+        
+    ctx = callback_context
+    trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
     gt = True if setting == "above" else False
-    df = DataRetrieval(db, output, region, scenario, year).mapping_df()
-    unstyled_figure = InputOutputMappingPlot(output, region, scenario, year, df, threshold = percentile, gt = gt, n_estimators = n_estimators, max_depth = max_depth)
-    finished_figure = FinishedFigure(unstyled_figure).make_finished_figure()
 
-    return finished_figure
+    if mode == "standard":
+        df = DataRetrieval(db, output, region, scenario, year).mapping_df()
+        unstyled_figure = InputOutputMappingPlot(output, region, scenario, year, df, threshold = percentile, gt = gt, n_estimators = n_estimators, max_depth = max_depth)
+        finished_figure = FinishedFigure(unstyled_figure).make_finished_figure()
+
+        return go.Figure(), True, True, finished_figure, False, False, False
+
+    if mode == "filtered":
+        outputs_to_include = [dropdown for dropdown in [dropdown_1, dropdown_2, dropdown_3] if dropdown]
+        df = MultiOutputRetrieval(db, outputs_to_include, region, scenario, year).construct_df()
+
+        filter_fig = go.Figure(data = [
+            go.Parcoords(line = dict(color = "purple"), dimensions = [{"label": col, "values": df[col], "constraintrange": [np.percentile(df[col], x[0]), np.percentile(df[col], x[1])]} for x, col in zip([slider_1, slider_2, slider_3], df.columns[1:])])
+        ])
+        fig = go.Figure()
+
+        if trigger_id == "input-output-mapping-apply-constraints" or trigger_id == "input-output-mapping-update-all-settings":
+            constraint_df = df.copy()
+            constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
+            
+            # Iterate through each dropdown/slider pair to apply constraints
+            for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3], [slider_1, slider_2, slider_3]):
+                if dropdown:  # Ensure dropdown has a selection
+                    lower_bound, upper_bound = np.percentile(df[readability_obj.naming_dict_long_names_first[dropdown]], slider)
+                    constraint_df["in_constraint_range"] &= ((constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] >= lower_bound) & (constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] <= upper_bound)).astype(int)
+            
+            color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
+            fig = go.Figure(data=[
+                go.Parcoords(
+                    line=dict(
+                        color=constraint_df["in_constraint_range"],
+                        colorscale=color_scale,
+                        showscale=True,
+                        colorbar=dict(
+                            title='In Constraint Range',
+                            tickvals=[0.25, 0.75],
+                            ticktext=['Out', 'In']
+                        )
+                    ),
+                    dimensions=[
+                        {"label": col, "values": constraint_df[col]} for col in constraint_df.columns[1:-1]
+                    ]
+                )
+            ])
+
+            fig = FilteredInputOutputMappingPlot(constraint_df, region, scenario, year, n_estimators = n_estimators, random_forest_depth = max_depth).make_plot()
+
+        return filter_fig, False, False, fig, True, True, True
 
 # callback for i/o tree
-@app.callback(Output("full-cart-tree", "figure"), 
-              Input("input-output-mapping-output", "value"),
-              Input("input-output-mapping-region", "value"),
-              Input("input-output-mapping-scenario", "value"),
-              Input("input-output-mapping-year", "value"),
-              Input("full-cart-tree-depth-dropdown", "value"))
-def update_tree(output, region, scenario, year, depth):
-    if not depth or not output or not region or not scenario or not year:
+@app.callback(
+    Output("full-cart-tree", "figure"), 
+    State("input-output-mapping-output", "value"),
+    State("input-output-mapping-region", "value"),
+    State("input-output-mapping-scenario", "value"),
+    State("input-output-mapping-year", "value"),
+    Input("input-output-mapping-mode", "value"),
+    Input("full-cart-tree-depth-dropdown", "value"),
+    Input("input-output-mapping-apply-constraints", "n_clicks"),
+    Input("input-output-mapping-update-all-settings", "n_clicks"),
+    Input("slider-custom-oo-mapping-1", "value"),
+    Input("slider-custom-oo-mapping-2", "value"),
+    Input("slider-custom-oo-mapping-3", "value"),
+    Input("custom-io-mapping-dropdown-1", "value"),
+    Input("custom-io-mapping-dropdown-2", "value"),
+    Input("custom-io-mapping-dropdown-3", "value"),
+)
+def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, update_all_settings, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3):
+    if not cart_depth or not output or not region or not scenario or not year:
         raise PreventUpdate
     
-    df = DataRetrieval(db, output, region, scenario, year).mapping_df()
-    tree = InputOutputMapping(output, region, scenario, year, df, cart_depth = depth).CART()
-    fig = PlotTree(output, region, scenario, year, df, tree).make_plot(show = False)
+    ctx = callback_context
+    trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
 
-    return fig
+    if mode == "standard":
+        df = DataRetrieval(db, output, region, scenario, year).mapping_df()
+        _, y = InputOutputMapping(output, region, scenario, year, df, cart_depth = cart_depth).preprocess_for_classification()
+        tree = InputOutputMapping(output, region, scenario, year, df, cart_depth = cart_depth).CART()
+        fig = PlotTree(tree, y).make_plot(show = False)
+
+        return fig
+    
+    if mode == "filtered":
+        outputs_to_include = [dropdown for dropdown in [dropdown_1, dropdown_2, dropdown_3] if dropdown]
+        df = MultiOutputRetrieval(db, outputs_to_include, region, scenario, year).construct_df()
+
+        if trigger_id == "input-output-mapping-apply-constraints" or trigger_id == "input-output-mapping-update-all-settings":
+            constraint_df = df.copy()
+            constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
+            
+            # Iterate through each dropdown/slider pair to apply constraints
+            for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3], [slider_1, slider_2, slider_3]):
+                if dropdown:  # Ensure dropdown has a selection
+                    lower_bound, upper_bound = np.percentile(df[readability_obj.naming_dict_long_names_first[dropdown]], slider)
+                    constraint_df["in_constraint_range"] &= ((constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] >= lower_bound) & (constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] <= upper_bound)).astype(int)
+
+            tree = FilteredInputOutputMappingPlot(constraint_df, region, scenario, year, cart_depth = cart_depth).CART()
+            fig = PlotTree(tree, tree.y_discrete).make_plot(show = False)
+
+            return fig
+        
+        else:
+            return go.Figure()
 
 # callback for permutation importance
 @app.callback(
     Output("input-output-mapping-permutation-importance", "figure"),
-    Input("input-output-mapping-output", "value"),
-    Input("input-output-mapping-region", "value"),
-    Input("input-output-mapping-scenario", "value"),
-    Input("input-output-mapping-year", "value"),
+    State("input-output-mapping-output", "value"),
+    State("input-output-mapping-region", "value"),
+    State("input-output-mapping-scenario", "value"),
+    State("input-output-mapping-year", "value"),
     State("input-output-mapping-n-estimators", "value"),
     State("input-output-mapping-max-depth", "value"),
-    Input("input-output-mapping-apply-hyperparameters", "n_clicks")
+    Input("input-output-mapping-update-all-settings", "n_clicks")
 )
-def update_permutation_importance(output, region, scenario, year, n_estimators, max_depth, n_clicks):
+def update_permutation_importance(output, region, scenario, year, n_estimators, max_depth, update_all_settings):
     if not region or not output or not year:
         raise PreventUpdate
     
@@ -1209,7 +1410,7 @@ def update_permutation_importance(output, region, scenario, year, n_estimators, 
 @app.callback(
     Output("output-output-mapping-parallel-coords-visualize", "figure"),
     Output("output-output-mapping-figure-container", "hidden"),
-    Output("input-output-mapping-parallel-coords-div", "hidden"),
+    Output("output-output-mapping-parallel-coords-div", "hidden"),
     Output("output-output-mapping-figure", "figure"),
     Output("output-output-mapping-output", "multi"),
     Output("output-output-mapping-output", "options"),
@@ -1437,7 +1638,7 @@ def dynamic_custom_variables_fill(operation_type, n_clicks, current_fill_area, t
         raise PreventUpdate
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
-    
+
     if trigger_id == "custom-vars-operation":
         if operation_type == "division":
             if len(current_fill_area) == 4:
@@ -1446,11 +1647,11 @@ def dynamic_custom_variables_fill(operation_type, n_clicks, current_fill_area, t
                 return ([current_fill_area[0]] + [
                     dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
                         placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
-                        html.Span("by", style = {'margin-right': '10px'}),
-                        dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-                                    placeholder = "Output 2",
-                                    style = {"width": "500px"})
-                            ], text_box_value, current_operation)
+                    html.Span("by", style = {'margin-right': '10px'}),
+                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                                placeholder = "Output 2",
+                                style = {"width": "500px"})
+                        ], text_box_value, current_operation)
     else:
         return ([current_fill_area[0]], "", None)
 
@@ -1483,7 +1684,10 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
-output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-output", "choropleth-mapping-output", "ts-clustering-output", "output-output-mapping-output", "regional-heatmaps-output"]
+output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-output", "choropleth-mapping-output", "ts-clustering-output", "output-output-mapping-output", "regional-heatmaps-output",
+                                  "input-output-mapping-output-dropdown-1", "input-output-mapping-output-dropdown-2", "input-output-mapping-output-dropdown-3",
+                                  "output-output-mapping-output-dropdown-1", "output-output-mapping-output-dropdown-2", "output-output-mapping-output-dropdown-3",
+                                  "custom-vars-output-1-dropdown-div", "custom-vars-output-2-dropdown-div"]
 for dropdown in output_dropdowns_to_update_ids:
     @app.callback(
         Output(dropdown, "options", allow_duplicate = True),

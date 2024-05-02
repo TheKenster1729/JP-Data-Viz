@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from analysis import InputOutputMapping, TimeSeriesClustering, OutputOutputMapping, FilteredOutputOutputMapping
+from analysis import InputOutputMapping, TimeSeriesClustering, OutputOutputMapping, FilteredOutputOutputMapping, FilteredInputOutputMapping
 from styling import Color, Options, Readability
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -578,6 +578,37 @@ class OutputOutputMappingPlot(OutputOutputMapping, DashboardFigure):
 
         return fig
 
+class FilteredInputOutputMappingPlot(FilteredInputOutputMapping, DashboardFigure):
+    def __init__(self, constraint_df, region, scenario, year, num_to_plot = 5, cart_depth = 4, n_estimators = 100, random_forest_depth = 4):
+        super().__init__(constraint_df, region, scenario, year, num_to_plot = num_to_plot, cart_depth = cart_depth, n_estimators = n_estimators, random_forest_depth = random_forest_depth)
+        DashboardFigure.__init__(self, "filtered-input-output-mapping-main")
+
+        self.fig = self.make_plot()
+
+    def make_plot(self, show = False, save = False):
+        sortefeature_importances, sorted_labeled_importances, top_n = self.random_forest()
+        fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
+                            subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
+
+        parcoords_df = self.X[top_n].copy()
+        parcoords_df["y_discrete"] = self.y_discrete.values
+
+        dimensions = []
+        color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
+        for col in parcoords_df.columns[:-1]:
+            dimensions.append(dict(label = col, values = parcoords_df[col]))
+        fig.add_trace(go.Bar(x = top_n, y = sorted_labeled_importances[top_n]), row = 1, col = 1)
+        fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
+                                      dimensions = dimensions, labelside = "bottom", labelangle = 30), row = 1, col = 2)
+        fig.update_annotations(yshift = 20)
+        if show:
+            fig.show()
+
+        if save:
+            fig.write_image(save + ".png", scale = 2)
+
+        return fig
+
 class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigure):
     def __init__(self, db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = 5):
         super().__init__(db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = num_to_plot)
@@ -764,7 +795,7 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
         return fig
 
 class TreeNode:
-    def __init__(self, id, feature=None, threshold=None, left=None, right=None, value=None):
+    def __init__(self, id, feature=None, threshold=None, left=None, right=None, value=None, density = None, coverage = None):
         self.id = id
         self.feature = feature
         self.threshold = threshold
@@ -773,12 +804,15 @@ class TreeNode:
         self.value = value
         self.x = 0  # x-coordinate in the plot
         self.y = 0  # y-coordinate in the plot
+        self.density = density
+        self.coverage = coverage
 
 class PlotTree(DashboardFigure):
-    def __init__(self, output, region, scenario, year, df, fit_model):
+    def __init__(self, fit_model, y):
         super().__init__("cart-tree-diagram")
         self.fit_model = fit_model
         self.fit_tree_model = self.fit_model.tree_
+        self.y = y
 
     def layout_binary_tree(self, root, depth=0, x=0, y=0, level_height=10, node_spacing=5):
         """
@@ -803,16 +837,19 @@ class PlotTree(DashboardFigure):
         return left_width + node_spacing + right_width
 
     def build_tree_from_CART(self, tree_, node_id=0, depth=0):
+        value = tree_.value[node_id]
+        density = value[0][1]/(value[0][0] + value[0][1])
+        total_num_interest_cases = sum(self.y)
+        coverage = value[0][1]/total_num_interest_cases
+
         if tree_.children_left[node_id] == tree_.children_right[node_id]:  # Leaf node
-            value = tree_.value[node_id]
-            return TreeNode(node_id, value=value, feature="leaf", threshold=0, left=None, right=None)
+            return TreeNode(node_id, value=value, feature="leaf", threshold=0, left=None, right=None, density = density, coverage = coverage)
         left_child = self.build_tree_from_CART(tree_, tree_.children_left[node_id], depth + 1)
         right_child = self.build_tree_from_CART(tree_, tree_.children_right[node_id], depth + 1)
         feature_id = self.fit_tree_model.feature[node_id]
         feature = self.fit_model.feature_names_in_[feature_id]
         threshold = tree_.threshold[node_id]
-        value = tree_.value[node_id]
-        return TreeNode(node_id, feature=feature, threshold=threshold, left=left_child, right=right_child, value = value)
+        return TreeNode(node_id, feature=feature, threshold=threshold, left=left_child, right=right_child, value = value, density = density, coverage = coverage)
 
     def add_annotations(self, fig, node):
         if node is not None:
@@ -821,7 +858,7 @@ class PlotTree(DashboardFigure):
                 text = "{}<br><={:.2f}</br>".format(node.feature, node.threshold)
             else:
                 text = "Leaf"
-            hover_text = "Samples: {}<br>Non-interest Cases: {}, Interest Cases: {}".format(int(node.value[0][0] + node.value[0][1]), int(node.value[0][0]), int(node.value[0][1]))
+            hover_text = "Samples: {}<br>Non-interest Cases: {}, Interest Cases: {}<br>Density: {}%, Coverage: {}%".format(int(node.value[0][0] + node.value[0][1]), int(node.value[0][0]), int(node.value[0][1]), int(node.density*100), int(node.coverage*100))
             fig.add_annotation(x=node.x, y=node.y, text=text, showarrow=False, font=dict(size=10), hovertext = hover_text)
             if node.left:
                 self.add_annotations(fig, node.left)

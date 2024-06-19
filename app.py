@@ -9,7 +9,7 @@ from styling import Options, Readability, Color, FinishedFigure
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot, \
                         OutputOutputMappingPlot, PlotTree, RegionalHeatmaps, InputDistributionAlternate, PermutationImportance, FilteredOutputOutputMappingPlot, \
-                        FilteredInputOutputMappingPlot
+                        FilteredInputOutputMappingPlot, STRESSPlatformConnection
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
@@ -17,6 +17,7 @@ from pprint import pprint
 from dash_iconify import DashIconify
 import pandas as pd
 from analysis import InputOutputMapping
+import json
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BOOTSTRAP],
                 suppress_callback_exceptions = True)
@@ -905,6 +906,21 @@ time_series_clustering = html.Div(id = "ts-clustering", style = {"padding": 20},
                     children = [
                         dbc.Row(
                             dcc.Loading(dcc.Graph(id = "ts-clustering-plot"))
+                        ),
+                        dbc.Row(
+                            children = [
+                                dbc.Accordion(
+                                    children = [
+                                        dbc.AccordionItem(
+                                            children = [
+                                                dcc.Loading(dcc.Graph(id = "ts-clustering-random-forest-plot"))
+                                            ],
+                                            title = "CART"
+                                        )
+                                    ],
+                                    start_collapsed = True
+                                )
+                            ]
                         )
                     ]
                 )
@@ -926,20 +942,12 @@ custom_variables = html.Div(children =
             children = [
                 dcc.Dropdown(
                     id = "custom-vars-operation", 
-                    options = [{"label": "Dividing", "value": "division"}],
+                    options = [{"label": "Dividing", "value": "division"}, {"label": "Adding", "value": "addition"}, {"label": "Multiplying", "value": "multiplication"}, {"label": "Subtracting", "value": "subtraction"}],
                     placeholder = "Operation",
                     style = {"width": "200px", "margin-right": "10px"}
                 ),
                 html.Div(id = "custom-vars-output-dropdown-div",
                     children = [
-                        dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", 
-                            options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-                            placeholder = "Output 1", 
-                            style = {"display": "none"}),
-                        dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", 
-                            options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
-                            placeholder = "Output 1", 
-                            style = {"display": "none"})
                 ])
             ]
         ),
@@ -960,6 +968,103 @@ custom_variables = html.Div(children =
                     ],
                     id = "custom-variable-created-modal",
                     is_open = False,
+                )
+            ]
+        )
+    ]
+)
+
+stress_connection = html.Div(id = "stress-connection", style = {"padding": 20},
+    children = [
+        dbc.Row(
+            children = [
+                dbc.Col(
+                    children = [
+                        html.Div("Outputs", className = "text-primary"),
+                        dcc.Dropdown(id = "stress-connection-outputs",
+                            options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
+                            value = ["emissions_CO2eq_total_million_ton_CO2eq"],
+                            multi = True
+                        )
+                    ]
+                )
+            ]
+        ),
+        dbc.Row(style = {"padding-top": 10},
+            children = [
+                dbc.Col(
+                    children = [
+                        html.Div("Inputs", className = "text-primary"),
+                        dcc.Dropdown(id = "stress-connection-inputs",
+                            options = [{'label': i, 'value': i} for i in options_obj.input_names],
+                            value = ["WindGas", "BioCCS"],
+                            multi = True
+                        )
+                    ]
+                )
+            ]
+        ),
+        dbc.Row(style = {"padding-top": 10},
+            children = [
+                dbc.Col(width = 2,
+                    children = [
+                        html.Div("Scenario", className = "text-primary"),
+                        dcc.Dropdown(id = "stress-connection-scenario", options = [{"label": i, "value": i} for i in options_obj.scenario_display_names_rev.keys()], value = "2C_med")
+                    ]
+                ),
+                dbc.Col(width = 1,
+                    children = [
+                        html.Div("Year", className = "text-primary"),
+                        dcc.Dropdown(id = "stress-connection-year", options = [{"label": i, "value": i} for i in options_obj.years], value = 2050)
+                    ]
+                ),
+                dbc.Col(width = 1,
+                    children = [
+                        html.Div("Region", className = "text-primary"),
+                        dcc.Dropdown(id = "stress-connection-region", options = [{"label": i, "value": i} for i in options_obj.region_names], value = "GLB")
+                    ]
+                ),
+                dbc.Col(
+                    children = [
+                        html.Div("Color", className = "text-primary"),
+                        dcc.Dropdown(id = "stress-connection-color", options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in options_obj.outputs], value = "primary_energy_use_Biofuel_FirstGen_EJ")
+                    ]
+                )
+            ]
+        ),
+        dbc.Row(style = {"padding-top": 10},
+            children = [
+                dbc.Col(
+                    children = [
+                        dbc.Button("Apply", id = "stress-connection-button", className = "btn btn-primary")
+                    ]
+                )
+            ]
+        ),
+        dbc.Row(style = {"padding-top": 10},
+            children = [
+                dbc.Col(
+                    children = [
+                        dcc.Loading(dcc.Graph(id = "stress-connection-graph"), type = "cube")
+                    ]
+                )
+            ]
+        ),
+        dbc.Row(style = {"padding-top": 10},
+            children = [
+                dbc.Col(
+                    children = [
+                        dbc.Button("Update Table", id = "stress-connection-update-table-button", className = "btn btn-primary")
+                    ]
+                )
+            ]
+        ),
+        dbc.Row(style = {"padding-top": 10},
+            children = [
+                dbc.Col(
+                    children = [
+                        dcc.Loading(dbc.Table(id = "stress-connection-table"), type = "cube")
+                    ]
                 )
             ]
         )
@@ -995,23 +1100,6 @@ examples = html.Div(style = {},
     ]
 )
 
-# footer = dbc.Navbar(style = {"border-radius": "30px 30px 0px 0px"},
-#     class_name = "navbar navbar-expand-lg custom-navbar",
-#     color = "#785EF0",
-#     children = [
-#         dbc.Row(
-#             style = {"padding": 20, "margin-top": 15},
-#             children = [
-#                 html.P(style = {"color": "white"},
-#                         children = 
-#                         ["Created by Jennifer Morris and Kenny Cox | Github for this dashboard: "]
-#                 )
-#             ],
-#             align = "center"
-#         )
-#     ]
-# )
-
 # build layout
 app.layout = html.Div(
     [
@@ -1030,12 +1118,13 @@ app.layout = html.Div(
                     dbc.Tab(id = "choropleth-map", label = "Choropleth Mapping", children = [choropleth_map]),
                     dbc.Tab(id = "ts-clustering-tab", label = "Time Series Clustering", children = [time_series_clustering]),
                     dbc.Tab(id = "regional-heatmaps-tab", label = "Regional Heatmaps", children = [regional_heatmaps]),
-                    dbc.Tab(id = "custom-variables-tab", label = "Custom Variables", children = [custom_variables])
+                    dbc.Tab(id = "custom-variables-tab", label = "Custom Variables", children = [custom_variables]),
+                    dbc.Tab(id = "stress-connection-tab", label = "Connect to STRESS Platform", children = [stress_connection])
                 ]
                 )
             ]
             ),
-        dcc.Store(id = "stored-custom-variables", storage_type = "session")
+        dcc.Store(id = "stored-custom-variables", storage_type = "memory")
     ]
 )
 
@@ -1102,7 +1191,7 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
             try:
                 title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
             except KeyError:
-                title_text = "Time Series for {}".format(output_name)
+                title_text = "Time Series for {}".format(json.loads(output_name)["name"])
 
             fig = go.Figure(traces_to_add)
             fig.update_layout(
@@ -1160,7 +1249,7 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
                 new_traces += traces_to_add
 
             if output_name not in options_obj.outputs:
-                title_text = "Time Series for " + output_name.split("-")[-1]
+                title_text = "Time Series for " + json.loads(output_name)["name"]
             else:
                 title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
 
@@ -1181,7 +1270,7 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
         if not selected_regions or not selected_scenarios:
             raise PreventUpdate
 
-        styling_options = {"color": color_scheme}
+        styling_options = {"color": color_scheme, "y-axis": y_axis}
         fig = OutputHistograms(output_name, selected_regions, selected_scenarios, year, db, styling_options = styling_options).make_plot()
 
         if output_name not in options_obj.outputs:
@@ -1377,8 +1466,9 @@ def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, upda
                     lower_bound, upper_bound = np.percentile(df[readability_obj.naming_dict_long_names_first[dropdown]], slider)
                     constraint_df["in_constraint_range"] &= ((constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] >= lower_bound) & (constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] <= upper_bound)).astype(int)
 
-            tree = FilteredInputOutputMappingPlot(constraint_df, region, scenario, year, cart_depth = cart_depth).CART()
-            fig = PlotTree(tree, tree.y_discrete).make_plot(show = False)
+            filtered_mapping = FilteredInputOutputMappingPlot(constraint_df, region, scenario, year, cart_depth = cart_depth)
+            tree = filtered_mapping.CART()
+            fig = PlotTree(tree, filtered_mapping.y_discrete).make_plot(show = False)
 
             return fig
         
@@ -1509,53 +1599,6 @@ def update_output_output_mapping(mode, output, region, scenario, year, dropdown_
         return go.Figure(), True, True, finished_fig, False, options
 
         return filter_fig, False, False, fig, True, options
-    
-#     if mode == "high-low":
-#         component = dbc.Row(
-#             children = [
-#                 dbc.Col(
-#                     dcc.Dropdown(
-#                         id = "custom-oo-mapping-dropdown-1",
-#                         options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
-#                         value = "emissions_CO2eq_total_million_ton_CO2eq"
-#                     )
-#                 )
-#             ]
-#         )
-
-#         return component, go.Figure()
-
-# df = MultiOutputRetrieval(db, [output for output in [output1, output2, output3] if output], region, scenario, year).construct_df()
-# df_to_plot = df[df.columns[1:]]
-
-# fig = go.Figure(data = [
-#     go.Parcoords(
-#         dimensions = [{"label": col, "values": df_to_plot[col]} for col in df_to_plot.columns]
-#     )
-# ])
-
-# # slider-custom-oo-mapping
-# @app.callback(
-#     Output("output-output-mapping-figure", "figure"),
-#     Input("slider-custom-oo-mapping-1", "value"),
-#     Input("slider-custom-oo-mapping-2", "value"),
-#     Input("slider-custom-oo-mapping-3", "value"),
-#     Input("custom-oo-mapping-dropdown-1", "value"),
-#     Input("custom-oo-mapping-dropdown-2", "value"),
-#     Input("custom-oo-mapping-dropdown-3", "value")
-# )
-# def update_sliders(slider1, slider2, slider3, output1, output2, output3):
-#     df = MultiOutputRetrieval(db, [output for output in [output1, output2, output3] if output], region, scenario, year).construct_df()
-#     df_to_plot = df[df.columns[1:]]
-
-#     fig = go.Figure(data = [
-#         go.Parcoords(
-#             dimensions = [{"label": col, "values": df_to_plot[col]} for col in df_to_plot.columns]
-#         )
-#     ])
-
-#     return fig
-
 
 # callback for regional heatmaps
 @app.callback(Output("regional-heatmaps-figure", "figure"),
@@ -1606,6 +1649,7 @@ def update_figure(output, scenario, year):
 # callback for ts clustering
 @app.callback(
     Output("ts-clustering-plot", "figure"),
+    Output('ts-clustering-random-forest-plot', 'figure'),
     Input("ts-clustering-output", "value"),
     Input("ts-clustering-region", "value"),
     Input("ts-clustering-scenario", "value"),
@@ -1617,58 +1661,86 @@ def update_figure(output, region, scenario, n_clusters, metric):
         raise PreventUpdate
     
     df = DataRetrieval(db, output, region, scenario).single_output_df()
-    fig = TimeSeriesClusteringPlot(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
-    finished_figure = FinishedFigure(fig).make_finished_figure()
+    fig_obj = TimeSeriesClusteringPlot(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
+    finished_figure = FinishedFigure(fig_obj).make_finished_figure()
+    cart_plot = fig_obj.mapping_plot()
 
-    return finished_figure
+    return finished_figure, cart_plot
 
 # callback for dynamic display of custom variables tab
 @app.callback(
-    Output("custom-vars-fill-area", "children"),
-    Output("custom-vars-var-name", "value"),
+    Output("custom-vars-output-dropdown-div", "children"),
     Output("custom-vars-operation", "value"),
+    Output("custom-vars-var-name", "value"),
     Input("custom-vars-operation", "value"),
-    Input("create-custom-variable-button", "n_clicks"),
-    State("custom-vars-fill-area", "children"),
-    State("custom-vars-var-name", "value"),
-    State("custom-vars-operation", "value")
+    Input("close-centered", "n_clicks"),
+    State("output-dropdown", "options"),
+    State("custom-vars-var-name", "value")
 )
-def dynamic_custom_variables_fill(operation_type, n_clicks, current_fill_area, text_box_value, current_operation):
+def dynamic_custom_variables_fill(operation_type, n_clicks, options, var_name):
     if not operation_type:
         raise PreventUpdate
+
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
 
     if trigger_id == "custom-vars-operation":
         if operation_type == "division":
-            if len(current_fill_area) == 4:
-                return current_fill_area, text_box_value, current_operation
-            else:
-                return ([current_fill_area[0]] + [
-                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                return [(
+                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
                         placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
                     html.Span("by", style = {'margin-right': '10px'}),
-                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div", options = [{"label": k, "value": v} for k, v in readability_obj.naming_dict_display_names_first.items()],
+                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", options = options,
                                 placeholder = "Output 2",
                                 style = {"width": "500px"})
-                        ], text_box_value, current_operation)
-    else:
-        return ([current_fill_area[0]], "", None)
+                        ), operation_type, var_name]
+        if operation_type == "addition":
+            return [(dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
+                        placeholder = "Select Outputs to Add", style = {"margin-right": "10px", "width": "1000px"}, multi = True),
+                        dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", style = {"display": "none"})), operation_type, var_name]
+        if operation_type == "multiplication":
+                return [(
+                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
+                        placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
+                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", options = options,
+                                placeholder = "Output 2",
+                                style = {"width": "500px"})
+                        ), operation_type, var_name]
+        if operation_type == "subtraction":
+                return [(
+                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
+                        placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
+                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", options = options,
+                                placeholder = "Output 2",
+                                style = {"width": "500px"})
+                        ), operation_type, var_name]
 
+    if trigger_id == "close-centered":
+        return [[], "", ""]
+    
 # callback for custom variables
 @app.callback(
     Output("stored-custom-variables", "data"),
     State("stored-custom-variables", "data"),
     State("custom-vars-var-name", "value"),
-    State("custom-vars-output-1-dropdown-div", "value"),
-    State("custom-vars-output-2-dropdown-div", "value"),
-    Input("create-custom-variable-button", "n_clicks")
+    State("custom-vars-output-1-dropdown-div-1", "value"),
+    State("custom-vars-output-2-dropdown-div-2", "value"),
+    State("custom-vars-operation", "value"),
+    Input("create-custom-variable-button", "n_clicks"),
+    prevent_initial_call = True
 )
-def update_custom_variables(current_data, var_name, output_1, output_2, n_clicks):
+def update_custom_variables(current_data, var_name, output_1, output_2, operation, n_clicks):
     if n_clicks is None:
         raise PreventUpdate
     current_data = current_data or {}
-    current_data[var_name] = {"operation": "division", "output1": output_1, "output2": output_2}
+    if operation == "division":
+        current_data[var_name] = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
+    if operation == "addition":
+        current_data[var_name] = {"operation": operation, "outputs": output_1, "name": var_name}
+    if operation == "multiplication":
+        current_data[var_name] = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
+    if operation == "subtraction":
+        current_data[var_name] = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
 
     return current_data
 
@@ -1684,32 +1756,75 @@ def toggle_modal(n1, n2, is_open):
         return not is_open
     return is_open
 
+# callback for STRESS platform connection graph
+@app.callback(
+    Output("stress-connection-graph", "figure"),
+    State("stress-connection-inputs", "value"),
+    State("stress-connection-outputs", "value"),
+    State("stress-connection-color", "value"),
+    State("stress-connection-region", "value"),
+    State("stress-connection-scenario", "value"),
+    State("stress-connection-year", "value"),
+    State("stress-connection-graph", "restyleData"),
+    Input("stress-connection-button", "n_clicks")
+)
+def update_stress_connection_graph(inputs, outputs, color, region, scenario, year, constraint_range, n_clicks_apply):
+    if not inputs or not outputs or not color:
+        raise PreventUpdate
+
+    fig, df = STRESSPlatformConnection(db, inputs, outputs, color, region, scenario, year).make_plot()
+
+    return fig
+
+# callback for STRESS platform connection table
+@app.callback(
+    Output("stress-connection-table", "children"),
+    State("stress-connection-inputs", "value"),
+    State("stress-connection-outputs", "value"),
+    State("stress-connection-color", "value"),
+    State("stress-connection-region", "value"),
+    State("stress-connection-scenario", "value"),
+    State("stress-connection-year", "value"),
+    State("stress-connection-graph", "figure"),
+    Input("stress-connection-update-table-button", "n_clicks")
+)
+def update_stress_connection_table(inputs, outputs, color, region, scenario, year, figure, n_clicks_table):
+    if not inputs or not outputs or not color:
+        raise PreventUpdate
+
+    fig, df = STRESSPlatformConnection(db, inputs, outputs, color, region, scenario, year).make_plot()
+    if figure:
+        print(figure["data"][0]["dimensions"][0]["line"])
+
+    return dbc.Table.from_dataframe(df, striped = True, bordered = True, hover = True, size = "sm")
+
+
 output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-output", "choropleth-mapping-output", "ts-clustering-output", "output-output-mapping-output", "regional-heatmaps-output",
                                   "input-output-mapping-output-dropdown-1", "input-output-mapping-output-dropdown-2", "input-output-mapping-output-dropdown-3",
-                                  "output-output-mapping-output-dropdown-1", "output-output-mapping-output-dropdown-2", "output-output-mapping-output-dropdown-3",
-                                  "custom-vars-output-1-dropdown-div", "custom-vars-output-2-dropdown-div"]
+                                  "output-output-mapping-output-dropdown-1", "output-output-mapping-output-dropdown-2", "output-output-mapping-output-dropdown-3"]
 for dropdown in output_dropdowns_to_update_ids:
     @app.callback(
         Output(dropdown, "options", allow_duplicate = True),
         State(dropdown, "options"),
         Input("stored-custom-variables", "data"),
         Input("create-custom-variable-button", "n_clicks"),
+        Input("custom-vars-operation", "value"),
         prevent_initial_call = True
     )
-    def update_output_dropdowns(current_options, current_stored_data, n_clicks):
+    def update_output_dropdowns(current_options, current_stored_data, n_clicks, operation):
         if n_clicks is None:
             raise PreventUpdate
         for custom_var_name in current_stored_data.keys():
             all_current_outputs = [x["label"] for x in current_options]
             if custom_var_name not in all_current_outputs:
-                value_to_use = current_stored_data[custom_var_name]["output1"] + "-" + current_stored_data[custom_var_name]["operation"] + "-" + current_stored_data[custom_var_name]["output2"] + "-" + custom_var_name
+                value_to_use = json.dumps(current_stored_data[custom_var_name])
                 dict_to_append = {"label": custom_var_name, "value": value_to_use}
-        current_options.append(dict_to_append)
+                current_options.append(dict_to_append)
 
         return current_options
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "0.0.0.0")
+    app.run(debug = True, host = "localhost")
 
     # discarded components
 
@@ -1729,4 +1844,4 @@ if __name__ == '__main__':
         children = ["Data Visualization Dashboard"]
     )
     '''
-    
+     

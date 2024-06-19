@@ -1,6 +1,7 @@
 import pandas as pd
 from plotly.colors import n_colors, hex_to_rgb, convert_dict_colors_to_same_type
 from PIL import ImageColor
+import json
 
 class Color:
     def __init__(self):
@@ -233,78 +234,78 @@ class Options:
                     "WindGas",
                     "WindBio",
                     "Biol-Oil",
-                    "GDP",
+                    "TFP",
                     "Pop",
-                    "USA GDP",
-                    "Non-USA GDP",
+                    "USA TFP",
+                    "Non-USA TFP",
                     "USA Pop",
                     "Non-USA Pop",
-                    "CHN GDP",
-                    "Non-CHN GDP",
+                    "CHN TFP",
+                    "Non-CHN TFP",
                     "CHN Pop",
                     "Non-CHN Pop",
-                    "EUR GDP",
-                    "Non-EUR GDP",
+                    "EUR TFP",
+                    "Non-EUR TFP",
                     "EUR Pop",
                     "Non-EUR Pop",
-                    "CAN GDP",
-                    "Non-CAN GDP",
+                    "CAN TFP",
+                    "Non-CAN TFP",
                     "CAN Pop",
                     "Non-CAN Pop",
-                    "MEX GDP",
-                    "Non-MEX GDP",
+                    "MEX TFP",
+                    "Non-MEX TFP",
                     "MEX Pop",
                     "Non-MEX Pop",
-                    "JPN GDP",
-                    "Non-JPN GDP",
+                    "JPN TFP",
+                    "Non-JPN TFP",
                     "JPN Pop",
                     "Non-JPN Pop",
-                    "ANZ GDP",
-                    "Non-ANZ GDP",
+                    "ANZ TFP",
+                    "Non-ANZ TFP",
                     "ANZ Pop",
                     "Non-ANZ Pop",
-                    "ROE GDP",
-                    "Non-ROE GDP",
+                    "ROE TFP",
+                    "Non-ROE TFP",
                     "ROE Pop",
                     "Non-ROE Pop",
-                    "RUS GDP",
-                    "Non-RUS GDP",
+                    "RUS TFP",
+                    "Non-RUS TFP",
                     "RUS Pop",
                     "Non-RUS Pop",
-                    "ASI GDP",
-                    "Non-ASI GDP",
+                    "ASI TFP",
+                    "Non-ASI TFP",
                     "ASI Pop",
                     "Non-ASI Pop",
-                    "IND GDP",
-                    "Non-IND GDP",
+                    "IND TFP",
+                    "Non-IND TFP",
                     "IND Pop",
                     "Non-IND Pop",
-                    "BRA GDP",
-                    "Non-BRA GDP",
+                    "BRA TFP",
+                    "Non-BRA TFP",
                     "BRA Pop",
                     "Non-BRA Pop",
-                    "AFR GDP",
-                    "Non-AFR GDP",
+                    "AFR TFP",
+                    "Non-AFR TFP",
                     "AFR Pop",
                     "Non-AFR Pop",
-                    "MES GDP",
-                    "Non-MES GDP",
+                    "MES TFP",
+                    "Non-MES TFP",
                     "MES Pop",
                     "Non-MES Pop",
-                    "LAM GDP",
-                    "Non-LAM GDP",
+                    "LAM TFP",
+                    "Non-LAM TFP",
                     "LAM Pop",
                     "Non-LAM Pop",
-                    "REA GDP",
-                    "Non-REA GDP",
+                    "REA TFP",
+                    "Non-REA TFP",
                     "REA Pop",
                     "Non-REA Pop",
-                    "KOR GDP",
-                    "Non-KOR GDP",
+                    "KOR TFP",
+                    "Non-KOR TFP",
                     "KOR Pop",
                     "Non-KOR Pop",
-                    "IDZ GDP",
-                    "Non-IDZ GDP",
+                    "IDZ TFP",
+                    "Non-IDZ TFP",
                     "IDZ Pop",
                     "Non-IDZ Pop"
                 ]
@@ -321,6 +322,26 @@ class FinishedFigure(Color, Readability, Options):
                                               "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for ",
                                               "output-output-mapping-main": "Output-Output Mapping for ", "regional-heatmaps": "Regional Heatmap for ",
                                               "permutation-importance": "Permutation Importance for "}
+        
+    def split_label(self, label, max_line_length):
+        words = label.split()
+        lines = []
+        current_line = []
+
+        for word in words:
+            # Check if adding the next word exceeds the max line length
+            if sum(len(w) for w in current_line) + len(word) + len(current_line) - 1 < max_line_length:
+                current_line.append(word)
+            else:
+                # Join current line and start a new line
+                lines.append(' '.join(current_line))
+                current_line = [word]
+
+        # Append the last line
+        if current_line:
+            lines.append(' '.join(current_line))
+
+        return '<br>'.join(lines)
 
     def style_figure(self):
         # this logic block handles the output display name portion of titling figures
@@ -329,7 +350,8 @@ class FinishedFigure(Color, Readability, Options):
         else:
             # assume this covers all cases, as an output not present in the data set originally
             # nor present as a custom output should not occur
-            output_name_for_title = self.figure_object.output.split("-")[-1]
+            
+            output_name_for_title = json.loads(self.figure_object.output)["name"]
 
         # define overall title
         if self.figure_object.year:
@@ -347,9 +369,9 @@ class FinishedFigure(Color, Readability, Options):
             
             def new_name_for_bar_graph(current_name):
                 if current_name in self.outputs:
-                    new_name = self.naming_dict_long_names_first[current_name]
+                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
                 else:
-                    new_name = current_name
+                    new_name = self.split_label(current_name, 12)
 
                 return new_name
             self.figure_object.fig.data[0]["x"] = [new_name_for_bar_graph(name) for name in self.figure_object.fig.data[0]["x"]]
@@ -357,12 +379,13 @@ class FinishedFigure(Color, Readability, Options):
             for dimension in self.figure_object.fig.data[1]["dimensions"]:
                 current_name = dimension.label
                 if current_name in self.outputs:
-                    new_name = self.naming_dict_long_names_first[current_name]
+                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
                 else:
-                    new_name = current_name
+                    new_name = self.split_label(current_name, 12)
                 dimension.label = new_name
-
+            
             self.figure_object.fig.data[1].labelangle = 30
+            self.figure_object.fig.update_layout(margin=dict(b=100))
 
         if self.figure_object.figure_type == "choropleth-map":
             self.figure_object.fig.update_layout(
@@ -387,9 +410,9 @@ class FinishedFigure(Color, Readability, Options):
         if self.figure_object.figure_type == "output-output-mapping-main":
             def new_name_for_bar_graph(current_name):
                 if current_name in self.outputs:
-                    new_name = self.naming_dict_long_names_first[current_name]
+                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
                 else:
-                    new_name = current_name
+                    new_name = self.split_label(current_name, 12)
 
                 return new_name
             self.figure_object.fig.data[0]["x"] = [new_name_for_bar_graph(name) for name in self.figure_object.fig.data[0]["x"]]
@@ -397,9 +420,9 @@ class FinishedFigure(Color, Readability, Options):
             for dimension in self.figure_object.fig.data[1]["dimensions"]:
                 current_name = dimension.label
                 if current_name in self.outputs:
-                    new_name = self.naming_dict_long_names_first[current_name]
+                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
                 else:
-                    new_name = current_name
+                    new_name = self.split_label(current_name, 12)
                 dimension.label = new_name
 
             self.figure_object.fig.data[1].labelangle = 30

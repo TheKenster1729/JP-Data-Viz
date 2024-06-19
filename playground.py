@@ -1,67 +1,51 @@
-import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.graph_objects as go
 import numpy as np
-from dash.dependencies import Output, Input, State
-from dash import callback_context
 
 app = dash.Dash(__name__)
 
-values1 = np.random.randint(100, 400, 100)
-values2 = np.random.randint(100, 400, 100)
-values3 = np.random.randint(100, 400, 100)
-values4 = np.random.randint(100, 400, 100)
+# Sample data
+np.random.seed(42)
+num_vars = 4
+num_samples = 100
+data = np.random.rand(num_samples, num_vars)
+
+# Create parallel coordinates plot
+fig = go.Figure(data=go.Parcoords(
+    line=dict(color=np.random.randint(low=0, high=num_samples, size=num_samples),
+              colorscale='Viridis',
+              showscale=True),
+    dimensions=[{'label': f'Variable {i+1}', 'values': data[:, i]} for i in range(num_vars)]
+))
+
+# Overlaying transparent scatter for interaction
+for i in range(num_samples):
+    fig.add_trace(
+        go.Scatter(
+            x=list(range(num_vars)), y=data[i, :], mode='lines+markers',
+            marker=dict(color='rgba(0,0,0,0)'), line=dict(width=3, color='rgba(0,0,0,0)'),
+            hoverinfo='text', text=[f"Var {j+1}: {data[i, j]:.2f}" for j in range(num_vars)],
+            showlegend=False
+        )
+    )
 
 app.layout = html.Div([
-    dcc.Graph(
-        id='parallel-coordinates-plot',
-        figure={
-            'data': [
-                go.Parcoords(
-                    line=dict(color='blue'),
-                    dimensions=list([
-                        dict(range=[100,400],
-                             constraintrange=[100,200],
-                             label='Dimension 1', values=values1),
-                        dict(range=[100,400],
-                             label='Dimension 2', values=values2),
-                        dict(range=[100,400],
-                             label='Dimension 3', values=values3),
-                        dict(range=[100,400],
-                             label='Dimension 4', values=values4)
-                    ])
-                )
-            ],
-            'layout': go.Layout(
-                title='Parallel Coordinates Plot',
-                plot_bgcolor = 'white'
-            )
-        }
-    ),
-    html.Div([
-        dcc.RangeSlider(
-            id='my-slider',
-            min=100,
-            max=400,
-            step=1,
-            value=[250, 300],
-            marks={i: '{}'.format(i) for i in range(100, 401, 50)}
-        ),
-        html.Div(id='slider-output-container')
-    ])
+    dcc.Graph(id='parallel-plot', figure=fig),
+    html.Div(id='hover-data', style={'padding': '10px', 'fontSize': '16px'})
 ])
 
 @app.callback(
-    Output('parallel-coordinates-plot', 'figure'),
-    Input('my-slider', 'value'),
-    Input('parallel-coordinates-plot', 'figure')
+    Output('hover-data', 'children'),
+    [Input('parallel-plot', 'hoverData')]
 )
-def constraintrange(value, figure):
-    figure['data'][0]['dimensions'][1]['constraintrange'] = value
-    print(callback_context.triggered[0]["prop_id"])
-    print(figure['data'][0]['dimensions'][2].get('constraintrange'))
-    return figure
+def display_hover_data(hoverData):
+    if hoverData is not None:
+        print(hoverData)
+        return 'Hovering over:\n' + '\n'.join([f"{d['curveNumber']}: {d['text']}" for d in hoverData['points']])
+    return "Hover over the data!"
 
 if __name__ == '__main__':
     app.run_server(debug=True)

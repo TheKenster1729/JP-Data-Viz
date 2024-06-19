@@ -134,64 +134,143 @@ class DataRetrieval:
             suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
         return str(n) + suffix
 
-    def get_long_name(self):
-        return self.output + "_" + self.region.lower() + "_" + self.scenario.lower()
+    def get_long_name(self, name = None):
+        if not name: # this is the default
+            name = self.output
+        return name + "_" + self.region.lower() + "_" + self.scenario.lower()
+
+    def parse_custom_vars_division(self, parsed_string):
+        output1, output2 = parsed_string[0], parsed_string[2]
+        long_name_1 = output1 + "_" + self.region.lower() + "_" + self.scenario.lower()
+        long_name_2 = output2 + "_" + self.region.lower() + "_" + self.scenario.lower()
+        df1_query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name_1")
+        df2_query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name_2")
+
+        with self.db.retrieval_engine.connect() as conn:
+            sql_table_name_1 = conn.execute(df1_query, parameters = {"long_name_1": long_name_1}).fetchall()[0][0]
+            sql_table_name_2 = conn.execute(df2_query, parameters = {"long_name_2": long_name_2}).fetchall()[0][0]
+        
+        try:
+            df1 = pd.read_sql_table(sql_table_name_1, con = self.db.retrieval_engine).drop(columns = "index_name")
+        except KeyError:
+            df1 = pd.read_sql_table(sql_table_name_1, con = self.db.retrieval_engine)
+
+        try:
+            df2 = pd.read_sql_table(sql_table_name_2, con = self.db.retrieval_engine).drop(columns = "index_name")
+        except KeyError:
+            df2 = pd.read_sql_table(sql_table_name_2, con = self.db.retrieval_engine)
+
+        df1 = df1.dropna()
+        df2 = df2.dropna()
+
+        df1["Value"] = df1["Value"].replace("Eps", 0)
+        df2["Value"] = df2["Value"].replace("Eps", 0)
+
+        if parsed_string[1] == "division":
+            assert len(df1) == len(df2)
+            df = df1.copy()
+            df["Value"] = df["Value"].div(df2["Value"])
+            df = df.replace([np.inf, -np.inf], np.nan).dropna()
+
+        return df
+
+    def parse_custom_vars_addition(self):
+        pass
+
+    def get_df(self, name = None):
+        if not name: # this is the default
+            name = self.output
+        long_name = self.get_long_name(name)
+        query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name")
+
+        with self.db.retrieval_engine.connect() as conn:
+            sql_table_name = conn.execute(query, parameters = {"long_name": long_name}).fetchall()[0][0]
+
+        # a new table implementation resulted in some tables not having the index_name column
+        try:
+            df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
+        except KeyError:
+            df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine)
+
+        df = df.dropna()
+        if self.output == "percapita_consumption_loss_percent":
+            df["Value"] = df["Value"]*100
+
+        df["Value"] = df["Value"].replace("Eps", 0)
+
+        if self.year:
+            df = df[df["Year"] == self.year]
+
+        return df
+
+    def parse_nested_json(self, json_data):
+        """
+        Recursively parse nested JSON strings into dictionaries.
+        
+        :param json_data: The JSON data to parse.
+        :return: The parsed JSON data with nested dictionaries.
+        """
+        if isinstance(json_data, str):
+            try:
+                parsed_data = json.loads(json_data)
+                return self.parse_nested_json(parsed_data)
+            except json.JSONDecodeError:
+                return json_data
+        elif isinstance(json_data, dict):
+            return {key: self.parse_nested_json(value) for key, value in json_data.items()}
+        elif isinstance(json_data, list):
+            return [self.parse_nested_json(item) for item in json_data]
+        else:
+            return json_data
+
+    def recurse_custom_variables(self, variable_dict):
+        from global_classes import VariableOutput
+        variable_dict = self.parse_nested_json(variable_dict)
+        operation = variable_dict["operation"]
+        if operation == "addition":
+            result = 0
+            for output in variable_dict["outputs"]:
+                if isinstance(output, dict):
+                    result += self.recurse_custom_variables(output)
+                else:
+                    if result == 0:
+                        result = self.get_df(output)
+                    else:
+                        # the VariableOutput class supports edge cases, so we use it here to not write the same code again
+                        output1 = VariableOutput(output, output, self.region, self.scenario, result, year = self.year)
+                        output2 = VariableOutput(output, output, self.region, self.scenario, self.get_df(output), year = self.year)
+                        result = output1 + output2 # this is a dataframe
+            return result
+
+        output1 = variable_dict["output1"]
+        if isinstance(output1, dict):
+            output1_value = self.recurse_custom_variables(output1)
+        else:
+            output1_value = self.get_df(output1)
+
+        output2 = variable_dict["output2"]
+        if isinstance(output2, dict):
+            output2_value = self.recurse_custom_variables(output2)
+        else:
+            output2_value = self.get_df(output2)
+
+        output1_value = VariableOutput(output1, output1, self.region, self.scenario, output1_value, year = self.year)
+        output2_value = VariableOutput(output2, output2, self.region, self.scenario, output2_value, year = self.year)
+        if operation == "subtraction":
+            return output1_value - output2_value
+        elif operation == "multiplication":
+            return output1_value * output2_value
+        elif operation == "division":
+            return output1_value / output2_value
+
+        raise ValueError(f"Unsupported operation: {operation}")
 
     def single_output_df(self):
         if self.output not in Options().outputs:
-            # indicates this call is for a custom variable, handle accordingly
-            # there is a much better way, probably a few but this will do for now
-            parsed_string = self.output.split("-")
-            output1, output2 = parsed_string[0], parsed_string[2]
-            long_name_1 = output1 + "_" + self.region.lower() + "_" + self.scenario.lower()
-            long_name_2 = output2 + "_" + self.region.lower() + "_" + self.scenario.lower()
-            df1_query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name_1")
-            df2_query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name_2")
-
-            with self.db.retrieval_engine.connect() as conn:
-                sql_table_name_1 = conn.execute(df1_query, parameters = {"long_name_1": long_name_1}).fetchall()[0][0]
-                sql_table_name_2 = conn.execute(df2_query, parameters = {"long_name_2": long_name_2}).fetchall()[0][0]
-            
-            try:
-                df1 = pd.read_sql_table(sql_table_name_1, con = self.db.retrieval_engine).drop(columns = "index_name")
-            except KeyError:
-                df1 = pd.read_sql_table(sql_table_name_1, con = self.db.retrieval_engine)
-
-            try:
-                df2 = pd.read_sql_table(sql_table_name_2, con = self.db.retrieval_engine).drop(columns = "index_name")
-            except KeyError:
-                df2 = pd.read_sql_table(sql_table_name_2, con = self.db.retrieval_engine)
-
-            df1 = df1.dropna()
-            df2 = df2.dropna()
-
-            df1["Value"] = df1["Value"].replace("Eps", 0)
-            df2["Value"] = df2["Value"].replace("Eps", 0)
-
-            if parsed_string[1] == "division":
-                assert len(df1) == len(df2)
-                df = df1.copy()
-                df["Value"] = df["Value"].div(df2["Value"])
-                df = df.replace([np.inf, -np.inf], np.nan).dropna()
+            df = self.recurse_custom_variables(self.output)
 
         else:
-            long_name = self.get_long_name()
-            query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name")
-
-            with self.db.retrieval_engine.connect() as conn:
-                sql_table_name = conn.execute(query, parameters = {"long_name": long_name}).fetchall()[0][0]
-
-            # a new table implementation resulted in some tables not having the index_name column
-            try:
-                df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
-            except KeyError:
-                df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine)
-            
-            df = df.dropna()
-            if self.output == "percapita_consumption_loss_percent":
-                df["Value"] = df["Value"]*100
-
-            df["Value"] = df["Value"].replace("Eps", 0)
+            df = self.get_df()
 
         return df
 
@@ -272,6 +351,12 @@ if __name__ == "__main__":
     # print(list(Options().outputs).pop("emissions_CO2eq_total_million_ton_CO2eq"))
     # DatabaseModification("all_data_jan_2024", scenarios = ["About1.5C_pes", "15C_med", "2C_pes"], files = ["1_percapita_consumption_loss_percent_About15C_pes.xlsx", "1_percapita_consumption_loss_percent_15C_med.xlsx", "1_percapita_consumption_loss_percent_2C_pes.xlsx"]).main()
 
-    m = MultiOutputRetrieval(db, ["sectoral_output_Electricity_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq", "consumption_billion_USD2007"], "GLB", "15C_med", 2050)
-    m.construct_df()
-    print(m.df)
+    # m = MultiOutputRetrieval(db, ["sectoral_output_Electricity_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq", "consumption_billion_USD2007"], "GLB", "15C_med", 2050)
+    # m.construct_df()
+    # print(m.df)
+    lower_bound = 5
+    upper_bound = 95
+    renewable_share = json.dumps({"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"})
+    test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
+    df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
+    print(df)

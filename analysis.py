@@ -17,7 +17,7 @@ class InputOutputMapping:
         self.y_continuous = self.df["Value"]
         self.threshold = threshold
         self.gt = gt
-        self.inputs = pd.read_csv(r"Cleaned Data/InputsMaster.csv")
+        self.inputs = pd.read_csv(r"Cleaned Data/InputsMasterTFP.csv")
         self.num_to_plot = num_to_plot
         self.cart_depth = cart_depth
         self.n_estimators = n_estimators
@@ -174,7 +174,7 @@ class FilteredInputOutputMapping:
         self.region = region
         self.scenario = scenario
         self.year = year
-        self.inputs = pd.read_csv(r"Cleaned Data/InputsMaster.csv")
+        self.inputs = pd.read_csv(r"Cleaned Data/InputsMasterTFP.csv")
         self.num_to_plot = num_to_plot
         self.cart_depth = cart_depth
         self.n_estimators = n_estimators
@@ -272,7 +272,7 @@ class FilteredOutputOutputMapping:
         return sorted_labeled_importances, top_n
 
 class TimeSeriesClustering:
-    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean"):
+    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean", num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
         self.df = df
         self.output = output
         self.region = region
@@ -280,12 +280,50 @@ class TimeSeriesClustering:
         self.n_clusters = n_clusters
         self.df_for_clustering = self.df.pivot(columns = "Year", index = "Run #")
         self.metric = metric
+        self.cart_depth = cart_depth
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.num_to_plot = num_to_plot
 
     def generate_clusters(self):
         clusters = TimeSeriesKMeans(n_clusters = self.n_clusters, metric = self.metric).fit(self.df_for_clustering)
 
         return clusters
-            
+
+    def cluster_mapping(self):
+        # using the clusters as the target, use random forest to find input drivers
+        # of the clusters
+        self.inputs = pd.read_csv(r"Cleaned Data/InputsMasterTFP.csv")
+        columns_to_remove = []
+        for column in self.inputs.columns:
+            signifiers = [" GDP", "Non-{} GDP".format(self.region), " Pop", "Non-{} Pop".format(self.region)]
+            if any(signifier in column for signifier in signifiers) and self.region not in column:
+                columns_to_remove.append(column)
+        self.inputs = self.inputs.drop(columns = columns_to_remove)
+
+        # some scenarios have runs that didn't solve in all cases, so remove those as well
+        runs_to_drop_dict = {"percapita_consumption_loss_percent":
+                             {"About15C_pes": [82, 98, 283, 305, 338, 373],
+                             "15C_med": [184, 221, 314, 374, 383]}
+                             }
+        drop_runs = runs_to_drop_dict.get(self.output)
+        if drop_runs:
+            runs_to_drop_for_scenario = drop_runs.get(self.scenario)
+            if runs_to_drop_for_scenario:
+                self.inputs = self.inputs.drop(self.inputs[self.inputs["Run #"].isin(runs_to_drop_for_scenario)].index)
+        
+        self.X = self.inputs[self.inputs.columns[1:]]
+        self.y = self.generate_clusters().labels_
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth).fit(self.X, self.y)
+
+        # get the average feature importances
+        feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = self.X.columns)
+        sorted_labeled_importances = feature_importances.mean().sort_values(ascending = False)
+        top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()
+
+        return feature_importances, sorted_labeled_importances, top_n
+
+
 
 if __name__ == "__main__":
     db = SQLConnection("all_data_jan_2024")
@@ -306,7 +344,10 @@ if __name__ == "__main__":
     # print(res[1])
 
     # permutation importances
-    df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
-    io = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).permutation_importance()
-    print(io)
+    # df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
+    # io = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).permutation_importance()
+    # print(io)
 
+    # time series clustering cart
+    df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
+    results = TimeSeriesClustering(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").cluster_mapping()

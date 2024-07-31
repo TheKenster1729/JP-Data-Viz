@@ -321,7 +321,7 @@ class FinishedFigure(Color, Readability, Options):
         self.display_names_for_figure_type = {"output-timeseries": "Time Series for ", "input-output-mapping-main": "CART Results for ",
                                               "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for ",
                                               "output-output-mapping-main": "Output-Output Mapping for ", "regional-heatmaps": "Regional Heatmap for ",
-                                              "permutation-importance": "Permutation Importance for "}
+                                              "permutation-importance": "Permutation Importance for ", "ts-clustering-cart": "Time Series Clusters CART for "}
         
     def split_label(self, label, max_line_length):
         words = label.split()
@@ -363,7 +363,7 @@ class FinishedFigure(Color, Readability, Options):
                                       title = title,
                                       height = 600)
         # plot-specific changes
-        if self.figure_object.figure_type == "input-output-mapping-main" or self.figure_object.figure_type == "output-output-mapping-main":
+        if self.figure_object.figure_type == "input-output-mapping-main" or self.figure_object.figure_type == "output-output-mapping-main" or self.figure_object.figure_type == "ts-clustering-cart":
             self.figure_object.fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
             self.figure_object.fig.update_annotations(yshift = 20)
             

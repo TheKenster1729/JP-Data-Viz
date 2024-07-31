@@ -312,7 +312,15 @@ class DataRetrieval:
             df_to_return = pd.concat([df_to_return, regional_result_reshaped])
 
         return df_to_return.reset_index(drop = True)
-    
+
+class DatabaseModificationForNewStructure(SQLConnection):
+    def __init__(self, dbname, path_to_scenarios = r"Raw Data\Scenarios"):
+        super().__init__(dbname)
+        self.path_to_scenarios = path_to_scenarios
+
+    def main(self):
+        pass
+
 '''
 import os
 import pandas as pd
@@ -340,7 +348,7 @@ for output in outputs:
             scenario_node = Node("{}".format(scenario), parent = region_node, sql_table_name = filename_dict[output] + "_{}_{}".format(region.lower(), scenario.lower()))
 '''
 if __name__ == "__main__":
-    db = SQLConnection("all_data_jan_2024")
+    # db = SQLConnection("all_data_jan_2024")
     # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
     # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
     # DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
@@ -354,9 +362,10 @@ if __name__ == "__main__":
     # m = MultiOutputRetrieval(db, ["sectoral_output_Electricity_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq", "consumption_billion_USD2007"], "GLB", "15C_med", 2050)
     # m.construct_df()
     # print(m.df)
-    lower_bound = 5
-    upper_bound = 95
-    renewable_share = json.dumps({"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"})
-    test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
-    df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
-    print(df)
+    # lower_bound = 5
+    # upper_bound = 95
+    # renewable_share = json.dumps({"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"})
+    # test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
+    # df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
+    # print(df)
+    DatabaseModification("all_data_jan_2024", path_to_scenarios = r"Raw Data/New_Ensembles").main()

@@ -9,7 +9,7 @@ from styling import Options, Readability, Color, FinishedFigure
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot, \
                         OutputOutputMappingPlot, PlotTree, RegionalHeatmaps, InputDistributionAlternate, PermutationImportance, FilteredOutputOutputMappingPlot, \
-                        FilteredInputOutputMappingPlot, STRESSPlatformConnection
+                        FilteredInputOutputMappingPlot, STRESSPlatformConnection, TimeSeriesClusteringPlotCART
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
@@ -1650,6 +1650,7 @@ def update_figure(output, scenario, year):
 @app.callback(
     Output("ts-clustering-plot", "figure"),
     Output('ts-clustering-random-forest-plot', 'figure'),
+    # Output("ts-clustering-cart-tree-plot", "figure"),
     Input("ts-clustering-output", "value"),
     Input("ts-clustering-region", "value"),
     Input("ts-clustering-scenario", "value"),
@@ -1659,13 +1660,15 @@ def update_figure(output, scenario, year):
 def update_figure(output, region, scenario, n_clusters, metric):
     if not region or not output or not scenario:
         raise PreventUpdate
-    
+
     df = DataRetrieval(db, output, region, scenario).single_output_df()
     fig_obj = TimeSeriesClusteringPlot(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
     finished_figure = FinishedFigure(fig_obj).make_finished_figure()
-    cart_plot = fig_obj.mapping_plot()
 
-    return finished_figure, cart_plot
+    cart_fig_obj = TimeSeriesClusteringPlotCART(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
+    cart_finished_figure = FinishedFigure(cart_fig_obj).make_finished_figure()
+
+    return finished_figure, cart_finished_figure
 
 # callback for dynamic display of custom variables tab
 @app.callback(

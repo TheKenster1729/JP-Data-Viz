@@ -548,7 +548,7 @@ class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
             fig.write_image(save + ".png", scale = 2)
 
         return fig
-    
+
 class OutputOutputMappingPlot(OutputOutputMapping, DashboardFigure):
     def __init__(self, db_obj, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5):
         super().__init__(db_obj, output, region, scenario, year, df, threshold = threshold, gt = gt, num_to_plot = num_to_plot)
@@ -774,7 +774,7 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
 
         return trace
 
-    def plot_clusters(self, show = False):
+    def make_plot(self, show = False):
         clusters = self.generate_clusters()
         fig = go.Figure()
         cluster_labels = ["Cluster {}".format(str(i)) for i in range(1, self.n_clusters + 1)]
@@ -800,8 +800,16 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
             fig.show()
 
         return fig
-    
-    def mapping_plot(self, show = False):
+
+class TimeSeriesClusteringPlotCART(TimeSeriesClustering, DashboardFigure):
+    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean", year = None, num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
+        super().__init__(df, output, region, scenario, n_clusters, metric = metric, num_to_plot = num_to_plot, cart_depth = cart_depth, n_estimators = n_estimators, max_depth = max_depth)
+        DashboardFigure.__init__(self, "ts-clustering-cart")
+        self.colors = ["#648fff", "#491d8b", "#FFB000", "#a2191f", "#00539a", "#0e6027", "#565151"]
+        self.fig = self.make_plot()
+        self.year = year # this may never become relevant, it is just included to prevent errors during the styling process
+
+    def make_plot(self, show = False):
         feature_importances, sorted_labeled_importances, top_n = self.cluster_mapping()
         fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
                             subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
@@ -823,7 +831,7 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale, showscale = True,
                                     colorbar=dict(
                                     title='Group',
-                                    tickvals=[(1/self.n_clusters)*i for i in range(1, self.n_clusters + 1)],  # Positions at which ticks should be displayed
+                                    tickvals=[(self.n_clusters-1)/(2*self.n_clusters)*(2*i+1) for i in range(self.n_clusters)],  # Positions at which ticks should be displayed
                                     ticktext=['Cluster {}'.format(i) for i in range(1, self.n_clusters + 1)],  # Text displayed at the ticks
                                     len=0.25,  # Makes the colorbar shorter
                                     y=0.5,   # Position the colorbar in the middle of the plot
@@ -836,9 +844,6 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
         fig.update_layout(width = 1000, height = 750)
 
         return fig
-    
-    def make_plot(self, show = False):
-        return self.plot_clusters()
 
 class TreeNode:
     def __init__(self, id, feature=None, threshold=None, left=None, right=None, value=None, density = None, coverage = None):

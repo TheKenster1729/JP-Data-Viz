@@ -35,7 +35,8 @@ class DatabaseModification(SQLConnection):
         super().__init__(dbname)
         self.path_to_scenarios = path_to_scenarios
         if scenarios == "all":
-            self.scenarios = os.listdir(path_to_scenarios)
+            self.scenarios = list(os.listdir(path_to_scenarios))
+            self.scenarios.remove(".DS_Store")
         else: # expects a list of scenario folders
             self.scenarios = scenarios
         self.files = files
@@ -54,7 +55,14 @@ class DatabaseModification(SQLConnection):
         mapping_df.to_sql(name = 'name_mappings', con = self.retrieval_engine, if_exists = 'append')
         print(f"Updated name mapping: {full_output_name} -> {assigned_name}")
 
+    def determine_column_range(self, df):
+        first_year_column = list(df.columns).index("2020")
+        alphanumeric = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H", 8: "I", 9: "J", 10: "K", 11: "L", 12: "M", 13: "N", 14: "O", 15: "P", 16: "Q", 17: "R", 18: "S", 19: "T", 20: "U", 21: "V", 22: "W", 23: "X", 24: "Y", 25: "Z"}
+
+        return alphanumeric[first_year_column - 1] + ":" + alphanumeric[len(df.columns) - 1]
+
     def main(self):
+        count = 1
         for folder in self.scenarios:
             path_to_this_folder = os.path.join(self.path_to_scenarios, folder)
             for filename in os.listdir(path_to_this_folder):
@@ -66,25 +74,34 @@ class DatabaseModification(SQLConnection):
                         # Load the Excel file into a Pandas DataFrame
                         file_path = os.path.join(path_to_this_folder, filename)
                         if self.files == "all":
-                            df = pd.read_excel(file_path, sheet_name = region, usecols = "B:S").rename(columns = {"Unnamed: 1": "Run #"})
+                            starting_column = self.determine_column_range(pd.read_excel(file_path, sheet_name = region))
+                            df = pd.read_excel(file_path, sheet_name = region, usecols = starting_column + ":S")
+                            df = df.rename(columns = {df.columns[0]: "Run #"})
                             df_to_use = df.melt(id_vars = "Run #", value_name = "Value", var_name = "Year")
                         else:
                             if filename in self.files:
-                                df = pd.read_excel(file_path, sheet_name = region, usecols = "B:S").rename(columns = {"Unnamed: 1": "Run #"})
+                                starting_column = self.determine_column_range(pd.read_excel(file_path, sheet_name = region))
+                                df = pd.read_excel(file_path, sheet_name = region, usecols = starting_column + ":S")
+                                df = df.rename(columns = {df.columns[0]: "Run #"})
                                 df_to_use = df.melt(id_vars = "Run #", value_name = "Value", var_name = "Year")
 
-                                cleaned_spreadsheet_name = '_'.join(filename.split('.')[0].split('_')[1:])
-                                folder_no_period = folder.replace('.', '')
-                                full_output_name = cleaned_spreadsheet_name[:-len(folder_no_period)] + region + "_" + cleaned_spreadsheet_name[-len(folder_no_period):]
+                        # need to process Eps - not float
+                        df_to_use["Value"] = df_to_use["Value"].replace("Eps", 0)
 
-                                sql_dtypes = {
-                                    "Run #": Integer,
-                                    "Year": Integer,
-                                    "Value": Float
-                                }
-                                df_to_use.to_sql(name = table_name, con = self.retrieval_engine, if_exists = 'replace', index = False, dtype = sql_dtypes)
-                                self.update_name_mapping_table(full_output_name, table_name)
-                                print(f"Loaded {filename} into {table_name} table in the database.")
+                        cleaned_spreadsheet_name = '_'.join(filename.split('.')[0].split('_')[1:])
+                        folder_no_period = folder.replace('.', '')
+                        full_output_name = cleaned_spreadsheet_name[:-len(folder_no_period)] + region + "_" + cleaned_spreadsheet_name[-len(folder_no_period):]
+
+                        sql_dtypes = {
+                            "Run #": Integer,
+                            "Year": Integer,
+                            "Value": Float
+                        }
+                        df_to_use.to_sql(name = table_name, con = self.retrieval_engine, if_exists = 'replace', index = False, dtype = sql_dtypes)
+                        self.update_name_mapping_table(full_output_name, table_name)
+
+            print(f"Finished scenario {folder} ({count} of {len(self.scenarios)})")
+            count += 1
 
 class MultiOutputRetrieval:
     def __init__(self, db_connection_obj, outputs, region, scenario, year = None):
@@ -97,16 +114,17 @@ class MultiOutputRetrieval:
     def construct_df(self):
         self.df = pd.DataFrame()
         for output in self.outputs:
+            output_name = output if output in Options().outputs else json.loads(output)["name"]
             df_to_add = pd.DataFrame()
             df = DataRetrieval(self.db, output, self.region, self.scenario, self.year).mapping_df()
             df_to_add["Run #"] = df["Run #"]
-            df_to_add[Readability().naming_dict_long_names_first[output]] = df["Value"]
+            df_to_add[output_name] = df["Value"]
             if len(self.df) == 0:
                 self.df = df_to_add
             else:
                 new_run_numbers = set(df["Run #"])
                 self.df = self.df[self.df["Run #"].isin(new_run_numbers)]
-                self.df[Readability().naming_dict_long_names_first[output]] = df["Value"]
+                self.df[output_name] = df["Value"]
         
         return self.df 
     
@@ -368,4 +386,4 @@ if __name__ == "__main__":
     # test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
     # df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
     # print(df)
-    DatabaseModification("all_data_jan_2024", path_to_scenarios = r"Raw Data/New_Ensembles").main()
+    DatabaseModification("all_data_aug_2024", path_to_scenarios = r"Raw Data/New_Ensembles").main()

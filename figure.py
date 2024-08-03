@@ -335,21 +335,18 @@ class OutputHistograms(DashboardFigure):
                 # Fetch the data for this combination
                 df = self.get_data(region, scenario)
                 
-                if self.styling_options["y-axis"] == "constrained":
-                    pass
-                else:
-                    # Add a histogram to the figure for this combination
-                    trace_to_add = go.Histogram(x = df['Value'],
+                # Add a histogram to the figure for this combination
+                trace_to_add = go.Histogram(x = df['Value'],
                                             name = f"{region} - {Options().scenario_display_names[scenario]}",
                                             marker_color = self.get_color(region, scenario),
                                             opacity = 0.75,
                                             )
-                    fig.add_trace(trace_to_add,
-                                            row = i + 1,
+                fig.add_trace(trace_to_add,
+                            row = i + 1,
                                             col = j + 1)
                     
-                    if j == 0:
-                        fig.update_yaxes(title_text = region, row = i + 1, col = j + 1)
+                if j == 0:
+                    fig.update_yaxes(title_text = region, row = i + 1, col = j + 1)
         
         if show:
             fig.show()
@@ -617,8 +614,8 @@ class FilteredInputOutputMappingPlot(FilteredInputOutputMapping, DashboardFigure
         return fig
 
 class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigure):
-    def __init__(self, db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = 5):
-        super().__init__(db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = num_to_plot)
+    def __init__(self, db_obj, outputs_to_use, constraint_df, region, scenario, year, num_to_plot = 5):
+        super().__init__(db_obj, outputs_to_use, constraint_df, region, scenario, year, num_to_plot = num_to_plot)
         DashboardFigure.__init__(self, "filtered-output-output-mapping-main")
 
         self.fig = self.make_plot()
@@ -629,7 +626,7 @@ class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigu
                             subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
 
         parcoords_df = self.df_to_use[top_n].copy()
-        parcoords_df["y_discrete"] = self.in_constraint_range
+        parcoords_df["y_discrete"] = self.df_to_use["in_constraint_range"]
 
         dimensions = []
         color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
@@ -639,6 +636,7 @@ class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigu
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
                                       dimensions = dimensions, labelside = "bottom", labelangle = 30), row = 1, col = 2)
         fig.update_annotations(yshift = 20)
+        fig.update_layout(width = 1200, height = 600)
         if show:
             fig.show()
 

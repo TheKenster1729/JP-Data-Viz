@@ -239,11 +239,10 @@ class FilteredInputOutputMapping:
         return important
 
 class FilteredOutputOutputMapping:
-    def __init__(self, db_obj, outputs_to_use, run_numbers, in_constraint_range, region, scenario, year, num_to_plot = 5):
+    def __init__(self, db_obj, outputs_to_use, constraint_df, region, scenario, year, num_to_plot = 5):
         self.db_obj = db_obj
         self.outputs_to_use = outputs_to_use
-        self.run_numbers = run_numbers
-        self.in_constraint_range = in_constraint_range
+        self.constraint_df = constraint_df
         self.region = region
         self.scenario = scenario
         self.year = year
@@ -255,16 +254,17 @@ class FilteredOutputOutputMapping:
         # need to handle this edge case
         for output in self.outputs_to_use:
             df = DataRetrieval(self.db_obj, output, self.region, self.scenario, self.year).mapping_df()
-            temp_df = pd.DataFrame()
-            temp_df[Readability().naming_dict_long_names_first[output]] = df["Value"]
-            self.df_to_use = pd.concat([self.df_to_use, temp_df], axis = 1)
+            self.df_to_use[Readability().naming_dict_long_names_first[output]] = df["Value"]
 
     def run_analysis(self):
-        self.create_dataframe()        
-        X = self.df_to_use
-        y = self.in_constraint_range
+        self.create_dataframe()
+        self.df_to_use["in_constraint_range"] = self.constraint_df["in_constraint_range"]
+        self.df_to_use.dropna(how = "any", inplace = True)
 
-        random_forest = RandomForestClassifier(n_estimators = 100).fit(X, y)
+        X = self.df_to_use[self.df_to_use.columns[:-1]]
+        y = self.df_to_use[self.df_to_use.columns[-1]]
+
+        random_forest = RandomForestClassifier(n_estimators = 10).fit(X, y)
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in random_forest.estimators_], columns = X.columns)
         sorted_labeled_importances = feature_importances.mean().sort_values(ascending = False)
         top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()

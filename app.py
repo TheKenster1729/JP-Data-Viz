@@ -1889,7 +1889,6 @@ def update_stress_connection_table(inputs, outputs, color, region, scenario, yea
 
     return dbc.Table.from_dataframe(df, striped = True, bordered = True, hover = True, size = "sm")
 
-
 output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-output", "choropleth-mapping-output", "ts-clustering-output", "output-output-mapping-output", "regional-heatmaps-output",
                                   "custom-io-mapping-dropdown-1", "custom-io-mapping-dropdown-2", "custom-io-mapping-dropdown-3",
                                   "custom-oo-mapping-dropdown-1", "custom-oo-mapping-dropdown-2", "custom-oo-mapping-dropdown-3", "custom-oo-mapping-dropdown-4", 
@@ -1915,7 +1914,7 @@ for dropdown in output_dropdowns_to_update_ids:
         return current_options
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "localhost")
+    app.run(debug = True, host = "0.0.0.0")
 
     # discarded components
 

@@ -698,7 +698,7 @@ class ChoroplethMap(DashboardFigure):
             locations = merged_gdf["Region"],
             z = merged_gdf["Median"],
             featureidkey = "properties.Region",
-            colorscale = "Viridis",
+            colorscale = "bupu",
             marker_line_color = 'black',
             marker_line_width = 0.5,
             hovertext = merged_gdf["text"]

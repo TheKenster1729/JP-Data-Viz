@@ -1635,13 +1635,14 @@ def update_output_output_mapping(mode, output, region, scenario, year, dropdown_
         if trigger_id == "output-output-mapping-apply-constraints":
             constraint_df = df.copy()
             constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
-            
+
             # Iterate through each dropdown/slider pair to apply constraints
             for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6], [slider_1, slider_2, slider_3, slider_4, slider_5, slider_6]):
                 if dropdown:  # Ensure dropdown has a selection
-                    lower_bound, upper_bound = np.percentile(df[readability_obj.naming_dict_long_names_first[dropdown]], slider)
-                    constraint_df["in_constraint_range"] &= ((constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] >= lower_bound) & (constraint_df[readability_obj.naming_dict_long_names_first[dropdown]] <= upper_bound)).astype(int)
-            
+                    output_name = readability_obj.naming_dict_long_names_first[dropdown] if dropdown in Options().outputs else json.loads(dropdown)["name"]
+                    lower_bound, upper_bound = np.percentile(df[output_name], slider)
+                    constraint_df["in_constraint_range"] &= ((constraint_df[output_name] >= lower_bound) & (constraint_df[output_name] <= upper_bound)).astype(int)
+
             color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
             fig = go.Figure(data=[
                 go.Parcoords(

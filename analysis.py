@@ -7,6 +7,7 @@ from sql_utils import SQLConnection, DataRetrieval
 from styling import Readability, Options
 from tslearn.clustering import TimeSeriesKMeans
 from sklearn.inspection import permutation_importance
+import json
 
 class InputOutputMapping:
     def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
@@ -254,7 +255,8 @@ class FilteredOutputOutputMapping:
         # need to handle this edge case
         for output in self.outputs_to_use:
             df = DataRetrieval(self.db_obj, output, self.region, self.scenario, self.year).mapping_df()
-            self.df_to_use[Readability().naming_dict_long_names_first[output]] = df["Value"]
+            output_name = Readability().naming_dict_long_names_first[output] if output in Options().outputs else json.loads(output)["name"]
+            self.df_to_use[output_name] = df["Value"]
 
     def run_analysis(self):
         self.create_dataframe()

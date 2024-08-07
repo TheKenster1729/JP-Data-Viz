@@ -114,7 +114,7 @@ class MultiOutputRetrieval:
     def construct_df(self):
         self.df = pd.DataFrame()
         for output in self.outputs:
-            output_name = output if output in Options().outputs else json.loads(output)["name"]
+            output_name = Readability().naming_dict_long_names_first[output] if output in Options().outputs else json.loads(output)["name"]
             df_to_add = pd.DataFrame()
             df = DataRetrieval(self.db, output, self.region, self.scenario, self.year).mapping_df()
             df_to_add["Run #"] = df["Run #"]

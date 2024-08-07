@@ -571,7 +571,7 @@ output_output_mapping = html.Div(id = "output-output-mapping-content", style = {
                                                             dcc.Dropdown(id = "output-output-mapping-output",
                                                                 options = [{'label': Readability().naming_dict_long_names_first[i], 'value': i} for i in Options().outputs],
                                                                 value = "emissions_CO2eq_total_million_ton_CO2eq")
-                                                            )   
+                                                            )
                                                         ]
                                                     ),
                                                     dbc.Col(width = 2, 
@@ -1002,14 +1002,14 @@ time_series_clustering = html.Div(id = "ts-clustering", style = {"padding": 20},
 
 custom_variables = html.Div(children = 
     [
-        html.Div(style = {'display': 'flex', 'align-items': 'center', 'padding': '20px'},
+        html.Div(style = {'display': 'flex', 'alignItems': 'center', 'padding': '20px'},
             children = [
                 html.Span("I would like to create a custom variable called ", style = {'margin-right': '10px'}, className = "text-info"),
                 dcc.Input(id = "custom-vars-var-name", style = {"margin-right": "10px", 'width': '200px'}),
                 html.Span("by", className = "text-info")
             ]
         ),
-        html.Div(id = "custom-vars-fill-area", style = {'display': 'flex', 'align-items': 'center', "margin-left": "100px"},
+        html.Div(id = "custom-vars-fill-area", style = {'display': 'flex', 'alignItems': 'center', "margin-left": "100px"},
             children = [
                 dcc.Dropdown(
                     id = "custom-vars-operation", 
@@ -1190,7 +1190,7 @@ app.layout = html.Div(
                     dbc.Tab(id = "ts-clustering-tab", label = "Time Series Clustering", children = [time_series_clustering]),
                     dbc.Tab(id = "regional-heatmaps-tab", label = "Regional Heatmaps", children = [regional_heatmaps]),
                     dbc.Tab(id = "custom-variables-tab", label = "Custom Variables", children = [custom_variables]),
-                    dbc.Tab(id = "stress-connection-tab", label = "Connect to STRESS Platform", children = [stress_connection])
+                    # dbc.Tab(id = "stress-connection-tab", label = "Connect to STRESS Platform", children = [stress_connection])
                 ]
                 )
             ]

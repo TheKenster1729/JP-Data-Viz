@@ -326,7 +326,6 @@ class TimeSeriesClustering:
         return feature_importances, sorted_labeled_importances, top_n
 
 
-
 if __name__ == "__main__":
     db = SQLConnection("all_data_jan_2024")
     custom_output_example = "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share"

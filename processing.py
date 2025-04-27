@@ -4,6 +4,9 @@ import os
 import pandas as pd
 import openpyxl as op
 import numpy as np
+import re
+import csv
+import openai
 
 class LoadData:
     def __init__(self, **filters):
@@ -106,5 +109,94 @@ class Scripts:
                 save_path = os.path.join(self.output_directory, case, "{}.csv".format('_'.join(file.split('_')[1:-1])))
                 self.aggregate_df.to_csv(save_path)
 
+class Naming:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    def get_output_names(self):
+        file_dir = os.listdir(self.file_path)
+        files = [file for file in file_dir if file.endswith('.xlsx')]
+
+        return files
+    
+    def extract_full_output_name(self, filename):
+        """
+        Given a filename (e.g., "1_GDP_billion_USD2007_2C.xlsx"),
+        remove the leading number and underscore, any trailing flag (_2C or _Ref),
+        and any file extension. Returns the cleaned full output name.
+        """
+        # Remove the file extension if present.
+        name, _ = os.path.splitext(filename)
+        # Remove trailing _2C or _Ref
+        name = re.sub(r'(_2C|_Ref)$', '', name)
+        # Remove leading numbers and underscore(s)
+        name = re.sub(r'^\d+_', '', name)
+        return name
+    
+    def get_display_name(self, full_output_name):
+        """
+        Call the OpenAI API (GPT) to convert a full output name into a human-readable display name.
+        
+        For example:
+        "GDP_billion_USD2007" ->
+            "GDP (Billion USD2007)"
+        "elec_prod_Renewables_TWh" ->
+            "Renewable Electricity Production (TWh)"
+        "sectoral_emi_EnergyIntensiveIndustry_Mining_million_ton_CO2e" ->
+            "Sectoral Emissions Energy Intensive Industry Mining (Million Ton CO2e)"
+        """
+        prompt = (
+            "Convert the following file output name into a human-readable display name in the format: "
+            "name_of_output (measuring units). Use the examples below as a guide:\n\n"
+            "Example 1:\n"
+            "Input: GDP_billion_USD2007\n"
+            "Output: GDP (Billion USD2007)\n\n"
+            "Example 2:\n"
+            "Input: elec_prod_Renewables_TWh\n"
+            "Output: Renewable Electricity Production (TWh)\n\n"
+            "Example 3:\n"
+            "Input: sectoral_emi_EnergyIntensiveIndustry_Mining_million_ton_CO2e\n"
+            "Output: Sectoral Emissions Energy Intensive Industry Mining (Million Ton CO2e)\n\n"
+            f"Now, convert this file output name:\nInput: {full_output_name}\nOutput:"
+        )
+        
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that converts file names into human-readable display names."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=60,
+                temperature=0.2,
+            )
+            display_name = response.choices[0].message.content
+        except Exception as e:
+            print(f"Error calling OpenAI API for {full_output_name}: {e}")
+            display_name = "ERROR"
+        return display_name
+    
+    def main(self):
+        # List of file names to process (these could come from a directory listing or another source)
+        file_names = self.get_output_names()
+        
+        output_rows = []
+        
+        for file in file_names:
+            full_output_name = self.extract_full_output_name(file)
+            print(f"Processing: {full_output_name}")  # Optional: show progress
+            display_name = self.get_display_name(full_output_name)
+            output_rows.append((full_output_name, display_name))
+        
+        # Write the results to a CSV file.
+        csv_filename = "publication_output_names.csv"
+        with open(csv_filename, "w", newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Full Output Name", "Display Name"])
+            writer.writerows(output_rows)
+        
+        print(f"CSV file '{csv_filename}' created successfully.")
+
 if __name__ == "__main__":
-    Scripts()
+    Naming(r"Raw Data/Archive/2C").main()

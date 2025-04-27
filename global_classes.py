@@ -29,6 +29,10 @@ class VariableOutput(GlobalVariables):
         self.df = df
         self.year = year
         self.sample_ids_set = set(self.df[self.global_sample_id_column])
+        self.id = self.original_name + "_" + self.region + "_" + self.scenario
+
+    def __eq__(self, other):
+        return self.original_name == other.original_name and self.region == other.region and self.scenario == other.scenario
 
     def __add__(self, other):
         other_sample_ids = other.sample_ids_set
@@ -123,53 +127,13 @@ class VariableOutput(GlobalVariables):
             df_to_return[self.global_data_column] = self_values_to_use[self.global_data_column] / other_values_to_use[self.global_data_column]
 
             return df_to_return
-
-class Region:
-    pass
-
-class Scenario:
-    pass
-
-class OutputOperations:
-    pass
-
-class DivideOutputs:
-    def __init__(self, output1, output2) -> None:
-        self.output1 = output1
-        self.output2 = output2
-
-    def consistency_check(self):
-        # basic check: make sure the two have the same run numbers, and if they don't, only use the run numbers that are in both
-        sample_id_condition = self.output1.sample_ids == self.output2.sample_ids
-        if not sample_id_condition:
-            samples_in_common = set(self.output1.sample_ids).intersection(self.output2.sample_ids)
-            self.output1.sample_ids = list(samples_in_common)
-            self.output2.sample_ids = list(samples_in_common)
-        assert self.output1.original_name == self.output2.original_name
-        assert self.output1.display_name == self.output2.display_name
-        assert self.output1.number_of_samples_per_time == self.output2.number_of_samples_per_time
-        assert self.output1.sample_ids == self.output2.sample_ids
-
-class SumOutputs(GlobalVariables):
-    def __init__(self, outputs: list) -> None:
-        super().__init__()
-        self.outputs = outputs
-
-    def find_valid_run_numbers(self):
-        self.run_numbers = [output.sample_ids_set for output in self.outputs]
-        self.valid_run_numbers = set.intersection(*self.run_numbers)
-
-    def sum_outputs(self):
-        self.find_valid_run_numbers()
-        result_df = self.outputs[0].df[self.outputs[0].df[self.global_sample_id_column].isin(self.valid_run_numbers)].copy()
-        # ensure the dataframe is sorted properly - year as the top sort and run number as the next level
-        result_df = result_df.sort_values(by=[self.global_time_column, self.global_sample_id_column], ascending=[True, True])
-        for output in self.outputs[1:]:
-            output_data_to_use = output.df[output.df[self.global_sample_id_column].isin(self.valid_run_numbers)]
-            output_data_to_use = output_data_to_use.sort_values(by=[self.global_time_column, self.global_sample_id_column], ascending=[True, True])
-            result_df[self.global_data_column] = result_df[self.global_data_column] + output_data_to_use[self.global_data_column]
-        return result_df
-
+        
+    def get_df(self):
+        if self.year:
+            return self.df.loc[self.df[self.global_time_column] == self.year]
+        else:
+            return self.df
+    
 class TreeNode:
     def __init__(self, name):
         self.name = name

@@ -22,7 +22,7 @@ class SQLConnection:
                 host = "localhost",
                 user = "root",
                 password = "password",
-                database = "all_data_jan_2024"
+                database = self.dbname
             )
         self.cursor = self.engine.cursor()
 
@@ -155,7 +155,7 @@ class DataRetrieval:
     def get_long_name(self, name = None):
         if not name: # this is the default
             name = self.output
-        return name + "_" + self.region.lower() + "_" + self.scenario.lower()
+        return name + "_" + self.region + "_" + self.scenario
 
     def parse_custom_vars_division(self, parsed_string):
         output1, output2 = parsed_string[0], parsed_string[2]
@@ -284,7 +284,7 @@ class DataRetrieval:
         raise ValueError(f"Unsupported operation: {operation}")
 
     def single_output_df(self):
-        if self.output not in Options().outputs:
+        if self.output not in Options().all_outputs:
             df = self.recurse_custom_variables(self.output)
 
         else:
@@ -386,4 +386,5 @@ if __name__ == "__main__":
     # test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
     # df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
     # print(df)
-    DatabaseModification("all_data_aug_2024", path_to_scenarios = r"Raw Data/New_Ensembles").main()
+    # DatabaseModification("publication", path_to_scenarios = r"Raw Data/Archive").main()
+    pass

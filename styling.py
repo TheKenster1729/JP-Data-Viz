@@ -157,8 +157,13 @@ class Color:
 class Readability:
     def __init__(self):
         self.naming_df = pd.read_csv(r"display_names.csv")
+        self.publication_naming_df = pd.read_csv(r"publication_output_names.csv")
+
         self.naming_dict_long_names_first = {i["Full Output Name"]:i["Display Name"] for i in self.naming_df.to_dict("records")}
         self.naming_dict_display_names_first = {v:k for k, v in self.naming_dict_long_names_first.items()}
+
+        self.publication_naming_dict_long_names_first = {i["Full Output Name"]:i["Display Name"] for i in self.publication_naming_df.to_dict("records")}
+        self.publication_naming_dict_display_names_first = {v:k for k, v in self.publication_naming_dict_long_names_first.items()}
 
     def ordinal(self, n):
         """
@@ -175,11 +180,15 @@ class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND",
                                 "BRA", "AFR", "MES", "LAM", "REA", "KOR", "IDZ"]
-        self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt', 'Ref']
+        self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt']
         self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt", "About15C_med": "About 1.5C Med",
-                                       "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes", "Ref": "Ref"}
+                                       "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes"}
+        self.publication_scenario_display_names = {"Ref": "Ref", "2C": "2C"}
         self.scenario_display_names_rev = {v:k for k, v in self.scenario_display_names.items()}
+        self.publication_scenario_display_names_rev = {v:k for k, v in self.publication_scenario_display_names.items()}
         self.outputs = Readability().naming_dict_long_names_first.keys()
+        self.publication_outputs = Readability().publication_naming_dict_long_names_first.keys()
+        self.all_outputs = list(self.outputs) + list(self.publication_outputs)
         self.years = [i for i in range(2020, 2101, 5)]
         self.markers = {"Ref": "circle", "2C": "triangle-up-open-dot"}
         self.input_names = [
@@ -345,8 +354,11 @@ class FinishedFigure(Color, Readability, Options):
 
     def style_figure(self):
         # this logic block handles the output display name portion of titling figures
-        if self.figure_object.output in self.outputs:
-            output_name_for_title = self.naming_dict_long_names_first[self.figure_object.output]
+        if self.figure_object.output in self.outputs or self.figure_object.output in self.publication_outputs:
+            if self.figure_object.output in self.publication_outputs:
+                output_name_for_title = self.publication_naming_dict_long_names_first[self.figure_object.output]
+            else:
+                output_name_for_title = self.naming_dict_long_names_first[self.figure_object.output]
         else:
             # assume this covers all cases, as an output not present in the data set originally
             # nor present as a custom output should not occur
@@ -355,9 +367,10 @@ class FinishedFigure(Color, Readability, Options):
 
         # define overall title
         if self.figure_object.year:
-            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + self.scenario_display_names[self.figure_object.scenario] + " " + str(self.figure_object.year)
+            scenario_name = self.scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.scenario_display_names else self.publication_scenario_display_names[self.figure_object.scenario]
+            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name + " " + str(self.figure_object.year)
         else:
-            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + self.scenario_display_names[self.figure_object.scenario]
+            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name
         self.figure_object.fig.update_layout(title_text = title,
                                       margin = dict(l = 20, r = 20),
                                       title = title,

@@ -4,15 +4,11 @@ from styling import Color, Options, Readability
 import pandas as pd
 from plotly.subplots import make_subplots
 from sql_utils import SQLConnection, DataRetrieval
-from processing import LoadData
 import numpy as np
-import plotly.express as px
 from itertools import product
 from plotly.colors import n_colors
 import geopandas as gpd
 import json
-from itertools import product
-from global_classes import NUM_SAMPLES_PER_TIMESTEP
 
 class DashboardFigure:
     def __init__(self, figure_type) -> None:
@@ -207,6 +203,10 @@ class NewTimeSeries(DashboardFigure):
         self.year = year
         self.data_for_histogram = self.df.query("Year==@self.year")
         self.styling_options = styling_options
+        if self.scenario == "2C" or self.scenario == "Ref":
+            self.scenario_display_name = {"2C": "2C", "Ref": "Ref"}[self.scenario]
+        else:
+            self.scenario_display_name = Options().scenario_display_names[self.scenario]
 
         self.return_figure()
 
@@ -217,7 +217,10 @@ class NewTimeSeries(DashboardFigure):
             color = Color().scenario_colors[self.scenario]
         elif self.styling_options["color"] == "standard":
             base_shade = Color().region_colors[self.region]
-            amount_to_lighten = Options().scenarios.index(self.scenario)
+            if self.scenario == "2C" or self.scenario == "Ref":
+                amount_to_lighten = 15 if self.scenario == "2C" else 0
+            else:
+                amount_to_lighten = Options().scenarios.index(self.scenario)
             color = Color().lighten_hex(base_shade, brightness_offset = amount_to_lighten*8)
         return color
 
@@ -231,10 +234,11 @@ class NewTimeSeries(DashboardFigure):
             showlegend = False,
             hoverinfo = "skip",
             customdata = ["{} {} {} lower".format(self.output, self.region, self.scenario)],
+            uid = f"{self.output}_{self.region}_{self.scenario}",
         )
 
         return trace
-    
+
     def median_trace(self, group, marker = "dash"):
         color = self.get_color()
         trace = go.Scatter(
@@ -242,8 +246,9 @@ class NewTimeSeries(DashboardFigure):
             y = self.median,
             line = dict(color = color),
             legendgroup = group,
-            name = "{} {}".format(self.region, Options().scenario_display_names[self.scenario]),
-            customdata = ["{} {} {} median".format(self.output, self.region, self.scenario)]
+            name = "{} {}".format(self.region, self.scenario_display_name),
+            customdata = ["{} {} {} median".format(self.output, self.region, self.scenario)],
+            uid = f"{self.output}_{self.region}_{self.scenario}",
         )
 
         return trace
@@ -261,7 +266,8 @@ class NewTimeSeries(DashboardFigure):
             legendgroup = group,
             showlegend = False,
             hoverinfo = "skip",
-            customdata = ["{} {} {} upper".format(self.output, self.region, self.scenario)]
+            customdata = ["{} {} {} upper".format(self.output, self.region, self.scenario)],
+            uid = f"{self.output}_{self.region}_{self.scenario}",
         )
 
         return trace
@@ -295,10 +301,67 @@ class NewTimeSeries(DashboardFigure):
             hist.show()
 
         return hist
-    
+
     def make_plot(self, show = False, show_uncertainty = True, upper = 95, lower = 5):
         traces = self.return_traces(show = show, show_uncertainty = show_uncertainty)
         fig = go.Figure(traces)
+
+class ModifyOutputTimeseries(DashboardFigure):
+    def __init__(self, output, regions, scenarios, existing_figure, styling_params, database, lower_bound = 5, upper_bound = 95, change_fig = False):
+        super().__init__("output-time-series")
+        self.output = output
+        self.regions = regions
+        self.scenarios = scenarios
+        self.existing_figure = existing_figure
+        self.existing_figure_uids_list = [trace.uid for trace in self.existing_figure.data]
+        self.existing_figure_uids_set = set(self.existing_figure_uids_list)
+        self.styling_params = styling_params
+        self.database = database
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.change_fig = change_fig
+
+    def get_combinations(self):
+        return product([self.output], self.regions, self.scenarios)
+
+    def remove_traces(self):
+        new_figure = self.existing_figure
+        combinations = self.get_combinations()
+        new_uids = set([f"{output}_{region}_{scenario}" for output, region, scenario in combinations])
+        uids_to_remove = self.existing_figure_uids_set - new_uids
+        traces = [trace for trace in new_figure.data if trace.uid not in uids_to_remove]
+        new_figure.data = traces
+
+        return new_figure
+
+    def trace_already_exists(self, uid, figure):
+        return uid in [trace.uid for trace in figure.data]
+
+    def get_df(self, output, region, scenario):
+        df = DataRetrieval(self.database, output, region, scenario).single_output_df_to_graph(self.lower_bound, self.upper_bound)
+        return df
+
+    def create_new_figure(self):
+        new_figure = self.remove_traces()
+        combinations = self.get_combinations()
+        combinations_list = [i for i in combinations]
+
+        for combo in combinations_list:
+            uid = f"{combo[0]}_{combo[1]}_{combo[2]}"
+            if not self.trace_already_exists(uid, new_figure):
+                df = self.get_df(combo[0], combo[1], combo[2])
+                traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
+                new_figure.add_traces(traces_to_add)
+
+        if self.change_fig:
+            # just delete old traces and re-add them with the right styling parameters
+            new_figure.data = []
+            for combo in combinations_list:
+                df = self.get_df(combo[0], combo[1], combo[2])
+                traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
+                new_figure.add_traces(traces_to_add)
+
+        return new_figure
 
 class OutputHistograms(DashboardFigure):
     def __init__(self, output, regions, scenarios, year, db_obj, styling_options = None):
@@ -681,10 +744,10 @@ class ChoroplethMap(DashboardFigure):
 
         global_min = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].min().min()
         global_max = self.df[[upper_bound_column_name, "Median", upper_bound_column_name]].max().max()
-        
+
         # Load the spatial data
         gdf = gpd.read_file(r"assets/Eppa countries/eppa6_regions_simplified.shp").rename(columns = {"EPPA6_Regi": "Region"})
-        
+
         # Merge the data with the spatial data
         merged_gdf = gdf.merge(self.df, on = "Region")
         geojson = json.loads(merged_gdf.to_json())
@@ -1176,8 +1239,6 @@ class STRESSPlatformConnection(DashboardFigure):
         return fig, parcoords_df
 
 if __name__ == "__main__":
-    db_obj = SQLConnection("all_data_jan_2024")
-
     # timeseries
     # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
     # df = DataRetrieval(db_obj, "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref").single_output_df_to_graph(5, 95)
@@ -1221,4 +1282,14 @@ if __name__ == "__main__":
     # PlotTree("consumption_billion_USD2007", "GLB", "Ref", 2050, df, tree).make_plot(show = True)
 
     # stress platform connection
-    STRESSPlatformConnection(db_obj, ["WindGas", "wind", "BioCCS", "gas", "oil", "coal"], ["consumption_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq"], "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).make_plot(show = True)
+    # STRESSPlatformConnection(db_obj, ["WindGas", "wind", "BioCCS", "gas", "oil", "coal"], ["consumption_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq"], "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).make_plot(show = True)
+
+    # output time series
+    test_fig = go.Figure()
+    test_fig.add_trace(go.Scatter(x = [1, 2, 3], y = [4, 5, 6], uid = "test", name = "test"))
+    db = SQLConnection("publication")
+    # combos = ModifyOutputTimeseries("emissions_CO2eq_total_million_ton_CO2eq", ["GLB", "USA", "EUR"], ["Ref", "2C_med"], test_fig, db_obj).get_combinations()
+    fig = ModifyOutputTimeseries("total_emissions_CO2e_million_ton_CO2e", ["GLB"], ["Ref"], test_fig, {"color": "by-scenario"}, db, 5, 95).create_new_figure()
+    fig = ModifyOutputTimeseries("total_emissions_CO2e_million_ton_CO2e", ["GLB", "USA"], ["Ref"], fig, {"color": "by-region"}, db, 5, 95).create_new_figure()
+    print(fig.data)
+    fig.show()

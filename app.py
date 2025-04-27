@@ -9,7 +9,7 @@ from styling import Options, Readability, Color, FinishedFigure
 from dash.dependencies import Input, Output, State, MATCH
 from figure import NewTimeSeries, InputDistribution, InputOutputMappingPlot, TraceInfo, OutputHistograms, ChoroplethMap, TimeSeriesClusteringPlot, \
                         OutputOutputMappingPlot, PlotTree, RegionalHeatmaps, InputDistributionAlternate, PermutationImportance, FilteredOutputOutputMappingPlot, \
-                        FilteredInputOutputMappingPlot, STRESSPlatformConnection, TimeSeriesClusteringPlotCART
+                        FilteredInputOutputMappingPlot, STRESSPlatformConnection, TimeSeriesClusteringPlotCART, ModifyOutputTimeseries
 import numpy as np
 import plotly.graph_objects as go
 from itertools import product
@@ -23,7 +23,8 @@ app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BO
                 suppress_callback_exceptions = True)
 
 # initialize SQL database and other UI elements
-db = SQLConnection("all_data_aug_2024")
+db_full = SQLConnection("all_data_aug_2024")
+db_publication = SQLConnection("publication")
 readability_obj = Readability()
 options_obj = Options()
 
@@ -68,6 +69,25 @@ navbar = dbc.Navbar(
                         style = {"textDecoration": "none", "color": "white", "text-align": "right", "padding": 100}
                     ),
                     width = "auto"
+                )
+            ]
+        )
+    ]
+)
+
+overview = html.Div(id = "overview-content", style = {"padding": 20},
+    children = [
+        dbc.Row(
+            children = [
+                dbc.Col(width = 3,
+                    children = [
+                        dbc.Row(html.H3("Data Selection")),
+                        dbc.Row(html.P("Select the data you want to visualize.")),
+                        dcc.Dropdown(id = "overview-data-dropdown", 
+                                     options = [{"label": "Full Dataset", "value": "full"}, {"label": "Publication Dataset", "value": "publication"}], 
+                                     value = "full",
+                                    ),
+                    ]
                 )
             ]
         )
@@ -875,7 +895,7 @@ choropleth_map = html.Div(style = {"padding": 20},
                                 html.Div("Scenario", className = "text-primary"),
                                 dcc.Dropdown(
                                     id = "choropleth-mapping-scenario",
-                                    options = [{'label': i, 'value': i} for i in Options().scenarios],
+                                    options = [{'label': Options().scenario_display_names[i], 'value': i} for i in Options().scenarios],
                                     value = "Ref"
                                 ),
                                 html.Div("Year", className = "text-primary"),
@@ -1182,6 +1202,7 @@ app.layout = html.Div(
                 id = "tabs",
                 children = [
                     # dbc.Tab(id = "examples-gallery", label = "Examples Gallery", children = [examples]),
+                    dbc.Tab(id = "overview", label = "Overview", children = [overview]),
                     dbc.Tab(id = "output-timeseries", label = "Output Distributions", children = [output_timeseries]),
                     dbc.Tab(id = "input-dist", label = "Input Distributions", children = [input_dists]),
                     dbc.Tab(id = "input-output-mapping", label = "Input-Output Mapping", children = [input_output_mapping]),
@@ -1224,17 +1245,26 @@ def add_hist_slider(chart_type):
      State("time-series-plot-upper-bound", "value"),
      State("time-series-plot-lower-bound", "value"),
      State("time-series-plot-color-picker", "value"),
-     State("time-series-plot-toggle-gridlines", "checked")]
+     State("time-series-plot-toggle-gridlines", "checked"),
+     State("overview-data-dropdown", "value")]
 )
 def update_timeseries_graph(output_name, selected_regions, selected_scenarios, chart_type, year, color_scheme, n_clicks_bound_changes, 
-                            n_clicks_styling_changes, existing_figure, upper_bound, lower_bound, plot_bgcolor, toggle_gridlines):
+                            n_clicks_styling_changes, existing_figure, upper_bound, lower_bound, plot_bgcolor, toggle_gridlines, overview_data_dropdown):
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+    if overview_data_dropdown == "full":
+        db = db_full
+    elif overview_data_dropdown == "publication":
+        db = db_publication
+    else:
+        raise ValueError("Invalid overview data dropdown value")
+
     if chart_type == "time-series":
         if not selected_regions or not selected_scenarios:
             raise PreventUpdate
-
+        
         if not existing_figure or len(existing_figure.get('data')) == 0:
+            # if no existing figure, create a new one
             region = selected_regions[0]
             scenario = selected_scenarios[0]
             new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
@@ -1251,91 +1281,133 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
             )
             fig.update_xaxes(showgrid = toggle_gridlines)
             fig.update_yaxes(showgrid = toggle_gridlines)
+
             return fig
 
-        current_trace_info = TraceInfo(existing_figure)
-        if current_trace_info.type[0] == "histogram": # means active figure is histogram, so need to generate scatter 
-            for region, scenario in product(selected_regions, selected_scenarios):
-                new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
-                traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
-
-            try:
-                title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
-            except KeyError:
-                title_text = "Time Series for {}".format(json.loads(output_name)["name"])
-
-            fig = go.Figure(traces_to_add)
-            fig.update_layout(
-                height = 625,
-                margin = dict(t = 40, b = 0, l = 10),
-                title_text = title_text,
-                # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
-                plot_bgcolor = plot_bgcolor
-            )
-            fig.update_xaxes(showgrid = toggle_gridlines)
-            fig.update_yaxes(showgrid = toggle_gridlines)
-            return fig
         else:
-            combos_with_trace_name = list(product(selected_regions, selected_scenarios, ["lower", "median", "upper"]))
-            current_traces = current_trace_info.traces
-            custom_data_just_strings = [i[0] for i in current_trace_info.custom_data]
-            existing_selections = set(custom_data_just_strings)
-            all_selections = set(["{}|{}|{}|{}".format(output_name, reg, sce, trace_name) for reg, sce, trace_name in combos_with_trace_name])
+            existing_fig = go.Figure(existing_figure)
+            # if the existing figure is a histogram, then we need to start from scratch
+            # otherwise, the new time series is added to the histogram figure
+            if existing_fig.data[0]["type"] == "histogram":
+                fig = ModifyOutputTimeseries(output_name, selected_regions, selected_scenarios, go.Figure(), {"color": color_scheme}, db, lower_bound, upper_bound, True).create_new_figure()
 
-            # changes to make
-            if trigger_id == "output-color-scheme":
-                # without this logic, the color of the figure will not update when the color scheme is changed
-                # what this does is take all existing plots and changes color according to what the new color scheme dictates
-                existing_figure_data = existing_figure["data"]
-                for i in existing_figure_data:
-                    trace_name = i["customdata"][0]
-                    region = trace_name.split(' ')[-3]
-                    scenario = trace_name.split(' ')[-2]
-                    if color_scheme == "by-region":
-                        color = Color().get_color_for_timeseries(color_scheme, region)
-                    elif color_scheme == "by-scenario":
-                        color = Color().get_color_for_timeseries(color_scheme, scenario)
-                    elif color_scheme == "standard":
-                        color = Color().get_color_for_timeseries(color_scheme, [region, scenario])
+                fig.update_layout(
+                    height = 625,
+                    margin = dict(t = 40, b = 0, l = 10),
+                    title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+                    yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+                    xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+                    plot_bgcolor = plot_bgcolor
+                )
+                fig.update_xaxes(showgrid = toggle_gridlines)
+                fig.update_yaxes(showgrid = toggle_gridlines)
 
-                    i["line"]["color"] = color
+                return fig
 
-            no_change = existing_selections.intersection(all_selections)
-            to_delete = existing_selections.difference(all_selections)
-            to_add = all_selections.difference(existing_selections)
-
-            # removing traces - well, keeping ones that haven't been removed
-            indices_to_delete = [custom_data_just_strings.index(i) for i in to_delete]
-            indices_to_keep = [i for i in range(len(current_traces)) if i not in indices_to_delete]
-            current_traces = [current_traces[i] for i in indices_to_keep]
-
-            # adding traces
-            new_traces = []
-            decomposed_traces_to_add = set([i.split("|")[0] + "|" + i.split("|")[1] + "|" + i.split("|")[2] for i in to_add])
-            for i in decomposed_traces_to_add:
-                output, reg, sce = tuple(i.split("|"))
-                new_trace_df = DataRetrieval(db, output_name, reg, sce).single_output_df_to_graph(lower_bound, upper_bound)
-                traces_to_add = NewTimeSeries(output_name, reg, sce, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
-                new_traces += traces_to_add
-
-            if output_name not in options_obj.outputs:
-                title_text = "Time Series for " + json.loads(output_name)["name"]
+            # the figure will only change if the regions/scenarios/output has changed
+            # to make sure the figure is changed when styling options are changed, check if any of the styling options have changed
+            if trigger_id == "output-color-scheme" or trigger_id == "time-series-plot-apply-styling-changes" or trigger_id == "time-series-plot-apply-bound-changes":
+                change_fig = True
             else:
-                title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
-
-            fig = go.Figure(data = current_traces + new_traces)
+                change_fig = False
+            fig = ModifyOutputTimeseries(output_name, selected_regions, selected_scenarios, existing_fig, {"color": color_scheme}, db, lower_bound, upper_bound, change_fig).create_new_figure()
             fig.update_layout(
                 height = 625,
                 margin = dict(t = 40, b = 0, l = 10),
-                title_text = title_text,
+                # title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+                title_text = "Time Series",
                 # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+                # xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
                 plot_bgcolor = plot_bgcolor
             )
             fig.update_xaxes(showgrid = toggle_gridlines)
             fig.update_yaxes(showgrid = toggle_gridlines)
+
             return fig
+
+        # current_trace_info = TraceInfo(existing_figure)
+        # if current_trace_info.type[0] == "histogram": # means active figure is histogram, so need to generate scatter 
+        #     for region, scenario in product(selected_regions, selected_scenarios):
+        #         new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
+        #         traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
+
+        #     try:
+        #         title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
+        #     except KeyError:
+        #         title_text = "Time Series for {}".format(json.loads(output_name)["name"])
+
+        #     fig = go.Figure(traces_to_add)
+        #     fig.update_layout(
+        #         height = 625,
+        #         margin = dict(t = 40, b = 0, l = 10),
+        #         title_text = title_text,
+        #         # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+        #         xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+        #         plot_bgcolor = plot_bgcolor
+        #     )
+        #     fig.update_xaxes(showgrid = toggle_gridlines)
+        #     fig.update_yaxes(showgrid = toggle_gridlines)
+        #     return fig
+        # else:
+        #     combos_with_trace_name = list(product(selected_regions, selected_scenarios, ["lower", "median", "upper"]))
+        #     current_traces = current_trace_info.traces
+        #     custom_data_just_strings = [i[0] for i in current_trace_info.custom_data]
+        #     existing_selections = set(custom_data_just_strings)
+        #     all_selections = set(["{}|{}|{}|{}".format(output_name, reg, sce, trace_name) for reg, sce, trace_name in combos_with_trace_name])
+
+        #     # changes to make
+        #     if trigger_id == "output-color-scheme":
+        #         # without this logic, the color of the figure will not update when the color scheme is changed
+        #         # what this does is take all existing plots and changes color according to what the new color scheme dictates
+        #         existing_figure_data = existing_figure["data"]
+        #         for i in existing_figure_data:
+        #             trace_name = i["customdata"][0]
+        #             region = trace_name.split(' ')[-3]
+        #             scenario = trace_name.split(' ')[-2]
+        #             if color_scheme == "by-region":
+        #                 color = Color().get_color_for_timeseries(color_scheme, region)
+        #             elif color_scheme == "by-scenario":
+        #                 color = Color().get_color_for_timeseries(color_scheme, scenario)
+        #             elif color_scheme == "standard":
+        #                 color = Color().get_color_for_timeseries(color_scheme, [region, scenario])
+
+        #             i["line"]["color"] = color
+
+        #     no_change = existing_selections.intersection(all_selections)
+        #     to_delete = existing_selections.difference(all_selections)
+        #     to_add = all_selections.difference(existing_selections)
+
+        #     # removing traces - well, keeping ones that haven't been removed
+        #     indices_to_delete = [custom_data_just_strings.index(i) for i in to_delete]
+        #     indices_to_keep = [i for i in range(len(current_traces)) if i not in indices_to_delete]
+        #     current_traces = [current_traces[i] for i in indices_to_keep]
+
+        #     # adding traces
+        #     new_traces = []
+        #     decomposed_traces_to_add = set([i.split("|")[0] + "|" + i.split("|")[1] + "|" + i.split("|")[2] for i in to_add])
+        #     for i in decomposed_traces_to_add:
+        #         output, reg, sce = tuple(i.split("|"))
+        #         new_trace_df = DataRetrieval(db, output_name, reg, sce).single_output_df_to_graph(lower_bound, upper_bound)
+        #         traces_to_add = NewTimeSeries(output_name, reg, sce, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
+        #         new_traces += traces_to_add
+
+        #     if output_name not in options_obj.outputs:
+        #         title_text = "Time Series for " + json.loads(output_name)["name"]
+        #     else:
+        #         title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
+
+        #     fig = go.Figure(data = current_traces + new_traces)
+        #     fig.update_layout(
+        #         height = 625,
+        #         margin = dict(t = 40, b = 0, l = 10),
+        #         title_text = title_text,
+        #         # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+        #         xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+        #         plot_bgcolor = plot_bgcolor
+        #     )
+        #     fig.update_xaxes(showgrid = toggle_gridlines)
+        #     fig.update_yaxes(showgrid = toggle_gridlines)
+        #     return fig
 
     else:
         if not selected_regions or not selected_scenarios:
@@ -1432,12 +1504,18 @@ def update_input_dist(inputs, focus_input):
     Input("custom-io-mapping-dropdown-2", "value"),
     Input("custom-io-mapping-dropdown-3", "value"),
     Input("input-output-mapping-update-all-settings", "n_clicks"),
+    Input("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
-def update_io_mapping_figure(output, region, scenario, year, percentile, setting, n_estimators, max_depth, n_clicks, mode, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, update_all_settings):
+def update_io_mapping_figure(output, region, scenario, year, percentile, setting, n_estimators, max_depth, n_clicks, mode, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, update_all_settings, publication_output):
     if not region or not output or not year:
         raise PreventUpdate
-        
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
+
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
     gt = True if setting == "above" else False
@@ -1508,11 +1586,17 @@ def update_io_mapping_figure(output, region, scenario, year, percentile, setting
     Input("custom-io-mapping-dropdown-1", "value"),
     Input("custom-io-mapping-dropdown-2", "value"),
     Input("custom-io-mapping-dropdown-3", "value"),
+    Input("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
-def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, update_all_settings, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3):
+def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, update_all_settings, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, publication_output):
     if not cart_depth or not output or not region or not scenario or not year:
         raise PreventUpdate
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
     
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
@@ -1558,11 +1642,17 @@ def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, upda
     State("input-output-mapping-n-estimators", "value"),
     State("input-output-mapping-max-depth", "value"),
     Input("input-output-mapping-update-all-settings", "n_clicks"),
+    Input("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
-def update_permutation_importance(output, region, scenario, year, n_estimators, max_depth, update_all_settings):
+def update_permutation_importance(output, region, scenario, year, n_estimators, max_depth, update_all_settings, publication_output):
     if not region or not output or not year:
         raise PreventUpdate
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
     
     df = DataRetrieval(db, output, region, scenario, year).mapping_df()
     unstyled_figure = PermutationImportance(df, output, region, scenario, year, n_estimators = n_estimators, max_depth = max_depth)
@@ -1598,11 +1688,17 @@ def update_permutation_importance(output, region, scenario, year, n_estimators, 
     Input("output-output-mapping-apply-constraints", "n_clicks"),
     Input("output-output-mapping-parallel-coords-visualize", "figure"),
     State("output-output-mapping-output", "options"),
+    State("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
-def update_output_output_mapping(mode, output, region, scenario, year, dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6, slider_1, slider_2, slider_3, slider_4, slider_5, slider_6, n_clicks, figure, options):
+def update_output_output_mapping(mode, output, region, scenario, year, dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6, slider_1, slider_2, slider_3, slider_4, slider_5, slider_6, n_clicks, figure, options, publication_output):
     if not region or not output or not scenario or not year:
         raise PreventUpdate
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
 
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
@@ -1692,10 +1788,16 @@ def update_output_output_mapping(mode, output, region, scenario, year, dropdown_
               State("regional-heatmaps-output", "value"),
               State("regional-heatmaps-region", "value"),
               State("regional-heatmaps-scenario", "value"),
+              Input("overview-data-dropdown", "value"),
               prevent_initial_call = True)
-def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios):
+def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios, publication_output):
     if not regions or not output or not scenarios:
         raise PreventUpdate
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
     
     df = pd.DataFrame()
     for reg in regions:
@@ -1722,11 +1824,17 @@ def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios):
     Input("choropleth-mapping-output", "value"),
     Input("choropleth-mapping-scenario", "value"),
     Input("choropleth-mapping-year", "value"),
+    Input("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
-def update_figure(output, scenario, year):
+def update_figure(output, scenario, year, publication_output):
     if not scenario or not output or not year:
         raise PreventUpdate
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
     
     df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
     unstyled_fig = ChoroplethMap(df, output, scenario, year, 5, 95)
@@ -1746,9 +1854,14 @@ def update_figure(output, scenario, year):
     Input("ts-clustering-metric", "value"),
     prevent_initial_call = True
 )
-def update_figure(output, region, scenario, n_clusters, metric):
+def update_figure(output, region, scenario, n_clusters, metric, publication_output):
     if not region or not output or not scenario:
         raise PreventUpdate
+    
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
 
     df = DataRetrieval(db, output, region, scenario).single_output_df()
     fig_obj = TimeSeriesClusteringPlot(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
@@ -1809,7 +1922,7 @@ def dynamic_custom_variables_fill(operation_type, n_clicks, options, var_name):
 
     if trigger_id == "close-centered":
         return [[], "", ""]
-    
+
 # callback for custom variables
 @app.callback(
     Output("stored-custom-variables", "data"),
@@ -1897,22 +2010,54 @@ output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-outpu
 for dropdown in output_dropdowns_to_update_ids:
     @app.callback(
         Output(dropdown, "options", allow_duplicate = True),
+        Output(dropdown, "value"),
         State(dropdown, "options"),
         Input("stored-custom-variables", "data"),
         Input("create-custom-variable-button", "n_clicks"),
         Input("custom-vars-operation", "value"),
+        Input("overview-data-dropdown", "value"),
         prevent_initial_call = True
     )
-    def update_output_dropdowns(current_options, current_stored_data, n_clicks, operation):
-        if n_clicks is None:
-            raise PreventUpdate
-        for custom_var_name in current_stored_data.keys():
-            all_current_outputs = [x["label"] for x in current_options]
-            if custom_var_name not in all_current_outputs:
-                value_to_use = json.dumps(current_stored_data[custom_var_name])
-                dict_to_append = {"label": custom_var_name, "value": value_to_use}
-                current_options.append(dict_to_append)
-        return current_options
+    def update_output_dropdowns(current_options, current_stored_data, n_clicks, operation, publication_output):
+        ctx = callback_context
+        trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+        if trigger_id == "overview-data-dropdown":
+            if publication_output == "full":
+                options = [{"label": j, "value": i} for i, j in Readability().naming_dict_long_names_first.items()]
+            else:
+                options = [{"label": j, "value": i} for i, j in Readability().publication_naming_dict_long_names_first.items()]
+            if current_stored_data: 
+                custom_variable_options = [{"label": i, "value": json.dumps(j)} for i, j in current_stored_data.items()]
+                options = options + custom_variable_options
+            return options, options[0]["value"]
+        else:
+            if n_clicks is None:
+                raise PreventUpdate
+            else:
+                for custom_var_name in current_stored_data.keys():
+                    all_current_outputs = [x["label"] for x in current_options]
+                    if custom_var_name not in all_current_outputs:
+                        value_to_use = json.dumps(current_stored_data[custom_var_name])
+                        dict_to_append = {"label": custom_var_name, "value": value_to_use}
+                        current_options.append(dict_to_append)
+                return current_options
+
+# change all scenario menus depending on overview data dropdown
+scenario_dropdowns_to_update_ids = ["scenario-dropdown", "ts-clustering-scenario", "regional-heatmaps-scenario", "output-output-mapping-scenario", "input-output-mapping-scenario", "choropleth-mapping-scenario"]
+for dropdown in scenario_dropdowns_to_update_ids:
+    @app.callback(
+        Output(dropdown, "options", allow_duplicate = True),
+        Output(dropdown, "value"),
+        State(dropdown, "options"),
+        Input("overview-data-dropdown", "value"),
+        prevent_initial_call = True
+    )
+    def update_scenario_dropdowns(current_options, publication_output):
+        if publication_output == "full":
+            options = [{"label":k, "value":v} for k, v in options_obj.scenario_display_names_rev.items()]
+        else:
+            options = [{"label": "Reference", "value": "Ref"}, {"label": "2C", "value": "2C"}]
+        return options, [options[0]["value"]]
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

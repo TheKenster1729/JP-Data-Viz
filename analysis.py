@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sql_utils import SQLConnection, DataRetrieval
@@ -132,10 +131,20 @@ class OutputOutputMapping:
 
         # create the X data frame for CART for this input/region/scenario/year combination
         main_df = pd.DataFrame(data = {"Run #": target_output_run_numbers})
-        list_to_use = list(Options().outputs) + self.other_outputs
+        print(self.db_obj.dbname)
+        if self.db_obj.dbname == "full":
+            options_to_use = list(Options().outputs)
+        elif self.db_obj.dbname == "publication":
+            options_to_use = list(Options().publication_outputs)
+        else:
+            raise ValueError("Invalid database name")
+        list_to_use = options_to_use + self.other_outputs
         list_to_use.remove(self.output)
         for output in list_to_use:
-            df = DataRetrieval(self.db_obj, output, self.region, self.scenario, 2050).mapping_df()[["Run #", "Value"]]
+            try:
+                df = DataRetrieval(self.db_obj, output, self.region, self.scenario, 2050).mapping_df()[["Run #", "Value"]]
+            except:
+                continue
 
             # only proceed if this new output includes at least all the solved runs of the target output
             target_runs_set = set(target_output_run_numbers.values)
@@ -324,8 +333,6 @@ class TimeSeriesClustering:
         top_n = sorted_labeled_importances.index[:self.num_to_plot].to_list()
 
         return feature_importances, sorted_labeled_importances, top_n
-
-
 
 if __name__ == "__main__":
     db = SQLConnection("all_data_jan_2024")

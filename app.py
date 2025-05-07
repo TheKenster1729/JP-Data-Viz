@@ -197,8 +197,8 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
                     children = [
                         dbc.Row(html.Div("Scenario", className = "text-primary")),
                         dbc.Row(
-                            dbc.Checklist(id = "scenario-dropdown", style = {"padding": 10}, options = [{"label":k, "value":v} for k, v in options_obj.scenario_display_names_rev.items()],
-                                        inline = True, value = ["2C_med"])
+                            dcc.Dropdown(id = "scenario-dropdown", style = {"padding": 10}, options = [{"label":k, "value":v} for k, v in options_obj.scenario_display_names_rev.items()],
+                                        value = ["2C_med"], multi = True)
                         )
                     ]
                 ),
@@ -299,19 +299,7 @@ input_dists = html.Div(style = {"padding": 20},
                                                                     ),
                                                                 )
                                                             ]
-                                                        ),
-                                                        dbc.Col(width = 2,
-                                                            children = [
-                                                                dbc.Row(html.Div("Input to Highlight", className = "text-primary")),
-                                                                dbc.Row(
-                                                                    dcc.Dropdown(style = {"width": 200},
-                                                                        id = "expanded-view-input-dist-options",
-                                                                        options = [{'label': i, 'value': i} for i in Options().input_names],
-                                                                        value = "wind"
-                                                                        )
-                                                                    )
-                                                                ]
-                                                            )
+                                                        )
                                                         ]
                                                     )
                                                 ]
@@ -1220,6 +1208,73 @@ app.layout = html.Div(
     ]
 )
 
+output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-output", "choropleth-mapping-output", "ts-clustering-output", "output-output-mapping-output", "regional-heatmaps-output",
+                                  "custom-io-mapping-dropdown-1", "custom-io-mapping-dropdown-2", "custom-io-mapping-dropdown-3",
+                                  "custom-oo-mapping-dropdown-1", "custom-oo-mapping-dropdown-2", "custom-oo-mapping-dropdown-3", "custom-oo-mapping-dropdown-4", 
+                                  "custom-oo-mapping-dropdown-5", "custom-oo-mapping-dropdown-6"]
+for dropdown in output_dropdowns_to_update_ids:
+    @app.callback(
+        Output(dropdown, "options", allow_duplicate = True),
+        Output(dropdown, "value"),
+        State(dropdown, "options"),
+        Input("stored-custom-variables", "data"),
+        Input("create-custom-variable-button", "n_clicks"),
+        Input("custom-vars-operation", "value"),
+        Input("overview-data-dropdown", "value"),
+        prevent_initial_call = True
+    )
+    def update_output_dropdowns(current_options, current_stored_data, n_clicks, operation, publication_output):
+        ctx = callback_context
+        trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+        if trigger_id == "overview-data-dropdown":
+            if publication_output == "full":
+                options = [{"label": j, "value": i} for i, j in Readability().naming_dict_long_names_first.items()]
+            else:
+                options = [{"label": j, "value": i} for i, j in Readability().publication_naming_dict_long_names_first.items()]
+            if current_stored_data: 
+                custom_variable_options = [{"label": i, "value": json.dumps(j)} for i, j in current_stored_data.items()]
+                options = options + custom_variable_options
+            return options, options[0]["value"]
+        else:
+            if n_clicks is None or not current_stored_data:
+                raise PreventUpdate
+            else:
+                # Create a copy of current options to avoid modifying the original
+                updated_options = current_options.copy()
+                
+                # Check for new custom variables and add them to options
+                for custom_var_name, custom_var_data in current_stored_data.items():
+                    all_current_labels = [x["label"] for x in updated_options]
+                    if custom_var_name not in all_current_labels:
+                        value_to_use = json.dumps(custom_var_data)
+                        dict_to_append = {"label": custom_var_name, "value": value_to_use}
+                        updated_options.append(dict_to_append)
+                
+                # Return updated options and keep the current value
+                return updated_options, dash.no_update
+
+# change all scenario menus depending on overview data dropdown
+scenario_dropdowns_to_update_ids = ["scenario-dropdown", "ts-clustering-scenario", "regional-heatmaps-scenario", "output-output-mapping-scenario", "input-output-mapping-scenario", "choropleth-mapping-scenario"]
+for dropdown in scenario_dropdowns_to_update_ids:
+    @app.callback(
+        Output(dropdown, "options"),
+        Output(dropdown, "value"),
+        Input("overview-data-dropdown", "value"),
+        prevent_initial_call = True
+    )
+    def update_scenario_dropdowns(publication_output):
+        if publication_output == "full":
+            options = [{"label":k, "value":v} for k, v in options_obj.scenario_display_names_rev.items()]
+        else:
+            options = [{"label": "Reference", "value": "Ref"}, {"label": "2C", "value": "2C"}]
+        
+        # For multi-select dropdowns, return a list with the first value
+        # For single-select dropdowns, return just the first value
+        if dropdown in ["scenario-dropdown", "regional-heatmaps-scenario"]:
+            return options, [options[0]["value"]]
+        else:
+            return options, options[0]["value"]
+
 # adding slider for histogram when user selects histogram option
 @app.callback(
     Output('slider-area', 'style'),
@@ -1252,6 +1307,7 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
                             n_clicks_styling_changes, existing_figure, upper_bound, lower_bound, plot_bgcolor, toggle_gridlines, overview_data_dropdown):
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+    
     if overview_data_dropdown == "full":
         db = db_full
     elif overview_data_dropdown == "publication":
@@ -1469,9 +1525,8 @@ def timeseries_plot_image_download(n_clicks, figure_data):
 # callback for inputs
 @app.callback(
     Output("input-dist-graph", "figure"),
-    Input("input-dist-options", "value"),
-    Input("expanded-view-input-dist-options", "value"))
-def update_input_dist(inputs, focus_input):
+    Input("input-dist-options", "value"))
+def update_input_dist(inputs):
     if not inputs:
         raise PreventUpdate
     figure = InputDistributionAlternate(inputs).make_plot()
@@ -1495,16 +1550,16 @@ def update_input_dist(inputs, focus_input):
     State("input-output-mapping-setting", "value"),
     State("input-output-mapping-n-estimators", "value"),
     State("input-output-mapping-max-depth", "value"),
-    Input("input-output-mapping-apply-constraints", "n_clicks"),
-    Input("input-output-mapping-mode", "value"),
-    Input("slider-custom-oo-mapping-1", "value"),
-    Input("slider-custom-oo-mapping-2", "value"),
-    Input("slider-custom-oo-mapping-3", "value"),
-    Input("custom-io-mapping-dropdown-1", "value"),
-    Input("custom-io-mapping-dropdown-2", "value"),
-    Input("custom-io-mapping-dropdown-3", "value"),
+    State("input-output-mapping-apply-constraints", "n_clicks"),
+    State("input-output-mapping-mode", "value"),
+    State("slider-custom-oo-mapping-1", "value"),
+    State("slider-custom-oo-mapping-2", "value"),
+    State("slider-custom-oo-mapping-3", "value"),
+    State("custom-io-mapping-dropdown-1", "value"),
+    State("custom-io-mapping-dropdown-2", "value"),
+    State("custom-io-mapping-dropdown-3", "value"),
     Input("input-output-mapping-update-all-settings", "n_clicks"),
-    Input("overview-data-dropdown", "value"),
+    State("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
 def update_io_mapping_figure(output, region, scenario, year, percentile, setting, n_estimators, max_depth, n_clicks, mode, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, update_all_settings, publication_output):
@@ -1576,20 +1631,21 @@ def update_io_mapping_figure(output, region, scenario, year, percentile, setting
     State("input-output-mapping-region", "value"),
     State("input-output-mapping-scenario", "value"),
     State("input-output-mapping-year", "value"),
-    Input("input-output-mapping-mode", "value"),
-    Input("full-cart-tree-depth-dropdown", "value"),
-    Input("input-output-mapping-apply-constraints", "n_clicks"),
+    State("input-output-mapping-mode", "value"),
+    State("full-cart-tree-depth-dropdown", "value"),
+    State("input-output-mapping-apply-constraints", "n_clicks"),
+    State("input-output-mapping-update-all-settings", "n_clicks"),
+    State("slider-custom-oo-mapping-1", "value"),
+    State("slider-custom-oo-mapping-2", "value"),
+    State("slider-custom-oo-mapping-3", "value"),
+    State("custom-io-mapping-dropdown-1", "value"),
+    State("custom-io-mapping-dropdown-2", "value"),
+    State("custom-io-mapping-dropdown-3", "value"),
+    State("overview-data-dropdown", "value"),
     Input("input-output-mapping-update-all-settings", "n_clicks"),
-    Input("slider-custom-oo-mapping-1", "value"),
-    Input("slider-custom-oo-mapping-2", "value"),
-    Input("slider-custom-oo-mapping-3", "value"),
-    Input("custom-io-mapping-dropdown-1", "value"),
-    Input("custom-io-mapping-dropdown-2", "value"),
-    Input("custom-io-mapping-dropdown-3", "value"),
-    Input("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
-def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, update_all_settings, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, publication_output):
+def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, update_all_settings, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, publication_output, update_all_settings_n_clicks):
     if not cart_depth or not output or not region or not scenario or not year:
         raise PreventUpdate
     
@@ -1642,7 +1698,7 @@ def update_tree(output, region, scenario, year, mode, cart_depth, n_clicks, upda
     State("input-output-mapping-n-estimators", "value"),
     State("input-output-mapping-max-depth", "value"),
     Input("input-output-mapping-update-all-settings", "n_clicks"),
-    Input("overview-data-dropdown", "value"),
+    State("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
 def update_permutation_importance(output, region, scenario, year, n_estimators, max_depth, update_all_settings, publication_output):
@@ -1660,127 +1716,127 @@ def update_permutation_importance(output, region, scenario, year, n_estimators, 
 
     return finished_figure
 
-# callback for o/o mapping
-@app.callback(
-    Output("output-output-mapping-parallel-coords-visualize", "figure"),
-    Output("output-output-mapping-figure-container", "hidden"),
-    Output("output-output-mapping-parallel-coords-div", "hidden"),
-    Output("output-output-mapping-figure", "figure"),
-    Output("output-output-mapping-output", "multi"),
-    Output("output-output-mapping-output", "options"),
-    Input("output-output-mapping-mode", "value"),
-    Input("output-output-mapping-output", "value"),
-    Input("output-output-mapping-region", "value"),
-    Input("output-output-mapping-scenario", "value"),
-    Input("output-output-mapping-year", "value"),
-    Input("custom-oo-mapping-dropdown-1", "value"),
-    Input("custom-oo-mapping-dropdown-2", "value"),
-    Input("custom-oo-mapping-dropdown-3", "value"),
-    Input("custom-oo-mapping-dropdown-4", "value"),
-    Input("custom-oo-mapping-dropdown-5", "value"),
-    Input("custom-oo-mapping-dropdown-6", "value"),
-    Input("slider-custom-oo-mapping-1", "value"),
-    Input("slider-custom-oo-mapping-2", "value"),
-    Input("slider-custom-oo-mapping-3", "value"),
-    Input("slider-custom-oo-mapping-4", "value"),
-    Input("slider-custom-oo-mapping-5", "value"),
-    Input("slider-custom-oo-mapping-6", "value"),
-    Input("output-output-mapping-apply-constraints", "n_clicks"),
-    Input("output-output-mapping-parallel-coords-visualize", "figure"),
-    State("output-output-mapping-output", "options"),
-    State("overview-data-dropdown", "value"),
-    prevent_initial_call = True
-)
-def update_output_output_mapping(mode, output, region, scenario, year, dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6, slider_1, slider_2, slider_3, slider_4, slider_5, slider_6, n_clicks, figure, options, publication_output):
-    if not region or not output or not scenario or not year:
-        raise PreventUpdate
+# # callback for o/o mapping
+# @app.callback(
+#     Output("output-output-mapping-parallel-coords-visualize", "figure"),
+#     Output("output-output-mapping-figure-container", "hidden"),
+#     Output("output-output-mapping-parallel-coords-div", "hidden"),
+#     Output("output-output-mapping-figure", "figure"),
+#     Output("output-output-mapping-output", "multi"),
+#     Output("output-output-mapping-output", "options"),
+#     Input("output-output-mapping-mode", "value"),
+#     Input("output-output-mapping-output", "value"),
+#     Input("output-output-mapping-region", "value"),
+#     Input("output-output-mapping-scenario", "value"),
+#     Input("output-output-mapping-year", "value"),
+#     Input("custom-oo-mapping-dropdown-1", "value"),
+#     Input("custom-oo-mapping-dropdown-2", "value"),
+#     Input("custom-oo-mapping-dropdown-3", "value"),
+#     Input("custom-oo-mapping-dropdown-4", "value"),
+#     Input("custom-oo-mapping-dropdown-5", "value"),
+#     Input("custom-oo-mapping-dropdown-6", "value"),
+#     Input("slider-custom-oo-mapping-1", "value"),
+#     Input("slider-custom-oo-mapping-2", "value"),
+#     Input("slider-custom-oo-mapping-3", "value"),
+#     Input("slider-custom-oo-mapping-4", "value"),
+#     Input("slider-custom-oo-mapping-5", "value"),
+#     Input("slider-custom-oo-mapping-6", "value"),
+#     Input("output-output-mapping-apply-constraints", "n_clicks"),
+#     Input("output-output-mapping-parallel-coords-visualize", "figure"),
+#     State("output-output-mapping-output", "options"),
+#     State("overview-data-dropdown", "value"),
+#     prevent_initial_call = True
+# )
+# def update_output_output_mapping(mode, output, region, scenario, year, dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6, slider_1, slider_2, slider_3, slider_4, slider_5, slider_6, n_clicks, figure, options, publication_output):
+#     if not region or not output or not scenario or not year:
+#         raise PreventUpdate
     
-    if publication_output == "full":
-        db = db_full
-    else:
-        db = db_publication
+#     if publication_output == "full":
+#         db = db_full
+#     else:
+#         db = db_publication
 
-    ctx = callback_context
-    trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+#     ctx = callback_context
+#     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
 
-    if mode == "standard":
-        df = DataRetrieval(db, output, region, scenario, year).mapping_df()
-        fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
-        finished_fig = FinishedFigure(fig).make_finished_figure()
+#     if mode == "standard":
+#         df = DataRetrieval(db, output, region, scenario, year).mapping_df()
+#         fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
+#         finished_fig = FinishedFigure(fig).make_finished_figure()
 
-        return go.Figure(), True, True, finished_fig, False, options
+#         return go.Figure(), True, True, finished_fig, False, options
 
-    if mode == "filtered":
-        outputs_to_include = [dropdown for dropdown in [dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6] if dropdown]
-        df = MultiOutputRetrieval(db, outputs_to_include, region, scenario, year).construct_df()
+#     if mode == "filtered":
+#         outputs_to_include = [dropdown for dropdown in [dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6] if dropdown]
+#         df = MultiOutputRetrieval(db, outputs_to_include, region, scenario, year).construct_df()
 
-        filter_fig = go.Figure(data = [
-            go.Parcoords(line = dict(color = "purple"), dimensions = [{"label": col, "values": df[col], "constraintrange": [np.percentile(df[col], x[0]), np.percentile(df[col], x[1])]} for x, col in zip([slider_1, slider_2, slider_3, slider_4, slider_5, slider_6], df.columns[1:])])
-        ])
-        fig = go.Figure()
+#         filter_fig = go.Figure(data = [
+#             go.Parcoords(line = dict(color = "purple"), dimensions = [{"label": col, "values": df[col], "constraintrange": [np.percentile(df[col], x[0]), np.percentile(df[col], x[1])]} for x, col in zip([slider_1, slider_2, slider_3, slider_4, slider_5, slider_6], df.columns[1:])])
+#         ])
+#         fig = go.Figure()
 
-        if type(output) == str: # for some reason, when all outputs are to be used, "all" shows up as a list; however, multiple outputs also show up as a list
-            outputs_to_use = [output]
-        elif type(output) == list:
-            if output[0] == "all":
-                # this approach is necessary because custom variables may be included in the options
-                outputs_to_use = [option["value"] for option in options[1:]] # options[1:] is all outputs, including custom variables, except "all", which isn't an output itself
-            else:
-                outputs_to_use = output
+#         if type(output) == str: # for some reason, when all outputs are to be used, "all" shows up as a list; however, multiple outputs also show up as a list
+#             outputs_to_use = [output]
+#         elif type(output) == list:
+#             if output[0] == "all":
+#                 # this approach is necessary because custom variables may be included in the options
+#                 outputs_to_use = [option["value"] for option in options[1:]] # options[1:] is all outputs, including custom variables, except "all", which isn't an output itself
+#             else:
+#                 outputs_to_use = output
 
-        if trigger_id == "output-output-mapping-apply-constraints":
-            constraint_df = df.copy()
-            constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
+#         if trigger_id == "output-output-mapping-apply-constraints":
+#             constraint_df = df.copy()
+#             constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
 
-            # Iterate through each dropdown/slider pair to apply constraints
-            for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6], [slider_1, slider_2, slider_3, slider_4, slider_5, slider_6]):
-                if dropdown:  # Ensure dropdown has a selection
-                    output_name = readability_obj.naming_dict_long_names_first[dropdown] if dropdown in Options().outputs else json.loads(dropdown)["name"]
-                    lower_bound, upper_bound = np.percentile(df[output_name], slider)
-                    constraint_df["in_constraint_range"] &= ((constraint_df[output_name] >= lower_bound) & (constraint_df[output_name] <= upper_bound)).astype(int)
+#             # Iterate through each dropdown/slider pair to apply constraints
+#             for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6], [slider_1, slider_2, slider_3, slider_4, slider_5, slider_6]):
+#                 if dropdown:  # Ensure dropdown has a selection
+#                     output_name = readability_obj.naming_dict_long_names_first[dropdown] if dropdown in Options().outputs else json.loads(dropdown)["name"]
+#                     lower_bound, upper_bound = np.percentile(df[output_name], slider)
+#                     constraint_df["in_constraint_range"] &= ((constraint_df[output_name] >= lower_bound) & (constraint_df[output_name] <= upper_bound)).astype(int)
 
-            color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
-            fig = go.Figure(data=[
-                go.Parcoords(
-                    line=dict(
-                        color=constraint_df["in_constraint_range"],
-                        colorscale=color_scale,
-                        showscale=True,
-                        colorbar=dict(
-                            title='In Constraint Range',
-                            tickvals=[0.25, 0.75],
-                            ticktext=['Out', 'In']
-                        )
-                    ),
-                    dimensions=[
-                        {"label": col, "values": constraint_df[col]} for col in constraint_df.columns[1:-1]
-                    ]
-                )
-            ])
+#             color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
+#             fig = go.Figure(data=[
+#                 go.Parcoords(
+#                     line=dict(
+#                         color=constraint_df["in_constraint_range"],
+#                         colorscale=color_scale,
+#                         showscale=True,
+#                         colorbar=dict(
+#                             title='In Constraint Range',
+#                             tickvals=[0.25, 0.75],
+#                             ticktext=['Out', 'In']
+#                         )
+#                     ),
+#                     dimensions=[
+#                         {"label": col, "values": constraint_df[col]} for col in constraint_df.columns[1:-1]
+#                     ]
+#                 )
+#             ])
 
-            fig = FilteredOutputOutputMappingPlot(db, outputs_to_use, constraint_df, region, scenario, year).make_plot()
+#             fig = FilteredOutputOutputMappingPlot(db, outputs_to_use, constraint_df, region, scenario, year).make_plot()
 
-        if options[0]["value"] == "all":
-            new_options = options
-        else:
-            new_options = [{"label": "All", "value": "all"}] + options
+#         if options[0]["value"] == "all":
+#             new_options = options
+#         else:
+#             new_options = [{"label": "All", "value": "all"}] + options
         
-        return filter_fig, False, False, fig, True, new_options
+#         return filter_fig, False, False, fig, True, new_options
     
-    # this mode has been deprecated, but I'm leaving the code here for now in case we need it in the future
-    # the purpose of this mode was to look at the upper and lower ranges of the output variables, but that's 
-    # just a more specific case of the filtered mode
-    # if mode == "high-low":
-    #     df_upper = DataRetrieval(db, output, region, scenario, year).mapping_df()
-    #     df_lower = df_upper.copy()
+#     # this mode has been deprecated, but I'm leaving the code here for now in case we need it in the future
+#     # the purpose of this mode was to look at the upper and lower ranges of the output variables, but that's 
+#     # just a more specific case of the filtered mode
+#     # if mode == "high-low":
+#     #     df_upper = DataRetrieval(db, output, region, scenario, year).mapping_df()
+#     #     df_lower = df_upper.copy()
 
         
-    #     fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
-    #     finished_fig = FinishedFigure(fig).make_finished_figure()
+#     #     fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
+#     #     finished_fig = FinishedFigure(fig).make_finished_figure()
 
-    #     return go.Figure(), True, True, finished_fig, False, options
+#     #     return go.Figure(), True, True, finished_fig, False, options
 
-    #     return filter_fig, False, False, fig, True, options
+#     #     return filter_fig, False, False, fig, True, options
 
 # callback for regional heatmaps
 @app.callback(Output("regional-heatmaps-figure", "figure"),
@@ -1788,7 +1844,7 @@ def update_output_output_mapping(mode, output, region, scenario, year, dropdown_
               State("regional-heatmaps-output", "value"),
               State("regional-heatmaps-region", "value"),
               State("regional-heatmaps-scenario", "value"),
-              Input("overview-data-dropdown", "value"),
+              State("overview-data-dropdown", "value"),
               prevent_initial_call = True)
 def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios, publication_output):
     if not regions or not output or not scenarios:
@@ -1798,7 +1854,7 @@ def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios, public
         db = db_full
     else:
         db = db_publication
-    
+
     df = pd.DataFrame()
     for reg in regions:
         for sce in scenarios:
@@ -1818,29 +1874,29 @@ def update_regional_heatmaps_figure(n_clicks, output, regions, scenarios, public
 
     return fig
 
-# callback for choropleth mapping
-@app.callback(
-    Output("choropleth-mapping-figure", "figure"),
-    Input("choropleth-mapping-output", "value"),
-    Input("choropleth-mapping-scenario", "value"),
-    Input("choropleth-mapping-year", "value"),
-    Input("overview-data-dropdown", "value"),
-    prevent_initial_call = True
-)
-def update_figure(output, scenario, year, publication_output):
-    if not scenario or not output or not year:
-        raise PreventUpdate
+# # callback for choropleth mapping
+# @app.callback(
+#     Output("choropleth-mapping-figure", "figure"),
+#     Input("choropleth-mapping-output", "value"),
+#     Input("choropleth-mapping-scenario", "value"),
+#     Input("choropleth-mapping-year", "value"),
+#     State("overview-data-dropdown", "value"),
+#     prevent_initial_call = True
+# )
+# def update_figure(output, scenario, year, publication_output):
+#     if not scenario or not output or not year:
+#         raise PreventUpdate
     
-    if publication_output == "full":
-        db = db_full
-    else:
-        db = db_publication
+#     if publication_output == "full":
+#         db = db_full
+#     else:
+#         db = db_publication
     
-    df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
-    unstyled_fig = ChoroplethMap(df, output, scenario, year, 5, 95)
-    finished_fig = FinishedFigure(unstyled_fig).make_finished_figure()
+#     df = DataRetrieval(db, output, "GLB", scenario, year).choropleth_map_df(5, 95)
+#     unstyled_fig = ChoroplethMap(df, output, scenario, year, 5, 95)
+#     finished_fig = FinishedFigure(unstyled_fig).make_finished_figure()
 
-    return finished_fig
+#     return finished_fig
 
 # callback for ts clustering
 @app.callback(
@@ -1852,6 +1908,7 @@ def update_figure(output, scenario, year, publication_output):
     Input("ts-clustering-scenario", "value"),
     Input("ts-clustering-n-clusters", "value"),
     Input("ts-clustering-metric", "value"),
+    State("overview-data-dropdown", "value"),
     prevent_initial_call = True
 )
 def update_figure(output, region, scenario, n_clusters, metric, publication_output):
@@ -1865,12 +1922,10 @@ def update_figure(output, region, scenario, n_clusters, metric, publication_outp
 
     df = DataRetrieval(db, output, region, scenario).single_output_df()
     fig_obj = TimeSeriesClusteringPlot(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
-    finished_figure = FinishedFigure(fig_obj).make_finished_figure()
 
     cart_fig_obj = TimeSeriesClusteringPlotCART(df, output, region, scenario, n_clusters = n_clusters, metric = metric)
-    cart_finished_figure = FinishedFigure(cart_fig_obj).make_finished_figure()
 
-    return finished_figure, cart_finished_figure
+    return fig_obj.fig, cart_fig_obj.fig
 
 # callback for dynamic display of custom variables tab
 @app.callback(
@@ -2002,62 +2057,6 @@ def update_stress_connection_table(inputs, outputs, color, region, scenario, yea
         print(figure["data"][0]["dimensions"][0]["line"])
 
     return dbc.Table.from_dataframe(df, striped = True, bordered = True, hover = True, size = "sm")
-
-output_dropdowns_to_update_ids = ["output-dropdown", "input-output-mapping-output", "choropleth-mapping-output", "ts-clustering-output", "output-output-mapping-output", "regional-heatmaps-output",
-                                  "custom-io-mapping-dropdown-1", "custom-io-mapping-dropdown-2", "custom-io-mapping-dropdown-3",
-                                  "custom-oo-mapping-dropdown-1", "custom-oo-mapping-dropdown-2", "custom-oo-mapping-dropdown-3", "custom-oo-mapping-dropdown-4", 
-                                  "custom-oo-mapping-dropdown-5", "custom-oo-mapping-dropdown-6"]
-for dropdown in output_dropdowns_to_update_ids:
-    @app.callback(
-        Output(dropdown, "options", allow_duplicate = True),
-        Output(dropdown, "value"),
-        State(dropdown, "options"),
-        Input("stored-custom-variables", "data"),
-        Input("create-custom-variable-button", "n_clicks"),
-        Input("custom-vars-operation", "value"),
-        Input("overview-data-dropdown", "value"),
-        prevent_initial_call = True
-    )
-    def update_output_dropdowns(current_options, current_stored_data, n_clicks, operation, publication_output):
-        ctx = callback_context
-        trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
-        if trigger_id == "overview-data-dropdown":
-            if publication_output == "full":
-                options = [{"label": j, "value": i} for i, j in Readability().naming_dict_long_names_first.items()]
-            else:
-                options = [{"label": j, "value": i} for i, j in Readability().publication_naming_dict_long_names_first.items()]
-            if current_stored_data: 
-                custom_variable_options = [{"label": i, "value": json.dumps(j)} for i, j in current_stored_data.items()]
-                options = options + custom_variable_options
-            return options, options[0]["value"]
-        else:
-            if n_clicks is None:
-                raise PreventUpdate
-            else:
-                for custom_var_name in current_stored_data.keys():
-                    all_current_outputs = [x["label"] for x in current_options]
-                    if custom_var_name not in all_current_outputs:
-                        value_to_use = json.dumps(current_stored_data[custom_var_name])
-                        dict_to_append = {"label": custom_var_name, "value": value_to_use}
-                        current_options.append(dict_to_append)
-                return current_options
-
-# change all scenario menus depending on overview data dropdown
-scenario_dropdowns_to_update_ids = ["scenario-dropdown", "ts-clustering-scenario", "regional-heatmaps-scenario", "output-output-mapping-scenario", "input-output-mapping-scenario", "choropleth-mapping-scenario"]
-for dropdown in scenario_dropdowns_to_update_ids:
-    @app.callback(
-        Output(dropdown, "options", allow_duplicate = True),
-        Output(dropdown, "value"),
-        State(dropdown, "options"),
-        Input("overview-data-dropdown", "value"),
-        prevent_initial_call = True
-    )
-    def update_scenario_dropdowns(current_options, publication_output):
-        if publication_output == "full":
-            options = [{"label":k, "value":v} for k, v in options_obj.scenario_display_names_rev.items()]
-        else:
-            options = [{"label": "Reference", "value": "Ref"}, {"label": "2C", "value": "2C"}]
-        return options, [options[0]["value"]]
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

@@ -322,6 +322,11 @@ class ModifyOutputTimeseries(DashboardFigure):
         self.change_fig = change_fig
 
     def get_combinations(self):
+        if not isinstance(self.regions, list):
+            self.regions = [self.regions]
+        if not isinstance(self.scenarios, list):
+            self.scenarios = [self.scenarios]
+
         return product([self.output], self.regions, self.scenarios)
 
     def remove_traces(self):

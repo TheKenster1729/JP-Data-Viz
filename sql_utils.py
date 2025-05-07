@@ -246,34 +246,39 @@ class DataRetrieval:
         variable_dict = self.parse_nested_json(variable_dict)
         operation = variable_dict["operation"]
         if operation == "addition":
-            result = 0
+            result = None
             for output in variable_dict["outputs"]:
                 if isinstance(output, dict):
-                    result += self.recurse_custom_variables(output)
+                    current_df = self.recurse_custom_variables(output)
                 else:
-                    if result == 0:
-                        result = self.get_df(output)
-                    else:
-                        # the VariableOutput class supports edge cases, so we use it here to not write the same code again
-                        output1 = VariableOutput(output, output, self.region, self.scenario, result, year = self.year)
-                        output2 = VariableOutput(output, output, self.region, self.scenario, self.get_df(output), year = self.year)
-                        result = output1 + output2 # this is a dataframe
+                    current_df = self.get_df(output)
+                
+                if result is None:
+                    result = current_df
+                else:
+                    # the VariableOutput class supports edge cases, so we use it here to not write the same code again
+                    output1 = VariableOutput(output, output, self.region, self.scenario, result, year = self.year)
+                    output2 = VariableOutput(output, output, self.region, self.scenario, current_df, year = self.year)
+                    result = output1 + output2 # this is a dataframe
             return result
 
         output1 = variable_dict["output1"]
+        output1_name = output1.get("name", "nested_operation") if isinstance(output1, dict) else output1
         if isinstance(output1, dict):
             output1_value = self.recurse_custom_variables(output1)
         else:
             output1_value = self.get_df(output1)
 
         output2 = variable_dict["output2"]
+        output2_name = output2.get("name", "nested_operation") if isinstance(output2, dict) else output2
         if isinstance(output2, dict):
             output2_value = self.recurse_custom_variables(output2)
         else:
             output2_value = self.get_df(output2)
 
-        output1_value = VariableOutput(output1, output1, self.region, self.scenario, output1_value, year = self.year)
-        output2_value = VariableOutput(output2, output2, self.region, self.scenario, output2_value, year = self.year)
+        # Now using the extracted names instead of the original objects
+        output1_value = VariableOutput(output1_name, output1_name, self.region, self.scenario, output1_value, year = self.year)
+        output2_value = VariableOutput(output2_name, output2_name, self.region, self.scenario, output2_value, year = self.year)
         if operation == "subtraction":
             return output1_value - output2_value
         elif operation == "multiplication":

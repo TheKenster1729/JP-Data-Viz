@@ -131,7 +131,6 @@ class OutputOutputMapping:
 
         # create the X data frame for CART for this input/region/scenario/year combination
         main_df = pd.DataFrame(data = {"Run #": target_output_run_numbers})
-        print(self.db_obj.dbname)
         if self.db_obj.dbname == "full":
             options_to_use = list(Options().outputs)
         elif self.db_obj.dbname == "publication":

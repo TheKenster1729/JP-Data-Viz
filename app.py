@@ -1010,45 +1010,59 @@ time_series_clustering = html.Div(id = "ts-clustering", style = {"padding": 20},
 
 custom_variables = html.Div(children = 
     [
-        html.Div(style = {'display': 'flex', 'alignItems': 'center', 'padding': '20px'},
+        html.Div(style = {'display': 'flex', 'align-items': 'center', 'padding': '20px'},
             children = [
                 html.Span("I would like to create a custom variable called ", style = {'margin-right': '10px'}, className = "text-info"),
                 dcc.Input(id = "custom-vars-var-name", style = {"margin-right": "10px", 'width': '200px'}),
                 html.Span("by", className = "text-info")
             ]
         ),
-        html.Div(id = "custom-vars-fill-area", style = {'display': 'flex', 'alignItems': 'center', "margin-left": "100px"},
+        html.Div(id = "custom-vars-fill-area", style = {'display': 'flex', 'align-items': 'center', "margin-left": "100px"},
             children = [
                 dcc.Dropdown(
                     id = "custom-vars-operation", 
-                    options = [{"label": "Dividing", "value": "division"}, {"label": "Adding", "value": "addition"}, {"label": "Multiplying", "value": "multiplication"}, {"label": "Subtracting", "value": "subtraction"}],
+                    options = [
+                        {"label": "Dividing", "value": "division"}, 
+                        {"label": "Adding", "value": "addition"},
+                        {"label": "Multiplying", "value": "multiplication"},
+                        {"label": "Subtracting", "value": "subtraction"}
+                    ],
                     placeholder = "Operation",
                     style = {"width": "200px", "margin-right": "10px"}
                 ),
                 html.Div(id = "custom-vars-output-dropdown-div",
-                    children = [
-                ])
-            ]
-        ),
-        html.Div(style = {"padding": 20},
-            children = [
-                dbc.Button(id = "create-custom-variable-button", children = "Create", className = "btn btn-primary btn-lg"),
-                dbc.Modal(
-                    [
-                        dbc.ModalHeader(dbc.ModalTitle("Success!"), close_button = True),
-                        dbc.ModalFooter(
-                            dbc.Button(
-                                "Close",
-                                id = "close-centered",
-                                className = "ms-auto",
-                                n_clicks = 0,
-                            )
-                        )
-                    ],
-                    id = "custom-variable-created-modal",
-                    is_open = False,
+                    children = []
                 )
             ]
+        ),
+        html.Div(id="operation-description", className="text-muted", style={"margin-left": "100px", "margin-top": "5px"}),
+        html.Div(id="custom-variable-error", style={"display": "none"}),
+        html.Div(style = {"padding": 20, "display": "flex", "gap": "10px"},
+            children = [
+                dbc.Button(id = "preview-custom-variable-button", children = "Preview", className = "btn btn-secondary"),
+                dbc.Button(id = "create-custom-variable-button", children = "Create", className = "btn btn-primary btn-lg"),
+            ]
+        ),
+        html.Div(id="preview-container", style={"display": "none"},
+            children=[
+                dcc.Graph(id="custom-variable-preview", style={"height": "300px"})
+            ]
+        ),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Success!"), close_button = True),
+                dbc.ModalBody("Your custom variable has been created successfully."),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Close",
+                        id = "close-centered",
+                        className = "ms-auto",
+                        n_clicks = 0,
+                    )
+                )
+            ],
+            id = "custom-variable-created-modal",
+            is_open = False,
         )
     ]
 )
@@ -1380,90 +1394,6 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
             fig.update_yaxes(showgrid = toggle_gridlines)
 
             return fig
-
-        # current_trace_info = TraceInfo(existing_figure)
-        # if current_trace_info.type[0] == "histogram": # means active figure is histogram, so need to generate scatter 
-        #     for region, scenario in product(selected_regions, selected_scenarios):
-        #         new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
-        #         traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
-
-        #     try:
-        #         title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
-        #     except KeyError:
-        #         title_text = "Time Series for {}".format(json.loads(output_name)["name"])
-
-        #     fig = go.Figure(traces_to_add)
-        #     fig.update_layout(
-        #         height = 625,
-        #         margin = dict(t = 40, b = 0, l = 10),
-        #         title_text = title_text,
-        #         # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-        #         xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
-        #         plot_bgcolor = plot_bgcolor
-        #     )
-        #     fig.update_xaxes(showgrid = toggle_gridlines)
-        #     fig.update_yaxes(showgrid = toggle_gridlines)
-        #     return fig
-        # else:
-        #     combos_with_trace_name = list(product(selected_regions, selected_scenarios, ["lower", "median", "upper"]))
-        #     current_traces = current_trace_info.traces
-        #     custom_data_just_strings = [i[0] for i in current_trace_info.custom_data]
-        #     existing_selections = set(custom_data_just_strings)
-        #     all_selections = set(["{}|{}|{}|{}".format(output_name, reg, sce, trace_name) for reg, sce, trace_name in combos_with_trace_name])
-
-        #     # changes to make
-        #     if trigger_id == "output-color-scheme":
-        #         # without this logic, the color of the figure will not update when the color scheme is changed
-        #         # what this does is take all existing plots and changes color according to what the new color scheme dictates
-        #         existing_figure_data = existing_figure["data"]
-        #         for i in existing_figure_data:
-        #             trace_name = i["customdata"][0]
-        #             region = trace_name.split(' ')[-3]
-        #             scenario = trace_name.split(' ')[-2]
-        #             if color_scheme == "by-region":
-        #                 color = Color().get_color_for_timeseries(color_scheme, region)
-        #             elif color_scheme == "by-scenario":
-        #                 color = Color().get_color_for_timeseries(color_scheme, scenario)
-        #             elif color_scheme == "standard":
-        #                 color = Color().get_color_for_timeseries(color_scheme, [region, scenario])
-
-        #             i["line"]["color"] = color
-
-        #     no_change = existing_selections.intersection(all_selections)
-        #     to_delete = existing_selections.difference(all_selections)
-        #     to_add = all_selections.difference(existing_selections)
-
-        #     # removing traces - well, keeping ones that haven't been removed
-        #     indices_to_delete = [custom_data_just_strings.index(i) for i in to_delete]
-        #     indices_to_keep = [i for i in range(len(current_traces)) if i not in indices_to_delete]
-        #     current_traces = [current_traces[i] for i in indices_to_keep]
-
-        #     # adding traces
-        #     new_traces = []
-        #     decomposed_traces_to_add = set([i.split("|")[0] + "|" + i.split("|")[1] + "|" + i.split("|")[2] for i in to_add])
-        #     for i in decomposed_traces_to_add:
-        #         output, reg, sce = tuple(i.split("|"))
-        #         new_trace_df = DataRetrieval(db, output_name, reg, sce).single_output_df_to_graph(lower_bound, upper_bound)
-        #         traces_to_add = NewTimeSeries(output_name, reg, sce, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
-        #         new_traces += traces_to_add
-
-        #     if output_name not in options_obj.outputs:
-        #         title_text = "Time Series for " + json.loads(output_name)["name"]
-        #     else:
-        #         title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name])
-
-        #     fig = go.Figure(data = current_traces + new_traces)
-        #     fig.update_layout(
-        #         height = 625,
-        #         margin = dict(t = 40, b = 0, l = 10),
-        #         title_text = title_text,
-        #         # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-        #         xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
-        #         plot_bgcolor = plot_bgcolor
-        #     )
-        #     fig.update_xaxes(showgrid = toggle_gridlines)
-        #     fig.update_yaxes(showgrid = toggle_gridlines)
-        #     return fig
 
     else:
         if not selected_regions or not selected_scenarios:
@@ -1932,77 +1862,127 @@ def update_figure(output, region, scenario, n_clusters, metric, publication_outp
     Output("custom-vars-output-dropdown-div", "children"),
     Output("custom-vars-operation", "value"),
     Output("custom-vars-var-name", "value"),
+    Output("operation-description", "children"),
     Input("custom-vars-operation", "value"),
     Input("close-centered", "n_clicks"),
     State("output-dropdown", "options"),
-    State("custom-vars-var-name", "value")
+    State("custom-vars-var-name", "value"),
+    State("overview-data-dropdown", "value"),
+    prevent_initial_call=True
 )
-def dynamic_custom_variables_fill(operation_type, n_clicks, options, var_name):
+def dynamic_custom_variables_fill(operation_type, n_clicks, options, var_name, dataset_type):
     if not operation_type:
         raise PreventUpdate
 
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
-
+    
+    # Get the appropriate options based on the selected dataset
+    if dataset_type == "publication":
+        # You might need to filter options for publication dataset
+        filtered_options = [opt for opt in options if opt.get("dataset") == "publication"]
+    else:
+        filtered_options = options
+    
+    description = ""
+    
     if trigger_id == "custom-vars-operation":
         if operation_type == "division":
-                return [(
-                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
-                        placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
-                    html.Span("by", style = {'margin-right': '10px'}),
-                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", options = options,
-                                placeholder = "Output 2",
-                                style = {"width": "500px"})
-                        ), operation_type, var_name]
+            description = "Divides the first variable by the second variable. Handles division by zero by removing those data points."
+            return [(
+                dcc.Dropdown(id="custom-vars-output-1-dropdown-div-1", options=filtered_options,
+                    placeholder="Output 1", style={"margin-right": "10px", "width": "500px"}),
+                html.Span("by", style={'margin-right': '10px'}),
+                dcc.Dropdown(id="custom-vars-output-2-dropdown-div-2", options=filtered_options,
+                            placeholder="Output 2",
+                            style={"width": "500px"})
+                    ), operation_type, var_name, description]
+        
         if operation_type == "addition":
-            return [(dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
-                        placeholder = "Select Outputs to Add", style = {"margin-right": "10px", "width": "1000px"}, multi = True),
-                        dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", style = {"display": "none"})), operation_type, var_name]
+            description = "Adds multiple variables together. Variables must have matching run numbers."
+            return [(dcc.Dropdown(id="custom-vars-output-1-dropdown-div-1", options=filtered_options,
+                        placeholder="Select Outputs to Add", style={"margin-right": "10px", "width": "1000px"}, multi=True),
+                        dcc.Dropdown(id="custom-vars-output-2-dropdown-div-2", style={"display": "none"})), 
+                        operation_type, var_name, description]
+        
         if operation_type == "multiplication":
-                return [(
-                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
-                        placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
-                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", options = options,
-                                placeholder = "Output 2",
-                                style = {"width": "500px"})
-                        ), operation_type, var_name]
+            description = "Multiplies the first variable by the second variable."
+            return [(
+                dcc.Dropdown(id="custom-vars-output-1-dropdown-div-1", options=filtered_options,
+                    placeholder="Output 1", style={"margin-right": "10px", "width": "500px"}),
+                dcc.Dropdown(id="custom-vars-output-2-dropdown-div-2", options=filtered_options,
+                            placeholder="Output 2",
+                            style={"width": "500px"})
+                    ), operation_type, var_name, description]
+        
         if operation_type == "subtraction":
-                return [(
-                    dcc.Dropdown(id = "custom-vars-output-1-dropdown-div-1", options = options,
-                        placeholder = "Output 1", style = {"margin-right": "10px", "width": "500px"}),
-                    dcc.Dropdown(id = "custom-vars-output-2-dropdown-div-2", options = options,
-                                placeholder = "Output 2",
-                                style = {"width": "500px"})
-                        ), operation_type, var_name]
+            description = "Subtracts the second variable from the first variable."
+            return [(
+                dcc.Dropdown(id="custom-vars-output-1-dropdown-div-1", options=filtered_options,
+                    placeholder="Output 1", style={"margin-right": "10px", "width": "500px"}),
+                dcc.Dropdown(id="custom-vars-output-2-dropdown-div-2", options=filtered_options,
+                            placeholder="Output 2",
+                            style={"width": "500px"})
+                    ), operation_type, var_name, description]
 
     if trigger_id == "close-centered":
-        return [[], "", ""]
+        return [[], "", "", ""]
+    
+    # Default return
+    return [[], operation_type, var_name, description]
 
-# callback for custom variables
 @app.callback(
     Output("stored-custom-variables", "data"),
+    Output("custom-variable-error", "children"),
+    Output("custom-variable-error", "style"),
     State("stored-custom-variables", "data"),
     State("custom-vars-var-name", "value"),
     State("custom-vars-output-1-dropdown-div-1", "value"),
     State("custom-vars-output-2-dropdown-div-2", "value"),
     State("custom-vars-operation", "value"),
     Input("create-custom-variable-button", "n_clicks"),
-    prevent_initial_call = True
+    prevent_initial_call=True
 )
 def update_custom_variables(current_data, var_name, output_1, output_2, operation, n_clicks):
     if n_clicks is None:
         raise PreventUpdate
+    
+    # Initialize error message and style
+    error_msg = ""
+    error_style = {"display": "none"}
+    
+    # Validate inputs
+    if not var_name or var_name.strip() == "":
+        error_msg = "Please provide a name for your custom variable."
+        error_style = {"color": "red", "margin-top": "10px"}
+        return current_data, error_msg, error_style
+    
+    # Check if variable name already exists
     current_data = current_data or {}
-    if operation == "division":
-        current_data[var_name] = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
+    if var_name in current_data:
+        error_msg = f"A variable named '{var_name}' already exists. Please choose a different name."
+        error_style = {"color": "red", "margin-top": "10px"}
+        return current_data, error_msg, error_style
+    
+    # Validate operation-specific inputs
     if operation == "addition":
+        if not output_1 or len(output_1) == 0:
+            error_msg = "Please select at least one output to add."
+            error_style = {"color": "red", "margin-top": "10px"}
+            return current_data, error_msg, error_style
         current_data[var_name] = {"operation": operation, "outputs": output_1, "name": var_name}
-    if operation == "multiplication":
+    elif operation in ["division", "multiplication", "subtraction"]:
+        if not output_1 or not output_2:
+            error_msg = "Please select both outputs for this operation."
+            error_style = {"color": "red", "margin-top": "10px"}
+            return current_data, error_msg, error_style
         current_data[var_name] = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
-    if operation == "subtraction":
-        current_data[var_name] = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
-
-    return current_data
+    else:
+        error_msg = "Invalid operation selected."
+        error_style = {"color": "red", "margin-top": "10px"}
+        return current_data, error_msg, error_style
+    
+    return current_data, "", {"display": "none"}
 
 # callback for modal pop-up on custom variables tab
 @app.callback(
@@ -2057,6 +2037,97 @@ def update_stress_connection_table(inputs, outputs, color, region, scenario, yea
         print(figure["data"][0]["dimensions"][0]["line"])
 
     return dbc.Table.from_dataframe(df, striped = True, bordered = True, hover = True, size = "sm")
+
+@app.callback(
+    Output("custom-variable-preview", "figure"),
+    Output("preview-container", "style"),
+    Input("preview-custom-variable-button", "n_clicks"),
+    State("custom-vars-var-name", "value"),
+    State("custom-vars-output-1-dropdown-div-1", "value"),
+    State("custom-vars-output-2-dropdown-div-2", "value"),
+    State("custom-vars-operation", "value"),
+    State("overview-data-dropdown", "value"),
+    prevent_initial_call=True
+)
+def preview_custom_variable(n_clicks, var_name, output_1, output_2, operation, dataset_type):
+    if n_clicks is None or not var_name:
+        raise PreventUpdate
+    
+    # Select the appropriate database
+    if dataset_type == "full":
+        db = db_full
+    else:
+        db = db_publication
+    
+    # Default region and scenario for preview
+    region = "GLB"  # Global
+    scenario = "2C_med"  # A common scenario
+    
+    try:
+        # Create a temporary variable definition
+        temp_var = {}
+        if operation == "addition":
+            if not output_1 or len(output_1) == 0:
+                raise ValueError("No outputs selected for addition")
+            temp_var = {"operation": operation, "outputs": output_1, "name": var_name}
+        elif operation in ["division", "multiplication", "subtraction"]:
+            if not output_1 or not output_2:
+                raise ValueError("Both outputs must be selected")
+            temp_var = {"operation": operation, "output1": output_1, "output2": output_2, "name": var_name}
+        
+        # Use your existing DataRetrieval class to process the custom variable
+        data_retrieval = DataRetrieval(db, temp_var, region, scenario)
+        df = data_retrieval.single_output_df_to_graph(5, 95)  # Using 5th and 95th percentiles
+        
+        # Create a simple time series plot
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df.index,
+            y=df['Median'],
+            mode='lines',
+            name='Median',
+            line=dict(color='blue')
+        ))
+        
+        # Get the correct column names from the DataFrame
+        lower_col = df.columns[0]  # First column should be the lower percentile
+        upper_col = df.columns[2]  # Third column should be the upper percentile
+        
+        fig.add_trace(go.Scatter(
+            x=df.index,
+            y=df[lower_col],
+            mode='lines',
+            name=lower_col,
+            line=dict(color='lightblue')
+        ))
+        fig.add_trace(go.Scatter(
+            x=df.index,
+            y=df[upper_col],
+            mode='lines',
+            name=upper_col,
+            line=dict(color='lightblue')
+        ))
+        
+        fig.update_layout(
+            title=f"Preview of {var_name}",
+            xaxis_title="Year",
+            yaxis_title="Value",
+            legend_title="Statistics"
+        )
+        
+        return fig, {"display": "block"}
+    
+    except Exception as e:
+        # Create an error figure
+        fig = go.Figure()
+        fig.add_annotation(
+            text=f"Error creating preview: {str(e)}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(color="red", size=14)
+        )
+        return fig, {"display": "block"}
 
 if __name__ == '__main__':
     app.run(debug = True, host = "localhost")

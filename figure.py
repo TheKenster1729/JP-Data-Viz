@@ -307,7 +307,7 @@ class NewTimeSeries(DashboardFigure):
         fig = go.Figure(traces)
 
 class ModifyOutputTimeseries(DashboardFigure):
-    def __init__(self, output, regions, scenarios, existing_figure, styling_params, database, lower_bound = 5, upper_bound = 95, change_fig = False):
+    def __init__(self, output, regions, scenarios, existing_figure, styling_params, database, lower_bound=5, upper_bound=95, change_fig=False):
         super().__init__("output-time-series")
         self.output = output
         self.regions = regions
@@ -320,6 +320,17 @@ class ModifyOutputTimeseries(DashboardFigure):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.change_fig = change_fig
+        
+        # Extract output ID for custom variables
+        if isinstance(self.output, str) and self.output.startswith('{'):
+            try:
+                # For custom variables, use a consistent ID based on the variable name
+                custom_var = json.loads(self.output)
+                self.output_id = f"custom_{custom_var.get('name', 'var')}"
+            except:
+                self.output_id = "custom_var"
+        else:
+            self.output_id = self.output
 
     def get_combinations(self):
         if not isinstance(self.regions, list):
@@ -327,7 +338,7 @@ class ModifyOutputTimeseries(DashboardFigure):
         if not isinstance(self.scenarios, list):
             self.scenarios = [self.scenarios]
 
-        return product([self.output], self.regions, self.scenarios)
+        return product([self.output_id], self.regions, self.scenarios)
 
     def remove_traces(self):
         new_figure = self.existing_figure
@@ -342,8 +353,9 @@ class ModifyOutputTimeseries(DashboardFigure):
     def trace_already_exists(self, uid, figure):
         return uid in [trace.uid for trace in figure.data]
 
-    def get_df(self, output, region, scenario):
-        df = DataRetrieval(self.database, output, region, scenario).single_output_df_to_graph(self.lower_bound, self.upper_bound)
+    def get_df(self, output_id, region, scenario):
+        # Use the original output value (which might be a JSON string) for data retrieval
+        df = DataRetrieval(self.database, self.output, region, scenario).single_output_df_to_graph(self.lower_bound, self.upper_bound)
         return df
 
     def create_new_figure(self):
@@ -355,7 +367,12 @@ class ModifyOutputTimeseries(DashboardFigure):
             uid = f"{combo[0]}_{combo[1]}_{combo[2]}"
             if not self.trace_already_exists(uid, new_figure):
                 df = self.get_df(combo[0], combo[1], combo[2])
-                traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
+                # Create a modified NewTimeSeries that uses our output_id for UIDs
+                ts = NewTimeSeries(self.output, combo[1], combo[2], 2050, df, styling_options=self.styling_params)
+                # Override the UIDs in the traces
+                traces_to_add = ts.return_traces()
+                for trace in traces_to_add:
+                    trace.uid = uid
                 new_figure.add_traces(traces_to_add)
 
         if self.change_fig:
@@ -363,11 +380,16 @@ class ModifyOutputTimeseries(DashboardFigure):
             new_figure.data = []
             for combo in combinations_list:
                 df = self.get_df(combo[0], combo[1], combo[2])
-                traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
+                ts = NewTimeSeries(self.output, combo[1], combo[2], 2050, df, styling_options=self.styling_params)
+                traces_to_add = ts.return_traces()
+                # Override the UIDs in the traces
+                uid = f"{combo[0]}_{combo[1]}_{combo[2]}"
+                for trace in traces_to_add:
+                    trace.uid = uid
                 new_figure.add_traces(traces_to_add)
 
         return new_figure
-
+    
 class OutputHistograms(DashboardFigure):
     def __init__(self, output, regions, scenarios, year, db_obj, styling_options = None):
         super().__init__("output-histograms")

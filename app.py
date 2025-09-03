@@ -24,7 +24,7 @@ app = dash.Dash(__name__, external_stylesheets = [dbc.themes.PULSE, dbc.icons.BO
 
 # initialize SQL database and other UI elements
 db_full = SQLConnection("all_data_aug_2024")
-db_publication = SQLConnection("publication")
+# db_publication = SQLConnection("publication") # # need to add this back in overview once ready
 readability_obj = Readability()
 options_obj = Options()
 
@@ -84,7 +84,7 @@ overview = html.Div(id = "overview-content", style = {"padding": 20},
                         dbc.Row(html.H3("Data Selection")),
                         dbc.Row(html.P("Select the data you want to visualize.")),
                         dcc.Dropdown(id = "overview-data-dropdown", 
-                                     options = [{"label": "Full Dataset", "value": "full"}, {"label": "Publication Dataset", "value": "publication"}], 
+                                     options = [{"label": "Full Dataset", "value": "full"}], 
                                      value = "full",
                                     ),
                     ]

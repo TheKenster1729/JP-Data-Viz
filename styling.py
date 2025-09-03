@@ -118,7 +118,7 @@ class Color:
                               "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
         self.scenario_colors = {"15C_med": "#750e13", "15C_opt": "#ffb3b8", "About15C_pes": "#740937", "About15C_med": "#ffafd2",
                                 "About15C_opt": "#491d8b", "2C_pes": "#d4bbff", "2C_med": "#002d9c", "2C_opt": "#a6c8ff",
-                                "Above2C_pes": "#003a6d", "Above2C_med": "#82cfff", "Above2C_opt": "#004144", "Ref": "#3ddbd9"}
+                                "Above2C_pes": "#003a6d", "Above2C_med": "#82cfff", "Above2C_opt": "#004144", "Ref": "#3ddbd9", "2C": "#db3d3f"}
         self.scenario_markers = {"Ref": "solid", "Above2C_med": "dot", "2C_med": "dash"}
         self.histogram_patterns = {"Ref": "", "2C": "/"}
         self.parallel_coords_colors = ["#785EF0", "#FFB000"]

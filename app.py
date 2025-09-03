@@ -132,19 +132,19 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
                                                     )
                                                 ]
                                             ),
-                                            dbc.Col(style = {},
-                                                width = 3,
-                                                children = [
-                                                    dbc.Row(html.Div("View", className = "text-primary")),
-                                                    dbc.Row(
-                                                        children = [
-                                                            dcc.Dropdown(id = "chart-options", options = [{"label": "Time Series", "value": "time-series"},
-                                                                                    {"label": "Distribution by Year", "value": "dist-by-year"}],
-                                                                        value = "time-series")
-                                                        ]
-                                                    )
-                                                ]
-                                            )
+                                            # dbc.Col(style = {},
+                                            #     width = 3,
+                                            #     children = [
+                                            #         dbc.Row(html.Div("View", className = "text-primary")),
+                                            #         dbc.Row(
+                                            #             children = [
+                                            #                 dcc.Dropdown(id = "chart-options", options = [{"label": "Time Series", "value": "time-series"},
+                                            #                                         {"label": "Distribution by Year", "value": "dist-by-year"}],
+                                            #                             value = "time-series")
+                                            #             ]
+                                            #         )
+                                            #     ]
+                                            # )
                                         ]
                                     )
                                 ]
@@ -1275,15 +1275,15 @@ for dropdown in scenario_dropdowns_to_update_ids:
         else:
             return options, options[0]["value"]
 
-# adding slider for histogram when user selects histogram option
-@app.callback(
-    Output('slider-area', 'style'),
-    Input('chart-options', 'value'))
-def add_hist_slider(chart_type):
-    if chart_type == 'dist-by-year':
-        return {}
-    else:
-        return {"display": "none"}
+# # adding slider for histogram when user selects histogram option
+# @app.callback(
+#     Output('slider-area', 'style'),
+#     Input('chart-options', 'value'))
+# def add_hist_slider(chart_type):
+#     if chart_type == 'dist-by-year':
+#         return {}
+#     else:
+#         return {"display": "none"}
 
 # callback for output time series
 @app.callback(
@@ -1291,8 +1291,8 @@ def add_hist_slider(chart_type):
     [Input('output-dropdown', 'value'),
      Input('region-dropdown', 'value'),
      Input('scenario-dropdown', 'value'),
-     Input('chart-options', 'value'),
-     Input('year-slider', 'value'),
+    #  Input('chart-options', 'value'),
+    #  Input('year-slider', 'value'),
      Input('output-color-scheme', 'value'),
      Input("time-series-plot-apply-bound-changes", "n_clicks"),
      Input("time-series-plot-apply-styling-changes", "n_clicks")],
@@ -1303,7 +1303,8 @@ def add_hist_slider(chart_type):
      State("time-series-plot-toggle-gridlines", "checked"),
      State("overview-data-dropdown", "value")]
 )
-def update_timeseries_graph(output_name, selected_regions, selected_scenarios, chart_type, year, color_scheme, n_clicks_bound_changes, 
+# add back in commented out inputs when ready to re-incorporate
+def update_timeseries_graph(output_name, selected_regions, selected_scenarios, color_scheme, n_clicks_bound_changes, 
                             n_clicks_styling_changes, existing_figure, upper_bound, lower_bound, plot_bgcolor, toggle_gridlines, overview_data_dropdown):
     ctx = callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
@@ -1315,18 +1316,38 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
     else:
         raise ValueError("Invalid overview data dropdown value")
 
-    if chart_type == "time-series":
-        if not selected_regions or not selected_scenarios:
-            raise PreventUpdate
-        
-        if not existing_figure or len(existing_figure.get('data')) == 0:
-            # if no existing figure, create a new one
-            region = selected_regions[0]
-            scenario = selected_scenarios[0]
-            new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
-            traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
+    # if chart_type == "time-series":
+    if not selected_regions or not selected_scenarios:
+        raise PreventUpdate
+    
+    if not existing_figure or len(existing_figure.get('data')) == 0:
+        # if no existing figure, create a new one
+        region = selected_regions[0]
+        scenario = selected_scenarios[0]
+        new_trace_df = DataRetrieval(db, output_name, region, scenario).single_output_df_to_graph(lower_bound, upper_bound)
+        traces_to_add = NewTimeSeries(output_name, region, scenario, 2050, new_trace_df, styling_options = {"color": color_scheme}).return_traces()
 
-            fig = go.Figure(traces_to_add)
+        fig = go.Figure(traces_to_add)
+        fig.update_layout(
+            height = 625,
+            margin = dict(t = 40, b = 0, l = 10),
+            title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+            yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+            xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+            plot_bgcolor = plot_bgcolor
+        )
+        fig.update_xaxes(showgrid = toggle_gridlines)
+        fig.update_yaxes(showgrid = toggle_gridlines)
+
+        return fig
+
+    else:
+        existing_fig = go.Figure(existing_figure)
+        # if the existing figure is a histogram, then we need to start from scratch
+        # otherwise, the new time series is added to the histogram figure
+        if existing_fig.data[0]["type"] == "histogram":
+            fig = ModifyOutputTimeseries(output_name, selected_regions, selected_scenarios, go.Figure(), {"color": color_scheme}, db, lower_bound, upper_bound, True).create_new_figure()
+
             fig.update_layout(
                 height = 625,
                 margin = dict(t = 40, b = 0, l = 10),
@@ -1340,46 +1361,26 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
 
             return fig
 
+        # the figure will only change if the regions/scenarios/output has changed
+        # to make sure the figure is changed when styling options are changed, check if any of the styling options have changed
+        if trigger_id == "output-color-scheme" or trigger_id == "time-series-plot-apply-styling-changes" or trigger_id == "time-series-plot-apply-bound-changes":
+            change_fig = True
         else:
-            existing_fig = go.Figure(existing_figure)
-            # if the existing figure is a histogram, then we need to start from scratch
-            # otherwise, the new time series is added to the histogram figure
-            if existing_fig.data[0]["type"] == "histogram":
-                fig = ModifyOutputTimeseries(output_name, selected_regions, selected_scenarios, go.Figure(), {"color": color_scheme}, db, lower_bound, upper_bound, True).create_new_figure()
+            change_fig = False
+        fig = ModifyOutputTimeseries(output_name, selected_regions, selected_scenarios, existing_fig, {"color": color_scheme}, db, lower_bound, upper_bound, change_fig).create_new_figure()
+        fig.update_layout(
+            height = 625,
+            margin = dict(t = 40, b = 0, l = 10),
+            # title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
+            title_text = "Time Series",
+            # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
+            # xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+            plot_bgcolor = plot_bgcolor
+        )
+        fig.update_xaxes(showgrid = toggle_gridlines)
+        fig.update_yaxes(showgrid = toggle_gridlines)
 
-                fig.update_layout(
-                    height = 625,
-                    margin = dict(t = 40, b = 0, l = 10),
-                    title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
-                    yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                    xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
-                    plot_bgcolor = plot_bgcolor
-                )
-                fig.update_xaxes(showgrid = toggle_gridlines)
-                fig.update_yaxes(showgrid = toggle_gridlines)
-
-                return fig
-
-            # the figure will only change if the regions/scenarios/output has changed
-            # to make sure the figure is changed when styling options are changed, check if any of the styling options have changed
-            if trigger_id == "output-color-scheme" or trigger_id == "time-series-plot-apply-styling-changes" or trigger_id == "time-series-plot-apply-bound-changes":
-                change_fig = True
-            else:
-                change_fig = False
-            fig = ModifyOutputTimeseries(output_name, selected_regions, selected_scenarios, existing_fig, {"color": color_scheme}, db, lower_bound, upper_bound, change_fig).create_new_figure()
-            fig.update_layout(
-                height = 625,
-                margin = dict(t = 40, b = 0, l = 10),
-                # title_text = "Time Series for {}".format(readability_obj.naming_dict_long_names_first[output_name]),
-                title_text = "Time Series",
-                # yaxis = dict(title = dict(text = readability_obj.naming_dict_long_names_first[output_name], font = dict(size = 16))),
-                # xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
-                plot_bgcolor = plot_bgcolor
-            )
-            fig.update_xaxes(showgrid = toggle_gridlines)
-            fig.update_yaxes(showgrid = toggle_gridlines)
-
-            return fig
+        return fig
 
         # current_trace_info = TraceInfo(existing_figure)
         # if current_trace_info.type[0] == "histogram": # means active figure is histogram, so need to generate scatter 
@@ -1465,22 +1466,22 @@ def update_timeseries_graph(output_name, selected_regions, selected_scenarios, c
         #     fig.update_yaxes(showgrid = toggle_gridlines)
         #     return fig
 
-    else:
-        if not selected_regions or not selected_scenarios:
-            raise PreventUpdate
+    # else:
+    #     if not selected_regions or not selected_scenarios:
+    #         raise PreventUpdate
 
-        styling_options = {"color": color_scheme}
-        fig = OutputHistograms(output_name, selected_regions, selected_scenarios, year, db, styling_options = styling_options).make_plot()
+    #     styling_options = {"color": color_scheme}
+    #     fig = OutputHistograms(output_name, selected_regions, selected_scenarios, year, db, styling_options = styling_options).make_plot()
 
-        if output_name not in options_obj.outputs:
-            title_text = "Histograms for " + output_name.split("-")[-1]
-        else:
-            title_text = "Histograms for {}".format(readability_obj.naming_dict_long_names_first[output_name])
-        fig.update_layout(title_text = title_text)
-        fig.update_layout(
-            height = 550,
-            margin = dict(t = 70, b = 20, l = 10)
-        )
+    #     if output_name not in options_obj.outputs:
+    #         title_text = "Histograms for " + output_name.split("-")[-1]
+    #     else:
+    #         title_text = "Histograms for {}".format(readability_obj.naming_dict_long_names_first[output_name])
+    #     fig.update_layout(title_text = title_text)
+    #     fig.update_layout(
+    #         height = 550,
+    #         margin = dict(t = 70, b = 20, l = 10)
+    #     )
         return fig
 
 # callback for data download - doing this separately helps make everything more organized
@@ -1716,127 +1717,127 @@ def update_permutation_importance(output, region, scenario, year, n_estimators, 
 
     return finished_figure
 
-# # callback for o/o mapping
-# @app.callback(
-#     Output("output-output-mapping-parallel-coords-visualize", "figure"),
-#     Output("output-output-mapping-figure-container", "hidden"),
-#     Output("output-output-mapping-parallel-coords-div", "hidden"),
-#     Output("output-output-mapping-figure", "figure"),
-#     Output("output-output-mapping-output", "multi"),
-#     Output("output-output-mapping-output", "options"),
-#     Input("output-output-mapping-mode", "value"),
-#     Input("output-output-mapping-output", "value"),
-#     Input("output-output-mapping-region", "value"),
-#     Input("output-output-mapping-scenario", "value"),
-#     Input("output-output-mapping-year", "value"),
-#     Input("custom-oo-mapping-dropdown-1", "value"),
-#     Input("custom-oo-mapping-dropdown-2", "value"),
-#     Input("custom-oo-mapping-dropdown-3", "value"),
-#     Input("custom-oo-mapping-dropdown-4", "value"),
-#     Input("custom-oo-mapping-dropdown-5", "value"),
-#     Input("custom-oo-mapping-dropdown-6", "value"),
-#     Input("slider-custom-oo-mapping-1", "value"),
-#     Input("slider-custom-oo-mapping-2", "value"),
-#     Input("slider-custom-oo-mapping-3", "value"),
-#     Input("slider-custom-oo-mapping-4", "value"),
-#     Input("slider-custom-oo-mapping-5", "value"),
-#     Input("slider-custom-oo-mapping-6", "value"),
-#     Input("output-output-mapping-apply-constraints", "n_clicks"),
-#     Input("output-output-mapping-parallel-coords-visualize", "figure"),
-#     State("output-output-mapping-output", "options"),
-#     State("overview-data-dropdown", "value"),
-#     prevent_initial_call = True
-# )
-# def update_output_output_mapping(mode, output, region, scenario, year, dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6, slider_1, slider_2, slider_3, slider_4, slider_5, slider_6, n_clicks, figure, options, publication_output):
-#     if not region or not output or not scenario or not year:
-#         raise PreventUpdate
+# callback for o/o mapping
+@app.callback(
+    Output("output-output-mapping-parallel-coords-visualize", "figure"),
+    Output("output-output-mapping-figure-container", "hidden"),
+    Output("output-output-mapping-parallel-coords-div", "hidden"),
+    Output("output-output-mapping-figure", "figure"),
+    Output("output-output-mapping-output", "multi"),
+    Output("output-output-mapping-output", "options"),
+    Input("output-output-mapping-mode", "value"),
+    Input("output-output-mapping-output", "value"),
+    Input("output-output-mapping-region", "value"),
+    Input("output-output-mapping-scenario", "value"),
+    Input("output-output-mapping-year", "value"),
+    Input("custom-oo-mapping-dropdown-1", "value"),
+    Input("custom-oo-mapping-dropdown-2", "value"),
+    Input("custom-oo-mapping-dropdown-3", "value"),
+    Input("custom-oo-mapping-dropdown-4", "value"),
+    Input("custom-oo-mapping-dropdown-5", "value"),
+    Input("custom-oo-mapping-dropdown-6", "value"),
+    Input("slider-custom-oo-mapping-1", "value"),
+    Input("slider-custom-oo-mapping-2", "value"),
+    Input("slider-custom-oo-mapping-3", "value"),
+    Input("slider-custom-oo-mapping-4", "value"),
+    Input("slider-custom-oo-mapping-5", "value"),
+    Input("slider-custom-oo-mapping-6", "value"),
+    Input("output-output-mapping-apply-constraints", "n_clicks"),
+    Input("output-output-mapping-parallel-coords-visualize", "figure"),
+    State("output-output-mapping-output", "options"),
+    State("overview-data-dropdown", "value"),
+    prevent_initial_call = True
+)
+def update_output_output_mapping(mode, output, region, scenario, year, dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6, slider_1, slider_2, slider_3, slider_4, slider_5, slider_6, n_clicks, figure, options, publication_output):
+    if not region or not output or not scenario or not year:
+        raise PreventUpdate
     
-#     if publication_output == "full":
-#         db = db_full
-#     else:
-#         db = db_publication
+    if publication_output == "full":
+        db = db_full
+    else:
+        db = db_publication
 
-#     ctx = callback_context
-#     trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
+    ctx = callback_context
+    trigger_id = ctx.triggered[0]["prop_id"].split('.')[0]
 
-#     if mode == "standard":
-#         df = DataRetrieval(db, output, region, scenario, year).mapping_df()
-#         fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
-#         finished_fig = FinishedFigure(fig).make_finished_figure()
+    if mode == "standard":
+        df = DataRetrieval(db, output, region, scenario, year).mapping_df()
+        fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
+        finished_fig = FinishedFigure(fig).make_finished_figure()
 
-#         return go.Figure(), True, True, finished_fig, False, options
+        return go.Figure(), True, True, finished_fig, False, options
 
-#     if mode == "filtered":
-#         outputs_to_include = [dropdown for dropdown in [dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6] if dropdown]
-#         df = MultiOutputRetrieval(db, outputs_to_include, region, scenario, year).construct_df()
+    if mode == "filtered":
+        outputs_to_include = [dropdown for dropdown in [dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6] if dropdown]
+        df = MultiOutputRetrieval(db, outputs_to_include, region, scenario, year).construct_df()
 
-#         filter_fig = go.Figure(data = [
-#             go.Parcoords(line = dict(color = "purple"), dimensions = [{"label": col, "values": df[col], "constraintrange": [np.percentile(df[col], x[0]), np.percentile(df[col], x[1])]} for x, col in zip([slider_1, slider_2, slider_3, slider_4, slider_5, slider_6], df.columns[1:])])
-#         ])
-#         fig = go.Figure()
+        filter_fig = go.Figure(data = [
+            go.Parcoords(line = dict(color = "purple"), dimensions = [{"label": col, "values": df[col], "constraintrange": [np.percentile(df[col], x[0]), np.percentile(df[col], x[1])]} for x, col in zip([slider_1, slider_2, slider_3, slider_4, slider_5, slider_6], df.columns[1:])])
+        ])
+        fig = go.Figure()
 
-#         if type(output) == str: # for some reason, when all outputs are to be used, "all" shows up as a list; however, multiple outputs also show up as a list
-#             outputs_to_use = [output]
-#         elif type(output) == list:
-#             if output[0] == "all":
-#                 # this approach is necessary because custom variables may be included in the options
-#                 outputs_to_use = [option["value"] for option in options[1:]] # options[1:] is all outputs, including custom variables, except "all", which isn't an output itself
-#             else:
-#                 outputs_to_use = output
+        if type(output) == str: # for some reason, when all outputs are to be used, "all" shows up as a list; however, multiple outputs also show up as a list
+            outputs_to_use = [output]
+        elif type(output) == list:
+            if output[0] == "all":
+                # this approach is necessary because custom variables may be included in the options
+                outputs_to_use = [option["value"] for option in options[1:]] # options[1:] is all outputs, including custom variables, except "all", which isn't an output itself
+            else:
+                outputs_to_use = output
 
-#         if trigger_id == "output-output-mapping-apply-constraints":
-#             constraint_df = df.copy()
-#             constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
+        if trigger_id == "output-output-mapping-apply-constraints":
+            constraint_df = df.copy()
+            constraint_df["in_constraint_range"] = 1  # Initialize all rows as within constraint range
 
-#             # Iterate through each dropdown/slider pair to apply constraints
-#             for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6], [slider_1, slider_2, slider_3, slider_4, slider_5, slider_6]):
-#                 if dropdown:  # Ensure dropdown has a selection
-#                     output_name = readability_obj.naming_dict_long_names_first[dropdown] if dropdown in Options().outputs else json.loads(dropdown)["name"]
-#                     lower_bound, upper_bound = np.percentile(df[output_name], slider)
-#                     constraint_df["in_constraint_range"] &= ((constraint_df[output_name] >= lower_bound) & (constraint_df[output_name] <= upper_bound)).astype(int)
+            # Iterate through each dropdown/slider pair to apply constraints
+            for dropdown, slider in zip([dropdown_1, dropdown_2, dropdown_3, dropdown_4, dropdown_5, dropdown_6], [slider_1, slider_2, slider_3, slider_4, slider_5, slider_6]):
+                if dropdown:  # Ensure dropdown has a selection
+                    output_name = readability_obj.naming_dict_long_names_first[dropdown] if dropdown in Options().outputs else json.loads(dropdown)["name"]
+                    lower_bound, upper_bound = np.percentile(df[output_name], slider)
+                    constraint_df["in_constraint_range"] &= ((constraint_df[output_name] >= lower_bound) & (constraint_df[output_name] <= upper_bound)).astype(int)
 
-#             color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
-#             fig = go.Figure(data=[
-#                 go.Parcoords(
-#                     line=dict(
-#                         color=constraint_df["in_constraint_range"],
-#                         colorscale=color_scale,
-#                         showscale=True,
-#                         colorbar=dict(
-#                             title='In Constraint Range',
-#                             tickvals=[0.25, 0.75],
-#                             ticktext=['Out', 'In']
-#                         )
-#                     ),
-#                     dimensions=[
-#                         {"label": col, "values": constraint_df[col]} for col in constraint_df.columns[1:-1]
-#                     ]
-#                 )
-#             ])
+            color_scale = [(0.00, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[0]), (0.5, Color().parallel_coords_colors[1]),  (1.00, Color().parallel_coords_colors[1])]
+            fig = go.Figure(data=[
+                go.Parcoords(
+                    line=dict(
+                        color=constraint_df["in_constraint_range"],
+                        colorscale=color_scale,
+                        showscale=True,
+                        colorbar=dict(
+                            title='In Constraint Range',
+                            tickvals=[0.25, 0.75],
+                            ticktext=['Out', 'In']
+                        )
+                    ),
+                    dimensions=[
+                        {"label": col, "values": constraint_df[col]} for col in constraint_df.columns[1:-1]
+                    ]
+                )
+            ])
 
-#             fig = FilteredOutputOutputMappingPlot(db, outputs_to_use, constraint_df, region, scenario, year).make_plot()
+            fig = FilteredOutputOutputMappingPlot(db, outputs_to_use, constraint_df, region, scenario, year).make_plot()
 
-#         if options[0]["value"] == "all":
-#             new_options = options
-#         else:
-#             new_options = [{"label": "All", "value": "all"}] + options
+        if options[0]["value"] == "all":
+            new_options = options
+        else:
+            new_options = [{"label": "All", "value": "all"}] + options
         
-#         return filter_fig, False, False, fig, True, new_options
+        return filter_fig, False, False, fig, True, new_options
     
-#     # this mode has been deprecated, but I'm leaving the code here for now in case we need it in the future
-#     # the purpose of this mode was to look at the upper and lower ranges of the output variables, but that's 
-#     # just a more specific case of the filtered mode
-#     # if mode == "high-low":
-#     #     df_upper = DataRetrieval(db, output, region, scenario, year).mapping_df()
-#     #     df_lower = df_upper.copy()
+    # this mode has been deprecated, but I'm leaving the code here for now in case we need it in the future
+    # the purpose of this mode was to look at the upper and lower ranges of the output variables, but that's 
+    # just a more specific case of the filtered mode
+    # if mode == "high-low":
+    #     df_upper = DataRetrieval(db, output, region, scenario, year).mapping_df()
+    #     df_lower = df_upper.copy()
 
         
-#     #     fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
-#     #     finished_fig = FinishedFigure(fig).make_finished_figure()
+    #     fig = OutputOutputMappingPlot(db, output, region, scenario, year, df)
+    #     finished_fig = FinishedFigure(fig).make_finished_figure()
 
-#     #     return go.Figure(), True, True, finished_fig, False, options
+    #     return go.Figure(), True, True, finished_fig, False, options
 
-#     #     return filter_fig, False, False, fig, True, options
+    #     return filter_fig, False, False, fig, True, options
 
 # callback for regional heatmaps
 @app.callback(Output("regional-heatmaps-figure", "figure"),

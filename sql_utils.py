@@ -391,5 +391,4 @@ if __name__ == "__main__":
     # test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
     # df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
     # print(df)
-    # DatabaseModification("publication", path_to_scenarios = r"Raw Data/Archive").main()
-    pass
+    DatabaseModification("publication", path_to_scenarios = r"Raw Data/Archive").main()

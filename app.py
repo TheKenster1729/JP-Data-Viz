@@ -2060,7 +2060,7 @@ def update_stress_connection_table(inputs, outputs, color, region, scenario, yea
     return dbc.Table.from_dataframe(df, striped = True, bordered = True, hover = True, size = "sm")
 
 if __name__ == '__main__':
-    app.run(debug = True, host = "localhost")
+    app.run(debug = True, host = "0.0.0.0")
 
     # discarded components
 

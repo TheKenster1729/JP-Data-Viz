@@ -1,14 +1,15 @@
-import pandas as pd
-import os
-from styling import Readability, Options
-from global_classes import VariableOutput
+from PIL import Image
 
-# var1 = VariableOutput("gdp", "GDP", "GLB", "ref", pd.DataFrame(data = {"Run #": [1, 2, 3, 4, 5]}))
-# var2 = VariableOutput("GDP", "GDP", "GLB", "2c", pd.DataFrame(data = {"Run #": [1, 2, 3, 4, 5]}))
+# open images
+img1 = Image.open("/Users/kcox1729/Downloads/Screenshot_20250923-144931.png")
+img2 = Image.open("/Users/kcox1729/Downloads/PXL_20250923_184927985.MP.jpg")
 
-# l = [var1, var2]
+# make sure they are the same height
+h = max(img1.height, img2.height)
+new_img = Image.new("RGB", (img1.width + img2.width, h))
 
-# var1_copy = VariableOutput("gdp", "GDP", "GLB", "ref", pd.DataFrame(data = {"Run #": [1, 2, 3, 4, 5]}))
+# paste side by side
+new_img.paste(img1, (0, 0))
+new_img.paste(img2, (img1.width, 0))
 
-# print(var1_copy in l)
-print("total_emissions_CO2eq_million_ton_CO2eq" in Options().all_outputs)
+new_img.save("/Users/kcox1729/Downloads/combined.jpg")

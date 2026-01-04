@@ -9,6 +9,25 @@ from itertools import product
 from plotly.colors import n_colors
 import geopandas as gpd
 import json
+import hashlib
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def sanitize_uid(output, region, scenario):
+    """
+    Create a valid CSS selector-safe UID for Plotly traces.
+    Custom variables contain JSON strings with special characters that break CSS selectors.
+    This function creates a sanitized version that's safe to use.
+    """
+    # If output is a JSON string (custom variable), hash it to create a safe identifier
+    if output.startswith('{'):
+        # Use a hash of the JSON string to create a unique, safe identifier
+        output_hash = hashlib.md5(output.encode()).hexdigest()[:12]
+        return f"custom_{output_hash}_{region}_{scenario}"
+    else:
+        # For regular outputs, just sanitize any problematic characters
+        safe_output = re.sub(r'[^a-zA-Z0-9_-]', '_', output)
+        return f"{safe_output}_{region}_{scenario}"
 
 class DashboardFigure:
     def __init__(self, figure_type) -> None:
@@ -234,7 +253,7 @@ class NewTimeSeries(DashboardFigure):
             showlegend = False,
             hoverinfo = "skip",
             customdata = ["{} {} {} lower".format(self.output, self.region, self.scenario)],
-            uid = f"{self.output}_{self.region}_{self.scenario}",
+            uid = sanitize_uid(self.output, self.region, self.scenario),
         )
 
         return trace
@@ -248,7 +267,7 @@ class NewTimeSeries(DashboardFigure):
             legendgroup = group,
             name = "{} {}".format(self.region, self.scenario_display_name),
             customdata = ["{} {} {} median".format(self.output, self.region, self.scenario)],
-            uid = f"{self.output}_{self.region}_{self.scenario}",
+            uid = sanitize_uid(self.output, self.region, self.scenario),
         )
 
         return trace
@@ -267,7 +286,7 @@ class NewTimeSeries(DashboardFigure):
             showlegend = False,
             hoverinfo = "skip",
             customdata = ["{} {} {} upper".format(self.output, self.region, self.scenario)],
-            uid = f"{self.output}_{self.region}_{self.scenario}",
+            uid = sanitize_uid(self.output, self.region, self.scenario),
         )
 
         return trace
@@ -330,12 +349,16 @@ class ModifyOutputTimeseries(DashboardFigure):
         return product([self.output], self.regions, self.scenarios)
 
     def remove_traces(self):
-        new_figure = self.existing_figure
+        # Create a NEW figure object (not a reference) to ensure Dash detects the change
         combinations = self.get_combinations()
-        new_uids = set([f"{output}_{region}_{scenario}" for output, region, scenario in combinations])
+        new_uids = set([sanitize_uid(output, region, scenario) for output, region, scenario in combinations])
         uids_to_remove = self.existing_figure_uids_set - new_uids
-        traces = [trace for trace in new_figure.data if trace.uid not in uids_to_remove]
-        new_figure.data = traces
+        traces_to_keep = [trace for trace in self.existing_figure.data if trace.uid not in uids_to_remove]
+        
+        # Create a completely new figure with the traces we want to keep
+        new_figure = go.Figure(data=traces_to_keep)
+        # Copy over the layout from the existing figure
+        new_figure.update_layout(self.existing_figure.layout)
 
         return new_figure
 
@@ -347,24 +370,26 @@ class ModifyOutputTimeseries(DashboardFigure):
         return df
 
     def create_new_figure(self):
-        new_figure = self.remove_traces()
         combinations = self.get_combinations()
         combinations_list = [i for i in combinations]
-
-        for combo in combinations_list:
-            uid = f"{combo[0]}_{combo[1]}_{combo[2]}"
-            if not self.trace_already_exists(uid, new_figure):
-                df = self.get_df(combo[0], combo[1], combo[2])
-                traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
-                new_figure.add_traces(traces_to_add)
-
+        
         if self.change_fig:
-            # just delete old traces and re-add them with the right styling parameters
-            new_figure.data = []
+            # When change_fig is True, create a completely fresh figure (no reference to existing)
+            # This ensures Dash always detects it as a new figure
+            new_figure = go.Figure()
             for combo in combinations_list:
                 df = self.get_df(combo[0], combo[1], combo[2])
                 traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
                 new_figure.add_traces(traces_to_add)
+        else:
+            # Only when NOT changing, try to preserve existing traces
+            new_figure = self.remove_traces()
+            for combo in combinations_list:
+                uid = sanitize_uid(combo[0], combo[1], combo[2])
+                if not self.trace_already_exists(uid, new_figure):
+                    df = self.get_df(combo[0], combo[1], combo[2])
+                    traces_to_add = NewTimeSeries(combo[0], combo[1], combo[2], 2050, df, styling_options = self.styling_params).return_traces()
+                    new_figure.add_traces(traces_to_add)
 
         return new_figure
 
@@ -682,14 +707,20 @@ class FilteredInputOutputMappingPlot(FilteredInputOutputMapping, DashboardFigure
         return fig
 
 class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigure):
-    def __init__(self, db_obj, outputs_to_use, constraint_df, region, scenario, year, num_to_plot = 5):
-        super().__init__(db_obj, outputs_to_use, constraint_df, region, scenario, year, num_to_plot = num_to_plot)
+    def __init__(self, db_obj, constraint_df, region, scenario, year, num_to_plot = 5):
+        super().__init__(db_obj, constraint_df, region, scenario, year, num_to_plot = num_to_plot)
         DashboardFigure.__init__(self, "filtered-output-output-mapping-main")
 
         self.fig = self.make_plot()
 
     def make_plot(self, show = False, save = False):
         sorted_labeled_importances, top_n = self.run_analysis()
+        
+        if sorted_labeled_importances is None:
+            fig = go.Figure()
+            fig.add_annotation(text="Insufficient data for analysis", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False)
+            return fig
+        
         fig = make_subplots(cols = 2, specs = [[{"type": "xy"}, {"type": "domain"}]], column_widths = [0.4, 0.6], 
                             subplot_titles = ("Feature Importances, Top 5 Features", "Parallel Axis Plot, Top 5 Features"))
 
@@ -822,6 +853,9 @@ class TimeSeriesClusteringPlot(TimeSeriesClustering, DashboardFigure):
         self.colors = ["#648fff", "#491d8b", "#FFB000", "#a2191f", "#00539a", "#0e6027", "#565151"]
         self.fig = self.make_plot()
         self.year = year # this may never become relevant, it is just included to prevent errors during the styling process
+        self.output = output
+        self.region = region
+        self.scenario = scenario
 
     def single_trace(self, data, cluster, color, showlegend = False):
         opacity = 1 if showlegend else 0.3
@@ -1148,33 +1182,143 @@ class PlotTree(DashboardFigure):
         # return fig
 
 class RegionalHeatmaps(DashboardFigure):
-    def __init__(self, output, regions, scenarios, df, year = None):
+    """
+    Regional heatmaps showing feature importance across regions, scenarios, and years.
+    
+    Optimized with:
+    1. Parallel data fetching (I/O bound) using ThreadPoolExecutor
+    2. Sequential model training (CPU bound) using sklearn's internal parallelism
+    3. Reduced n_estimators (30) for faster training
+    """
+    
+    def __init__(self, db_obj, output, regions, scenarios, year=None, n_estimators=30, max_workers=16):
         super().__init__("regional-heatmaps")
+        self.db_obj = db_obj
         self.output = output
         self.regions = regions
         self.scenarios = scenarios
-        self.df = df
-        self.year = year # adding for consistency with other figures
-
+        self.year = year  # adding for consistency with other figures
+        self.n_estimators = n_estimators
+        self.max_workers = max_workers
+        
+        # Fetch data and build the DataFrame
+        self.df = self._build_importance_dataframe()
         self.fig = self.make_plot()
 
+    def _fetch_single_combination(self, args):
+        """
+        Fetch data for a single (region, scenario, year) combination.
+        I/O bound - designed for concurrent execution.
+        """
+        reg, sce, year = args
+        key = (reg, sce, year)
+        try:
+            mapping_df = DataRetrieval(self.db_obj, self.output, reg, sce, year).mapping_df()
+            return (key, mapping_df)
+        except Exception:
+            return (key, None)
+
+    def _train_single_model(self, reg, sce, year, mapping_df):
+        """
+        Train Random Forest for a single combination.
+        CPU bound - uses sklearn internal parallelism.
+        """
+        try:
+            model = InputOutputMapping(self.output, reg, sce, year, mapping_df, n_estimators=self.n_estimators)
+            importances, sorted_importances, top_n = model.random_forest(n_jobs=-1)
+            results_to_add = sorted_importances[top_n]
+            
+            return [
+                {"Year": year, "Region": reg, "Scenario": sce, "Input": inp, "Importance": imp}
+                for inp, imp in zip(results_to_add.index, results_to_add.values)
+            ]
+        except Exception:
+            return []
+
+    def _build_importance_dataframe(self):
+        """
+        Two-phase data processing:
+        1. Parallel data fetching (I/O bound)
+        2. Sequential model training (CPU bound with sklearn parallelism)
+        """
+        years = Options().years
+        
+        # Build all combinations to process
+        combinations = [
+            (reg, sce, year)
+            for reg in self.regions
+            for sce in self.scenarios
+            for year in years
+        ]
+        
+        # Phase 1: Parallel data fetching
+        fetched_data = {}
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            futures = {
+                executor.submit(self._fetch_single_combination, combo): combo 
+                for combo in combinations
+            }
+            
+            for future in as_completed(futures):
+                key, mapping_df = future.result()
+                if mapping_df is not None:
+                    fetched_data[key] = mapping_df
+        
+        # Phase 2: Sequential model training with sklearn parallelism
+        all_results = []
+        for (reg, sce, year), mapping_df in fetched_data.items():
+            results = self._train_single_model(reg, sce, year, mapping_df)
+            all_results.extend(results)
+        
+        return pd.DataFrame(all_results)
+
     def run_random_forest(self, reg, sce, year):
+        """Legacy method - kept for backward compatibility."""
         importances, sorted_importances, top_n = InputOutputMapping(self.output, reg, sce, year, self.df).random_forest()
         return importances, sorted_importances, top_n
 
-    def make_plot(self, show = False):
-        fig = make_subplots(rows = len(self.regions), cols = len(self.scenarios), shared_xaxes = True,
-                            subplot_titles = [f"{sce}" for sce in self.scenarios])
+    def make_plot(self, show=False):
+        fig = make_subplots(
+            rows=len(self.regions), 
+            cols=len(self.scenarios), 
+            shared_xaxes=True,
+            subplot_titles=[f"{sce}" for sce in self.scenarios],
+            vertical_spacing=0.033
+        )
 
+        # Calculate summed importance for each input over all years/regions/scenarios,
+        # then filter df to only top 5 summed importance inputs
+        summed = self.df.groupby("Input")["Importance"].sum().sort_values(ascending=False)
+        top5_inputs = summed.head(8).index
+        self.df = self.df[self.df["Input"].isin(top5_inputs)]
+        zmax = self.df["Importance"].max()
+        # Reduce vertical space between subplots by a factor of 3:
+        # To do this, update the layout after creating traces
         for j, reg in enumerate(self.regions):
             for k, sce in enumerate(self.scenarios):
                 df_to_plot = self.df[self.df["Region"].isin([reg]) & self.df["Scenario"].isin([sce])]
-                fig.add_trace(go.Heatmap(y = df_to_plot["Input"], x = df_to_plot["Year"], z = df_to_plot["Importance"], zmin=0, zmid = 0.1, zmax=1, colorscale=[(0, "#f1e5ff"), (0.4, "#732bf0"), (1, "#ff2b24")]), row = j + 1, col = k + 1)
+                fig.add_trace(
+                    go.Heatmap(
+                        y=df_to_plot["Input"], 
+                        x=df_to_plot["Year"], 
+                        z=df_to_plot["Importance"], 
+                        zmin=0, 
+                        zmax=zmax, 
+                        colorscale="bupu"  # Same colorscale as choropleth mapping
+                    ), 
+                    row=j + 1, col=k + 1
+                )
 
                 if k == 0:
-                    fig.update_yaxes(title_text = reg, row = j + 1, col = 1)
+                    fig.update_yaxes(title_text=reg, row=j + 1, col=1)
         
-        fig.update_layout(showlegend = False, title = "Regional Heatmaps", height = 1000)
+        # Reduce vertical space (set vertical_spacing to 1/3 of default 0.1 -> 0.033)
+        fig.update_layout(
+            showlegend=False,
+            title="Regional Heatmaps",
+            height=1000,
+            width = 1200,
+        )
 
         if show:
             fig.show()

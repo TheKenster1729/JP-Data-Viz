@@ -366,8 +366,8 @@ class FinishedFigure(Color, Readability, Options):
             output_name_for_title = json.loads(self.figure_object.output)["name"]
 
         # define overall title
+        scenario_name = self.publication_scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.publication_scenario_display_names else self.scenario_display_names[self.figure_object.scenario]
         if self.figure_object.year:
-            scenario_name = self.scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.scenario_display_names else self.publication_scenario_display_names[self.figure_object.scenario]
             title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name + " " + str(self.figure_object.year)
         else:
             title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name
@@ -409,10 +409,20 @@ class FinishedFigure(Color, Readability, Options):
                             height = 600,
                             width = 1200
                         )
+
         if self.figure_object.figure_type == "ts-clustering":
             self.figure_object.fig.update_layout(
                 yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
                 xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+            )
+
+        if self.figure_object.figure_type == "ts-clustering-cart":
+            self.figure_object.fig.update_layout(
+                yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
+                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
+                title = "Time Series Clusters for {}".format(output_name_for_title),
+                height = 750,
+                width = 1200
             )
 
         if self.figure_object.figure_type == "permutation-importance":

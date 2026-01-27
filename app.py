@@ -33,65 +33,64 @@ readability_obj = Readability()
 options_obj = Options()
 
 # construct navigation bar
-jp_logo = r"assets\images\JPSPGC.logo.color.png"
+jp_logo = r"assets/images/CSSS_sub-brand_lockup_three-line_rgb_mit-red.svg"
 navbar = dbc.Navbar(
     class_name = "navbar navbar-expand-lg custom-navbar",
     color = "#3e8cda",
     dark = True,
     children = [
-        html.A(
-            # Use row and col to control vertical alignment of logo / brand
-            dbc.Row(
-                [
-                    dbc.Col(style = {"margin-left": 20}, children = html.Img(src = jp_logo, height = "60px")),
-                    dbc.Col(dbc.NavbarBrand("MIT EPPA Model - Data Visualization Dashboard", className = "ms-2")),
-                ],
-                align = "center",
-                className = "g-0",
-            ),
-            href = "https://globalchange.mit.edu/",
-            target = "_blank",
-            style = {"textDecoration": "none"},
-        ),
-        dbc.NavbarToggler(id = "navbar-toggler", n_clicks = 0),
-        dbc.Row(style = {"margin-left": 250},
+        dbc.Row(
+            className = "w-100 align-items-center",
+            style = {"margin-left": 0, "margin-right": 0},
             children = [
-                dbc.Col(children = 
-                    html.A(
+                dbc.Col(
+                    width = "auto",
+                    children = html.A(
+                        html.Img(src = jp_logo, height = "60px"),
+                        href = "https://cs3.mit.edu/",
+                        target = "_blank",
+                        style = {"textDecoration": "none"},
+                    ),
+                ),
+                dbc.Col(
+                    style = {"flex": "1", "textAlign": "center"},
+                    children = dbc.NavbarBrand(
+                        children = [html.Span("MIT EPPA Model"), html.Br(), html.Span("Data Visualization Dashboard")],
+                        className = "ms-2",
+                        style = {"color": "white", "fontSize": "28px", "lineHeight": "1.1", "fontWeight": "700"},
+                    ),
+                ),
+                dbc.Col(
+                    width = "auto",
+                    style = {"margin-left": "auto", "margin-right": "15%"},
+                    children = html.A(
                         "Dashboard Guide",
                         href = "https://www.notion.so/thekenster/MIT-JP-Data-Visualization-Dashboard-User-Guide-f696462c92bc4280a261ef67b1ab3bf3",
                         target = "_blank",
-                        style = {"textDecoration": "none", "color": "white", "text-align": "right"},
+                        style = {"textDecoration": "none", "color": "white"},
                     ),
-                    width = "auto"
                 ),
-                dbc.Col(
-                    html.A(children = 
-                        "Upcoming Publication",
-                        href = "https://globalchange.mit.edu/publication/18092",
-                        target = "_blank",
-                        style = {"textDecoration": "none", "color": "white", "text-align": "right", "padding": 100}
-                    ),
-                    width = "auto"
-                )
-            ]
-        )
-    ]
+            ],
+        ),
+        dbc.NavbarToggler(id = "navbar-toggler", n_clicks = 0),
+    ],
 )
 
 overview = html.Div(id = "overview-content", style = {"padding": 20},
     children = [
         dbc.Row(
             children = [
-                dbc.Col(width = 3,
+                dbc.Col(width = 6,
                     children = [
                         dbc.Row(html.H3("Data Selection")),
                         dbc.Row(html.P("Select the data you want to visualize.")),
+                        dbc.Row(html.P("The two datasets represent two distinct ensembles of runs of the MIT EPPA Model. The Publication Dataset was used for an upcoming publication, while the Full Dataset contains a broader range of scenarios. Refer to the guide for additional information.")),
                         dcc.Dropdown(id = "overview-data-dropdown", 
                                      options = [{"label": "Full Dataset", "value": "full"}, 
                                      {"label": "Publication Dataset", "value": "publication"},
                                      ], 
                                      value = "full",
+                                     style = {"width": "80%"}
                                     ),
                     ]
                 )
@@ -174,7 +173,7 @@ output_timeseries = html.Div(id = "tab-1-content", style = {"padding": 20},
                 dbc.Col(width = 10,
                     children = [
                         dbc.Row(
-                            dcc.Graph(id = "output-time-series-plot")
+                            dcc.Graph(id = "output-time-series-plot", config={'modeBarButtonsToRemove': ['toImage']})
                         ),
                         dbc.Row(
                             html.Div(style = {"display": "none"},
@@ -280,7 +279,7 @@ input_dists = html.Div(style = {"padding": 20},
                                     children = [
                                         html.Div(style = {"display": "flex"},
                                             children = [
-                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Input Visualization")
+                                                html.H4(style = {"padding": 10, "color": "#9AC1F4"}, children = "Input Distributions")
                                             ]
                                         )
                                     ]
@@ -760,7 +759,7 @@ regional_heatmaps = html.Div(id = "regional-heatmaps", style = {"padding": 20},
                                     value = ["Ref"], multi = True
                                     ),
                                 html.Br(),
-                                dbc.Button("Apply", id = "regional-heatmaps-apply-button", className = "btn btn-primary")
+                                dbc.Button("Update", id = "regional-heatmaps-apply-button", className = "btn btn-primary")
                                 ]
                             ),
                         dbc.Col(width = 10,
@@ -1681,10 +1680,12 @@ def update_io_mapping_figure(output, region, scenario, year, percentile, setting
     State("custom-io-mapping-dropdown-2", "value"),
     State("custom-io-mapping-dropdown-3", "value"),
     State("overview-data-dropdown", "value"),
+    State("input-output-mapping-percentile", "value"),
+    State("input-output-mapping-setting", "value"),
     Input("input-output-mapping-update-all-settings", "n_clicks"),
     prevent_initial_call = True
 )
-def update_tree(output, region, scenario, year, mode, cart_depth, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, publication_output, update_all_settings_n_clicks):
+def update_tree(output, region, scenario, year, mode, cart_depth, slider_1, slider_2, slider_3, dropdown_1, dropdown_2, dropdown_3, publication_output, percentile, setting, update_all_settings_n_clicks):
     if not cart_depth or not output or not region or not scenario or not year:
         raise PreventUpdate
     
@@ -1693,10 +1694,12 @@ def update_tree(output, region, scenario, year, mode, cart_depth, slider_1, slid
     else:
         db = db_publication
 
+    gt = True if setting == "above" else False
+
     if mode == "standard":
         df = DataRetrieval(db, output, region, scenario, year).mapping_df()
-        _, y = InputOutputMapping(output, region, scenario, year, df, cart_depth = cart_depth).preprocess_for_classification()
-        tree = InputOutputMapping(output, region, scenario, year, df, cart_depth = cart_depth).CART()
+        _, y = InputOutputMapping(output, region, scenario, year, df, threshold = percentile, gt = gt, cart_depth = cart_depth).preprocess_for_classification()
+        tree = InputOutputMapping(output, region, scenario, year, df, threshold = percentile, gt = gt, cart_depth = cart_depth).CART()
         fig = PlotTree(tree, y).make_plot(show = False)
 
         return fig

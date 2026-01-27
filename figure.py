@@ -526,7 +526,7 @@ class InputDistributionAlternate:
     def make_plot(self, show = False):
         # Create a figure with subplots for each input
         num_inputs = len(self.inputs)
-        cols = 3  # Define the number of columns for the subplot grid
+        cols = 4  # Define the number of columns for the subplot grid
         rows = -(-num_inputs // cols)  # Calculate rows needed, round up division
         subplot_titles = [f"{input}" for input in self.inputs]
         
@@ -735,7 +735,7 @@ class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigu
         fig.add_trace(go.Parcoords(line = dict(color = parcoords_df["y_discrete"], colorscale = color_scale),
                                       dimensions = dimensions, labelside = "bottom", labelangle = 30), row = 1, col = 2)
         fig.update_annotations(yshift = 20)
-        fig.update_layout(width = 1200, height = 600)
+        fig.update_layout(width = 1600, height = 800)
         if show:
             fig.show()
 
@@ -1388,6 +1388,8 @@ class STRESSPlatformConnection(DashboardFigure):
         return fig, parcoords_df
 
 if __name__ == "__main__":
+    # db
+    db_obj = SQLConnection("all_data_aug_2024")
     # timeseries
     # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
     # df = DataRetrieval(db_obj, "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref").single_output_df_to_graph(5, 95)
@@ -1428,17 +1430,17 @@ if __name__ == "__main__":
     # tree
     # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
     # tree = InputOutputMapping("consumption_billion_USD2007", "GLB", "Ref", 2050, df).CART()
-    # PlotTree("consumption_billion_USD2007", "GLB", "Ref", 2050, df, tree).make_plot(show = True)
+    # PlotTree(tree, df["Value"]).make_plot(show = True)
 
     # stress platform connection
     # STRESSPlatformConnection(db_obj, ["WindGas", "wind", "BioCCS", "gas", "oil", "coal"], ["consumption_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq"], "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).make_plot(show = True)
 
     # output time series
-    test_fig = go.Figure()
-    test_fig.add_trace(go.Scatter(x = [1, 2, 3], y = [4, 5, 6], uid = "test", name = "test"))
-    db = SQLConnection("publication")
-    # combos = ModifyOutputTimeseries("emissions_CO2eq_total_million_ton_CO2eq", ["GLB", "USA", "EUR"], ["Ref", "2C_med"], test_fig, db_obj).get_combinations()
-    fig = ModifyOutputTimeseries("total_emissions_CO2e_million_ton_CO2e", ["GLB"], ["Ref"], test_fig, {"color": "by-scenario"}, db, 5, 95).create_new_figure()
-    fig = ModifyOutputTimeseries("total_emissions_CO2e_million_ton_CO2e", ["GLB", "USA"], ["Ref"], fig, {"color": "by-region"}, db, 5, 95).create_new_figure()
-    print(fig.data)
-    fig.show()
+    # test_fig = go.Figure()
+    # test_fig.add_trace(go.Scatter(x = [1, 2, 3], y = [4, 5, 6], uid = "test", name = "test"))
+    # db = SQLConnection("publication")
+    # # combos = ModifyOutputTimeseries("emissions_CO2eq_total_million_ton_CO2eq", ["GLB", "USA", "EUR"], ["Ref", "2C_med"], test_fig, db_obj).get_combinations()
+    # fig = ModifyOutputTimeseries("total_emissions_CO2e_million_ton_CO2e", ["GLB"], ["Ref"], test_fig, {"color": "by-scenario"}, db, 5, 95).create_new_figure()
+    # fig = ModifyOutputTimeseries("total_emissions_CO2e_million_ton_CO2e", ["GLB", "USA"], ["Ref"], fig, {"color": "by-region"}, db, 5, 95).create_new_figure()
+    # print(fig.data)
+    # fig.show()

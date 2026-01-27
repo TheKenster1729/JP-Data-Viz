@@ -397,32 +397,6 @@ class DatabaseModificationForNewStructure(SQLConnection):
     def main(self):
         pass
 
-'''
-import os
-import pandas as pd
-from styling import Options
-from sql_utils import SQLConnection
-from anytree import Node, RenderTree
-from anytree.exporter import JsonExporter
-from pprint import pprint
-
-folders = ["2C", "Ref"]
-root = r"Cleaned Data"
-
-connection = SQLConnection("jp_data")
-filename_dict = Options().filenames_to_sql_tables
-
-outputs = [x[:-4] for x in os.listdir(os.path.join(root, "2C"))]
-regions = Options().region_names
-scenarios = ["2C", "Ref"]
-root_node = Node("jp_data_tree")
-for output in outputs:
-    output_node = Node("{}".format(filename_dict[output]), parent = root_node)
-    for region in regions:
-        region_node = Node("{}".format(region), parent = output_node)
-        for scenario in scenarios:
-            scenario_node = Node("{}".format(scenario), parent = region_node, sql_table_name = filename_dict[output] + "_{}_{}".format(region.lower(), scenario.lower()))
-'''
 if __name__ == "__main__":
     # db = SQLConnection("all_data_jan_2024")
     # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())

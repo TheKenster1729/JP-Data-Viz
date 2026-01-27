@@ -24,6 +24,39 @@ def _get_inputs_df():
     return _INPUTS_CACHE.copy()  # Return copy to avoid mutation issues
 
 
+def _filter_inputs_by_region(inputs_df, region):
+    """
+    Filter InputsMasterTFP columns based on region-specific TFP/Pop and AEEI rules.
+    - GLB: keep only TFP/Pop (not regional or Non- regional variants); keep all AEEI.
+    - Other regions: keep only {REG} TFP/Pop and Non-{REG} TFP/Pop; keep only AEEI {REG}.
+    """
+    if region == "GLB":
+        allowed_tfp_pop = {"TFP", "Pop"}
+    else:
+        allowed_tfp_pop = {
+            f"{region} TFP",
+            f"Non-{region} TFP",
+            f"{region} Pop",
+            f"Non-{region} Pop",
+        }
+
+    columns_to_drop = []
+    for column in inputs_df.columns:
+        if column in {"Run #", "\ufeffRun #"}:
+            continue
+
+        if ("TFP" in column) or (" Pop" in column) or (column == "Pop"):
+            if column not in allowed_tfp_pop:
+                columns_to_drop.append(column)
+            continue
+
+        if column.startswith("AEEI "):
+            if region != "GLB" and column != f"AEEI {region}":
+                columns_to_drop.append(column)
+
+    return inputs_df.drop(columns=columns_to_drop)
+
+
 class InputOutputMapping:
     def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
         self.output = output
@@ -39,14 +72,9 @@ class InputOutputMapping:
         self.n_estimators = n_estimators
         self.max_depth = max_depth
 
-        # need to remove input pop/gdp not relevant to this region
+        # remove region-specific TFP/Pop and AEEI inputs per rules
         self.region = region
-        columns_to_remove = []
-        for column in self.inputs.columns:
-            signifiers = [" GDP", "Non-{} GDP".format(self.region), " Pop", "Non-{} Pop".format(self.region)]
-            if any(signifier in column for signifier in signifiers) and self.region not in column:
-                columns_to_remove.append(column)
-        self.inputs = self.inputs.drop(columns = columns_to_remove)
+        self.inputs = _filter_inputs_by_region(self.inputs, self.region)
 
         # some scenarios have runs that didn't solve in all cases, so remove those as well
         runs_to_drop_dict = {"percapita_consumption_loss_percent":
@@ -324,13 +352,8 @@ class FilteredInputOutputMapping:
         self.n_estimators = n_estimators
         self.random_forest_depth = random_forest_depth
 
-        # need to remove input pop/gdp not relevant to this region
-        columns_to_remove = []
-        for column in self.inputs.columns:
-            signifiers = [" GDP", "Non-{} GDP".format(self.region), " Pop", "Non-{} Pop".format(self.region)]
-            if any(signifier in column for signifier in signifiers) and self.region not in column:
-                columns_to_remove.append(column)
-        self.inputs = self.inputs.drop(columns = columns_to_remove)
+        # remove region-specific TFP/Pop and AEEI inputs per rules
+        self.inputs = _filter_inputs_by_region(self.inputs, self.region)
 
     def preprocess_for_classification(self):
 
@@ -558,12 +581,7 @@ class TimeSeriesClustering:
         # using the clusters as the target, use random forest to find input drivers
         # of the clusters
         self.inputs = _get_inputs_df()  # Use cached version
-        columns_to_remove = []
-        for column in self.inputs.columns:
-            signifiers = [" GDP", "Non-{} GDP".format(self.region), " Pop", "Non-{} Pop".format(self.region)]
-            if any(signifier in column for signifier in signifiers) and self.region not in column:
-                columns_to_remove.append(column)
-        self.inputs = self.inputs.drop(columns = columns_to_remove)
+        self.inputs = _filter_inputs_by_region(self.inputs, self.region)
 
         # some scenarios have runs that didn't solve in all cases, so remove those as well
         runs_to_drop_dict = {"percapita_consumption_loss_percent":
@@ -596,6 +614,10 @@ if __name__ == "__main__":
     # io = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).random_forest()
     # print(io[-1])
 
+    # cart
+    df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
+    cart_results = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).CART()
+
     # time series clustering
     # time_series = TimeSeriesClustering(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref")
     # clusters = time_series.plot_clusters()
@@ -611,5 +633,5 @@ if __name__ == "__main__":
     # print(io)
 
     # time series clustering cart
-    df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
-    results = TimeSeriesClustering(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").cluster_mapping()
+    # df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
+    # results = TimeSeriesClustering(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").cluster_mapping()

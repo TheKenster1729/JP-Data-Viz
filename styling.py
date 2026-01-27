@@ -180,9 +180,9 @@ class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND",
                                 "BRA", "AFR", "MES", "LAM", "REA", "KOR", "IDZ"]
-        self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt']
+        self.scenarios = ['15C_med', '15C_opt', 'About15C_pes', 'About15C_med', 'About15C_opt','2C_pes', '2C_med', '2C_opt', 'Above2C_pes', 'Above2C_med', 'Above2C_opt', 'Ref']
         self.scenario_display_names = {"15C_med": "1.5C Med", "15C_opt": "1.5C Opt", "2C_med": "2C Med", "2C_opt": "2C Opt", "2C_pes": "2C Pes", "About15C_opt": "About 1.5C Opt", "About15C_med": "About 1.5C Med",
-                                       "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes"}
+                                       "About15C_pes": "About 1.5C Pes", "Above2C_med": "Above 2C Med", "Above2C_opt": "Above 2C Opt", "Above2C_pes": "Above 2C Pes", "Ref": "Reference"}
         self.publication_scenario_display_names = {"Ref": "Ref", "2C": "2C"}
         self.scenario_display_names_rev = {v:k for k, v in self.scenario_display_names.items()}
         self.publication_scenario_display_names_rev = {v:k for k, v in self.publication_scenario_display_names.items()}

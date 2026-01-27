@@ -65,7 +65,7 @@ navbar = dbc.Navbar(
                     style = {"margin-left": "auto", "margin-right": "15%"},
                     children = html.A(
                         "Dashboard Guide",
-                        href = "https://www.notion.so/thekenster/MIT-JP-Data-Visualization-Dashboard-User-Guide-f696462c92bc4280a261ef67b1ab3bf3",
+                        href = "https://saber-wrench-cdd.notion.site/MIT-CS3-Data-Visualization-Dashboard-Guide-2de867c045ed80909bb1ff1ed60ea2e1",
                         target = "_blank",
                         style = {"textDecoration": "none", "color": "white"},
                     ),

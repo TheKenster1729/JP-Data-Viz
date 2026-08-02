@@ -1,0 +1,59 @@
+{
+  "case": "model/pub/filtered_iomap_random_forest_GLB",
+  "result": {
+    "importances": {
+      "index": [
+        "NGCAP",
+        "NGCC",
+        "VINT",
+        "Pop",
+        "AEEI LAM",
+        "WindGas",
+        "gas",
+        "LK FOOD",
+        "AEEI CAN",
+        "oil",
+        "AEEI JPN",
+        "AEEI USA",
+        "LK ENOE",
+        "Biol-Oil",
+        "AEEI MEX",
+        "AEEI ANZ",
+        "AEEI MES",
+        "BioCCS",
+        "ESUBE(EL/EI)",
+        "FF-GAS"
+      ],
+      "values": [
+        0.09167806542,
+        0.08294287021,
+        0.06240047094,
+        0.03175209681,
+        0.02989691203,
+        0.02965186962,
+        0.02714750059,
+        0.02269263069,
+        0.02229854918,
+        0.0221890291,
+        0.02177103453,
+        0.0211725623,
+        0.02026926025,
+        0.01987823907,
+        0.01861218485,
+        0.01810634433,
+        0.01797402404,
+        0.01690929819,
+        0.01690640502,
+        0.01653299152
+      ]
+    },
+    "top_n": [
+      "NGCAP",
+      "NGCC",
+      "VINT",
+      "Pop",
+      "AEEI LAM"
+    ]
+  },
+  "status": "ok"
+}

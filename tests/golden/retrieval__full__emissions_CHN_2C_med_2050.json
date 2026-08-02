@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/full/emissions_CHN_2C_med_2050",
+  "result": {
+    "columns": [
+      "Run #",
+      "Year",
+      "Value"
+    ],
+    "dtypes": [
+      "int64",
+      "int64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Run #": 1,
+        "Value": 8786.71,
+        "Year": 2050
+      },
+      {
+        "Run #": 2,
+        "Value": 8771.58,
+        "Year": 2050
+      },
+      {
+        "Run #": 3,
+        "Value": 8785.28,
+        "Year": 2050
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      400,
+      3
+    ],
+    "stats": {
+      "Run #": {
+        "max": 400.0,
+        "mean": 200.5,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.6143013,
+        "sum": 80200.0
+      },
+      "Value": {
+        "max": 8800.67,
+        "mean": 8758.29535,
+        "min": 0.0,
+        "nulls": 0,
+        "std": 439.0946589,
+        "sum": 3503318.14
+      },
+      "Year": {
+        "max": 2050.0,
+        "mean": 2050.0,
+        "min": 2050.0,
+        "nulls": 0,
+        "std": 0.0,
+        "sum": 820000.0
+      }
+    },
+    "tail": [
+      {
+        "Run #": 398,
+        "Value": 8762.3,
+        "Year": 2050
+      },
+      {
+        "Run #": 399,
+        "Value": 8775.49,
+        "Year": 2050
+      },
+      {
+        "Run #": 400,
+        "Value": 8763.28,
+        "Year": 2050
+      }
+    ],
+    "values_digest": "fe72d51729ef8d61b31d983061ea66863f37e880f9ed58dcd6e56e5c66bd685b"
+  },
+  "status": "ok"
+}

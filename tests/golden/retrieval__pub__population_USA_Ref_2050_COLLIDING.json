@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/pub/population_USA_Ref_2050_COLLIDING",
+  "result": {
+    "columns": [
+      "Run #",
+      "Year",
+      "Value"
+    ],
+    "dtypes": [
+      "int64",
+      "int64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Run #": 1,
+        "Value": 392.89,
+        "Year": 2050
+      },
+      {
+        "Run #": 2,
+        "Value": 369.57,
+        "Year": 2050
+      },
+      {
+        "Run #": 3,
+        "Value": 397.47,
+        "Year": 2050
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      399,
+      3
+    ],
+    "stats": {
+      "Run #": {
+        "max": 400.0,
+        "mean": 200.877193,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.5127631,
+        "sum": 80150.0
+      },
+      "Value": {
+        "max": 417.45,
+        "mean": 388.4714035,
+        "min": 357.79,
+        "nulls": 0,
+        "std": 11.45641875,
+        "sum": 155000.09
+      },
+      "Year": {
+        "max": 2050.0,
+        "mean": 2050.0,
+        "min": 2050.0,
+        "nulls": 0,
+        "std": 0.0,
+        "sum": 817950.0
+      }
+    },
+    "tail": [
+      {
+        "Run #": 398,
+        "Value": 402.53,
+        "Year": 2050
+      },
+      {
+        "Run #": 399,
+        "Value": 379.38,
+        "Year": 2050
+      },
+      {
+        "Run #": 400,
+        "Value": 390.0,
+        "Year": 2050
+      }
+    ],
+    "values_digest": "ecd22e33bca9774e7fccc043465f09ab2919ec4a1a8378270878ba76544bdebe"
+  },
+  "status": "ok"
+}

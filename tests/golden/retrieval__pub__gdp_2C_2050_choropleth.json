@@ -1,0 +1,91 @@
+{
+  "case": "retrieval/pub/gdp_2C_2050_choropleth",
+  "result": {
+    "columns": [
+      "Region",
+      "5th Percentile",
+      "Median",
+      "95th Percentile"
+    ],
+    "dtypes": [
+      "object",
+      "float64",
+      "float64",
+      "float64"
+    ],
+    "head": [
+      {
+        "5th Percentile": 26720.31,
+        "95th Percentile": 39794.74,
+        "Median": 31644.95,
+        "Region": "USA"
+      },
+      {
+        "5th Percentile": 2634.5625,
+        "95th Percentile": 4064.1225,
+        "Median": 3236.375,
+        "Region": "CAN"
+      },
+      {
+        "5th Percentile": 2517.268,
+        "95th Percentile": 4654.745,
+        "Median": 3447.39,
+        "Region": "MEX"
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      18,
+      4
+    ],
+    "stats": {
+      "5th Percentile": {
+        "max": 27764.85,
+        "mean": 6710.771889,
+        "min": 1305.5175,
+        "nulls": 0,
+        "std": 8261.730763,
+        "sum": 120793.894
+      },
+      "95th Percentile": {
+        "max": 39794.74,
+        "mean": 11192.65872,
+        "min": 2692.837,
+        "nulls": 0,
+        "std": 12974.49269,
+        "sum": 201467.857
+      },
+      "Median": {
+        "max": 32541.25,
+        "mean": 8530.509722,
+        "min": 1952.905,
+        "nulls": 0,
+        "std": 10007.12277,
+        "sum": 153549.175
+      }
+    },
+    "tail": [
+      {
+        "5th Percentile": 2096.21,
+        "95th Percentile": 2778.0025,
+        "Median": 2446.71,
+        "Region": "REA"
+      },
+      {
+        "5th Percentile": 2246.465,
+        "95th Percentile": 4888.0705,
+        "Median": 3285.805,
+        "Region": "KOR"
+      },
+      {
+        "5th Percentile": 1352.449,
+        "95th Percentile": 2692.837,
+        "Median": 1952.905,
+        "Region": "IDZ"
+      }
+    ],
+    "values_digest": "9ca40b4cdc9f5345183fa490bbd17928010f2213af26b121c473543efe9010d0"
+  },
+  "status": "ok"
+}

@@ -1,0 +1,99 @@
+{
+  "case": "retrieval/full/multi_output_GLB_15C_med_2050",
+  "result": {
+    "columns": [
+      "Run #",
+      "Emissions CO2eq Total (Million Ton CO2eq)",
+      "GDP (Billion USD2007)",
+      "Consumption (Billion USD2007)"
+    ],
+    "dtypes": [
+      "int64",
+      "float64",
+      "float64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Consumption (Billion USD2007)": 85857.0,
+        "Emissions CO2eq Total (Million Ton CO2eq)": 17794.6,
+        "GDP (Billion USD2007)": 139194.0,
+        "Run #": 1
+      },
+      {
+        "Consumption (Billion USD2007)": 86017.6,
+        "Emissions CO2eq Total (Million Ton CO2eq)": 17850.3,
+        "GDP (Billion USD2007)": 137599.0,
+        "Run #": 2
+      },
+      {
+        "Consumption (Billion USD2007)": 82045.8,
+        "Emissions CO2eq Total (Million Ton CO2eq)": 17916.0,
+        "GDP (Billion USD2007)": 132432.0,
+        "Run #": 3
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      400,
+      4
+    ],
+    "stats": {
+      "Consumption (Billion USD2007)": {
+        "max": 106493.0,
+        "mean": 87071.1515,
+        "min": 0.0,
+        "nulls": 0,
+        "std": 10994.71641,
+        "sum": 34828460.6
+      },
+      "Emissions CO2eq Total (Million Ton CO2eq)": {
+        "max": 18532.9,
+        "mean": 17427.06975,
+        "min": 0.0,
+        "nulls": 0,
+        "std": 1986.348549,
+        "sum": 6970827.9
+      },
+      "GDP (Billion USD2007)": {
+        "max": 171420.0,
+        "mean": 140330.64,
+        "min": 0.0,
+        "nulls": 0,
+        "std": 17653.41139,
+        "sum": 56132256.0
+      },
+      "Run #": {
+        "max": 400.0,
+        "mean": 200.5,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.6143013,
+        "sum": 80200.0
+      }
+    },
+    "tail": [
+      {
+        "Consumption (Billion USD2007)": 86609.9,
+        "Emissions CO2eq Total (Million Ton CO2eq)": 17870.6,
+        "GDP (Billion USD2007)": 139115.0,
+        "Run #": 398
+      },
+      {
+        "Consumption (Billion USD2007)": 87983.8,
+        "Emissions CO2eq Total (Million Ton CO2eq)": 17432.5,
+        "GDP (Billion USD2007)": 140116.0,
+        "Run #": 399
+      },
+      {
+        "Consumption (Billion USD2007)": 89552.4,
+        "Emissions CO2eq Total (Million Ton CO2eq)": 17165.6,
+        "GDP (Billion USD2007)": 144246.0,
+        "Run #": 400
+      }
+    ],
+    "values_digest": "d8b6aef51d0ea9999d0e8eca1ee13c0b4cb6eae5169e4d1783417f467f6214bd"
+  },
+  "status": "ok"
+}

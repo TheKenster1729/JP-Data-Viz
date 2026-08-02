@@ -1,0 +1,281 @@
+{
+  "case": "figure/pub/plot_tree_GLB_2C_2050",
+  "result": {
+    "figure": {
+      "annotations": [
+        "NGCAP<br><=0.93</br>",
+        "NGCC<br><=0.93</br>",
+        "VINT<br><=0.63</br>",
+        "AEEI EUR<br><=2.04</br>",
+        "Leaf",
+        "Leaf",
+        "E-NE(final)<br><=0.36</br>",
+        "Leaf",
+        "Leaf",
+        "WindGas<br><=0.77</br>",
+        "AEEI ASI<br><=1.65</br>",
+        "Leaf",
+        "Leaf",
+        "PC<br><=1.20</br>",
+        "Leaf",
+        "Leaf",
+        "VINT<br><=0.56</br>",
+        "AEEI MEX<br><=1.95</br>",
+        "AEEI REA<br><=-0.12</br>",
+        "Leaf",
+        "Leaf",
+        "LK OTHR<br><=1.00</br>",
+        "Leaf",
+        "Leaf",
+        "WindGas<br><=1.01</br>",
+        "Bio<br><=0.89</br>",
+        "Leaf",
+        "Leaf",
+        "gas<br><=1.44</br>",
+        "Leaf",
+        "Leaf"
+      ],
+      "data_digest": "0ecf34bb67da06d04838ae1791f22f3804bbe053b4cdd1756499d50b8eb4bfbc",
+      "kind": "figure",
+      "layout_digest": "fe997ea28b8a5411f4992f90fbac66b0390dee0760eb9c569c37478b62a82545",
+      "layout_keys": [
+        "annotations",
+        "plot_bgcolor",
+        "shapes",
+        "showlegend",
+        "xaxis",
+        "yaxis"
+      ],
+      "n_traces": 1,
+      "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+      "title": null,
+      "traces": [
+        {
+          "n_x": 90,
+          "n_y": 90,
+          "name": null,
+          "type": "scatter"
+        }
+      ]
+    },
+    "nodes": {
+      "coverage": 1.0,
+      "density": 0.2775,
+      "feature": "NGCAP",
+      "left": {
+        "coverage": 0.5135135135,
+        "density": 0.456,
+        "feature": "NGCC",
+        "left": {
+          "coverage": 0.04504504505,
+          "density": 0.119047619,
+          "feature": "VINT",
+          "left": {
+            "coverage": 0.009009009009,
+            "density": 0.02857142857,
+            "feature": "AEEI EUR",
+            "left": {
+              "coverage": 0.0,
+              "density": 0.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.009009009009,
+              "density": 1.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 2.040000021
+          },
+          "right": {
+            "coverage": 0.03603603604,
+            "density": 0.5714285714,
+            "feature": "E-NE(final)",
+            "left": {
+              "coverage": 0.0,
+              "density": 0.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.03603603604,
+              "density": 1.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 0.3649999946
+          },
+          "threshold": 0.6299999952
+        },
+        "right": {
+          "coverage": 0.4684684685,
+          "density": 0.6265060241,
+          "feature": "WindGas",
+          "left": {
+            "coverage": 0.009009009009,
+            "density": 0.07692307692,
+            "feature": "AEEI ASI",
+            "left": {
+              "coverage": 0.0,
+              "density": 0.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.009009009009,
+              "density": 1.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 1.650000036
+          },
+          "right": {
+            "coverage": 0.4594594595,
+            "density": 0.7285714286,
+            "feature": "PC",
+            "left": {
+              "coverage": 0.3873873874,
+              "density": 0.8269230769,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.07207207207,
+              "density": 0.4444444444,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 1.203500032
+          },
+          "threshold": 0.7660000026
+        },
+        "threshold": 0.9284999967
+      },
+      "right": {
+        "coverage": 0.4864864865,
+        "density": 0.1963636364,
+        "feature": "VINT",
+        "left": {
+          "coverage": 0.1621621622,
+          "density": 0.1052631579,
+          "feature": "AEEI MEX",
+          "left": {
+            "coverage": 0.1081081081,
+            "density": 0.075,
+            "feature": "AEEI REA",
+            "left": {
+              "coverage": 0.01801801802,
+              "density": 1.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.09009009009,
+              "density": 0.06329113924,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": -0.1150000021
+          },
+          "right": {
+            "coverage": 0.05405405405,
+            "density": 0.5454545455,
+            "feature": "LK OTHR",
+            "left": {
+              "coverage": 0.04504504505,
+              "density": 1.0,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.009009009009,
+              "density": 0.1666666667,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 1.004999995
+          },
+          "threshold": 1.945000052
+        },
+        "right": {
+          "coverage": 0.3243243243,
+          "density": 0.3461538462,
+          "feature": "WindGas",
+          "left": {
+            "coverage": 0.2522522523,
+            "density": 0.5283018868,
+            "feature": "Bio",
+            "left": {
+              "coverage": 0.02702702703,
+              "density": 0.1666666667,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.2252252252,
+              "density": 0.7142857143,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 0.8925000131
+          },
+          "right": {
+            "coverage": 0.07207207207,
+            "density": 0.1568627451,
+            "feature": "gas",
+            "left": {
+              "coverage": 0.02702702703,
+              "density": 0.06818181818,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "right": {
+              "coverage": 0.04504504505,
+              "density": 0.7142857143,
+              "feature": "leaf",
+              "left": null,
+              "right": null,
+              "threshold": 0
+            },
+            "threshold": 1.435000002
+          },
+          "threshold": 1.010999978
+        },
+        "threshold": 0.5550000072
+      },
+      "threshold": 0.9314999878
+    }
+  },
+  "status": "ok"
+}

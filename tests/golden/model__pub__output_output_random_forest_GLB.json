@@ -1,0 +1,59 @@
+{
+  "case": "model/pub/output_output_random_forest_GLB",
+  "result": {
+    "importances": {
+      "index": [
+        "elec_prod_Gas_CCS_TWh",
+        "primary_energy_use_Hydro_EJ",
+        "sectoral_emi_EnergyIntensiveIndustry_Mining_million_ton_CO2e",
+        "elec_prod_Renewables_TWh",
+        "Primary_energy_use_Coal_EJ",
+        "elec_prod_Coal_CCS_TWh",
+        "primary_energy_use_Gas_EJ",
+        "primary_energy_use_Renewables_EJ",
+        "sectoral_emi_Other_Manufacturing_million_ton_CO2e",
+        "sectoral_emi_Commercial_Residential_million_ton_CO2e",
+        "elec_prod_Biomass_No_CCS_TWh",
+        "sectoral_emi_Electricity_million_ton_CO2e",
+        "elec_prod_Gas_No_CCS_TWh",
+        "primary_energy_use_Nuclear_EJ",
+        "primary_energy_use_Oil_EJ",
+        "CPI_price_index",
+        "carbon_price_USD2007_per_ton_CO2e",
+        "elec_prod_Nuclear_TWh",
+        "sectoral_output_EnergyIntensiveIndustry_Mining_billion_USD2007",
+        "sectoral_emi_Transportation_million_ton_CO2e"
+      ],
+      "values": [
+        0.181773583,
+        0.04151152873,
+        0.04050285141,
+        0.03875326296,
+        0.03819322303,
+        0.03770977983,
+        0.03640271756,
+        0.03466408716,
+        0.03426328676,
+        0.03294030548,
+        0.03199343629,
+        0.03066157622,
+        0.03054825638,
+        0.02786522881,
+        0.02775497511,
+        0.02693237951,
+        0.02521286318,
+        0.02514720952,
+        0.02443422489,
+        0.02395894143
+      ]
+    },
+    "top_n": [
+      "elec_prod_Gas_CCS_TWh",
+      "primary_energy_use_Hydro_EJ",
+      "sectoral_emi_EnergyIntensiveIndustry_Mining_million_ton_CO2e",
+      "elec_prod_Renewables_TWh",
+      "Primary_energy_use_Coal_EJ"
+    ]
+  },
+  "status": "ok"
+}

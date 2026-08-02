@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/full/gdp_GLB_Ref_2050_COLLIDING",
+  "result": {
+    "columns": [
+      "Run #",
+      "Year",
+      "Value"
+    ],
+    "dtypes": [
+      "int64",
+      "int64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Run #": 1,
+        "Value": 157909.0,
+        "Year": 2050
+      },
+      {
+        "Run #": 2,
+        "Value": 158916.0,
+        "Year": 2050
+      },
+      {
+        "Run #": 3,
+        "Value": 156307.0,
+        "Year": 2050
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      400,
+      3
+    ],
+    "stats": {
+      "Run #": {
+        "max": 400.0,
+        "mean": 200.5,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.6143013,
+        "sum": 80200.0
+      },
+      "Value": {
+        "max": 193586.0,
+        "mean": 165547.4375,
+        "min": 146172.0,
+        "nulls": 0,
+        "std": 8630.112994,
+        "sum": 66218975.0
+      },
+      "Year": {
+        "max": 2050.0,
+        "mean": 2050.0,
+        "min": 2050.0,
+        "nulls": 0,
+        "std": 0.0,
+        "sum": 820000.0
+      }
+    },
+    "tail": [
+      {
+        "Run #": 398,
+        "Value": 165453.0,
+        "Year": 2050
+      },
+      {
+        "Run #": 399,
+        "Value": 168412.0,
+        "Year": 2050
+      },
+      {
+        "Run #": 400,
+        "Value": 165717.0,
+        "Year": 2050
+      }
+    ],
+    "values_digest": "1fe90f1faca2ea3e691bbd79046c655cace6dfef9c370d0e127478c7f82e0803"
+  },
+  "status": "ok"
+}

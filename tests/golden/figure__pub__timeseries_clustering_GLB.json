@@ -1,0 +1,2434 @@
+{
+  "case": "figure/pub/timeseries_clustering_GLB",
+  "result": {
+    "annotations": [],
+    "data_digest": "302ce4643eb2bf1b255c4b84c1d8bea3554c05ff9be984761a7cb4abb8994c6d",
+    "kind": "figure",
+    "layout_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "layout_keys": [],
+    "n_traces": 403,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": null,
+    "traces": [
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 1",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 2",
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "Cluster 3",
+        "type": "scatter"
+      }
+    ]
+  },
+  "status": "ok"
+}

@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/full/renewable_share_division_GLB_15C_med_2050",
+  "result": {
+    "columns": [
+      "Run #",
+      "Year",
+      "Value"
+    ],
+    "dtypes": [
+      "int64",
+      "int64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Run #": 1,
+        "Value": 0.2325279906,
+        "Year": 2050
+      },
+      {
+        "Run #": 2,
+        "Value": 0.2388772906,
+        "Year": 2050
+      },
+      {
+        "Run #": 3,
+        "Value": 0.2425808411,
+        "Year": 2050
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      395,
+      3
+    ],
+    "stats": {
+      "Run #": {
+        "max": 400.0,
+        "mean": 199.2987342,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.4925531,
+        "sum": 78723.0
+      },
+      "Value": {
+        "max": 0.5844611672,
+        "mean": 0.3515762724,
+        "min": 0.2059118442,
+        "nulls": 0,
+        "std": 0.1083469289,
+        "sum": 138.8726276
+      },
+      "Year": {
+        "max": 2050.0,
+        "mean": 2050.0,
+        "min": 2050.0,
+        "nulls": 0,
+        "std": 0.0,
+        "sum": 809750.0
+      }
+    },
+    "tail": [
+      {
+        "Run #": 398,
+        "Value": 0.4679537003,
+        "Year": 2050
+      },
+      {
+        "Run #": 399,
+        "Value": 0.2423995645,
+        "Year": 2050
+      },
+      {
+        "Run #": 400,
+        "Value": 0.3275537871,
+        "Year": 2050
+      }
+    ],
+    "values_digest": "02f6ee74dc8889ede1fa603fbf6bbe308d363dc9b86d3d708ce961638de5b781"
+  },
+  "status": "ok"
+}

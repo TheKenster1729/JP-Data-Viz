@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/pub/gas_ccs_GLB_2C_series",
+  "result": {
+    "columns": [
+      "Run #",
+      "Year",
+      "Value"
+    ],
+    "dtypes": [
+      "int64",
+      "int64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Run #": 1,
+        "Value": 0.9747042874,
+        "Year": 2020
+      },
+      {
+        "Run #": 2,
+        "Value": 0.9747042874,
+        "Year": 2020
+      },
+      {
+        "Run #": 3,
+        "Value": 0.9747042874,
+        "Year": 2020
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      6800,
+      3
+    ],
+    "stats": {
+      "Run #": {
+        "max": 400.0,
+        "mean": 200.5,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.4781843,
+        "sum": 1363400.0
+      },
+      "Value": {
+        "max": 20889.76323,
+        "mean": 1426.099974,
+        "min": 0.0,
+        "nulls": 0,
+        "std": 2993.2429,
+        "sum": 9697479.826
+      },
+      "Year": {
+        "max": 2100.0,
+        "mean": 2060.0,
+        "min": 2020.0,
+        "nulls": 0,
+        "std": 24.49669872,
+        "sum": 14008000.0
+      }
+    },
+    "tail": [
+      {
+        "Run #": 398,
+        "Value": 0.0,
+        "Year": 2100
+      },
+      {
+        "Run #": 399,
+        "Value": 4681.022434,
+        "Year": 2100
+      },
+      {
+        "Run #": 400,
+        "Value": 5620.465538,
+        "Year": 2100
+      }
+    ],
+    "values_digest": "a1380838db812fcc3723d9bf7140d17070fb2db554f6ba93a441713965bcf8f1"
+  },
+  "status": "ok"
+}

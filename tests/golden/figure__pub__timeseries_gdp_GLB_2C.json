@@ -1,0 +1,37 @@
+{
+  "case": "figure/pub/timeseries_gdp_GLB_2C",
+  "result": {
+    "figure": {
+      "annotations": [],
+      "data_digest": "a7112831e4480a479ae0937b61e438e48ae12e4d4125faba62164af1e0016872",
+      "kind": "figure",
+      "layout_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "layout_keys": [],
+      "n_traces": 3,
+      "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+      "title": null,
+      "traces": [
+        {
+          "n_x": 17,
+          "n_y": 17,
+          "name": null,
+          "type": "scatter"
+        },
+        {
+          "n_x": 17,
+          "n_y": 17,
+          "name": null,
+          "type": "scatter"
+        },
+        {
+          "n_x": 17,
+          "n_y": 17,
+          "name": "GLB 2C",
+          "type": "scatter"
+        }
+      ]
+    },
+    "n_traces_from_return_traces": 3
+  },
+  "status": "ok"
+}

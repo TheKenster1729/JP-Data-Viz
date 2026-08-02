@@ -1,0 +1,24 @@
+{
+  "case": "figure/pub/permutation_importance_GLB",
+  "result": {
+    "annotations": [],
+    "data_digest": "ecb656548504ffe03bcbec5e3d2d2fd84cdc24de271a35df55f885fe80cf4b5a",
+    "kind": "figure",
+    "layout_digest": "13cea258f96ab8faa3521baad49835c590c6331fd25ed9281ac2e066b3557401",
+    "layout_keys": [
+      "showlegend"
+    ],
+    "n_traces": 1,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": null,
+    "traces": [
+      {
+        "n_x": 15,
+        "n_y": 15,
+        "name": null,
+        "type": "bar"
+      }
+    ]
+  },
+  "status": "ok"
+}

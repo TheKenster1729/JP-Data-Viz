@@ -1,0 +1,22 @@
+{
+  "case": "figure/pub/choropleth_gdp_2C_2050",
+  "result": {
+    "annotations": [],
+    "data_digest": "0a8e184f7dfa05c49f0959fe4c0c2b7b8c7ad4ce623eed48e5bfe62fd7b3c4c0",
+    "kind": "figure",
+    "layout_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "layout_keys": [],
+    "n_traces": 1,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": null,
+    "traces": [
+      {
+        "n_locations": 18,
+        "n_z": 18,
+        "name": null,
+        "type": "choropleth"
+      }
+    ]
+  },
+  "status": "ok"
+}

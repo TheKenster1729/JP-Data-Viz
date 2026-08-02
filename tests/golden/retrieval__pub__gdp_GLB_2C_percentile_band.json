@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/pub/gdp_GLB_2C_percentile_band",
+  "result": {
+    "columns": [
+      "5th Percentile",
+      "Median",
+      "95th Percentile"
+    ],
+    "dtypes": [
+      "float64",
+      "float64",
+      "float64"
+    ],
+    "head": [
+      {
+        "5th Percentile": 75379.8,
+        "95th Percentile": 75379.8,
+        "Median": 75379.8
+      },
+      {
+        "5th Percentile": 83937.605,
+        "95th Percentile": 90503.18,
+        "Median": 87097.8
+      },
+      {
+        "5th Percentile": 94722.385,
+        "95th Percentile": 103830.3,
+        "Median": 99132.2
+      }
+    ],
+    "index_name": "Year",
+    "kind": "dataframe",
+    "shape": [
+      17,
+      3
+    ],
+    "stats": {
+      "5th Percentile": {
+        "max": 314293.4,
+        "mean": 177775.4318,
+        "min": 75379.8,
+        "nulls": 0,
+        "std": 73834.15596,
+        "sum": 3022182.34
+      },
+      "95th Percentile": {
+        "max": 416391.65,
+        "mean": 218400.4988,
+        "min": 75379.8,
+        "nulls": 0,
+        "std": 103576.5922,
+        "sum": 3712808.48
+      },
+      "Median": {
+        "max": 352625.5,
+        "mean": 195552.4,
+        "min": 75379.8,
+        "nulls": 0,
+        "std": 85766.07882,
+        "sum": 3324390.8
+      }
+    },
+    "tail": [
+      {
+        "5th Percentile": 266173.95,
+        "95th Percentile": 341574.1,
+        "Median": 298800.5
+      },
+      {
+        "5th Percentile": 288713.0,
+        "95th Percentile": 377077.2,
+        "Median": 325444.0
+      },
+      {
+        "5th Percentile": 314293.4,
+        "95th Percentile": 416391.65,
+        "Median": 352625.5
+      }
+    ],
+    "values_digest": "c255818b78662f8b924dc715d928c1a2ad2dd1c4215c3a2aa57a5250b1116fef"
+  },
+  "status": "ok"
+}

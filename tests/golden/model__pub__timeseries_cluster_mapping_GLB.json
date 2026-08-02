@@ -1,0 +1,59 @@
+{
+  "case": "model/pub/timeseries_cluster_mapping_GLB",
+  "result": {
+    "importances": {
+      "index": [
+        "FF-COAL",
+        "BioCCS",
+        "PC",
+        "TFP",
+        "LK FOOD",
+        "VINT",
+        "AEEI ASI",
+        "Biol-Oil",
+        "AEEI IDZ",
+        "Bio",
+        "oil",
+        "AEEI CHN",
+        "E-LK",
+        "E-NOE",
+        "AEEI ROE",
+        "AEEI RUS",
+        "E-NE(final)",
+        "PCCAP",
+        "coal",
+        "LK EINT"
+      ],
+      "values": [
+        0.08466450135,
+        0.03924730465,
+        0.03760612953,
+        0.0332988294,
+        0.03090601276,
+        0.02571641938,
+        0.02500749676,
+        0.02427341403,
+        0.02389384055,
+        0.023555713,
+        0.02349639134,
+        0.02328986018,
+        0.02224857089,
+        0.02161237675,
+        0.02080591959,
+        0.02067358933,
+        0.02034727813,
+        0.0203423334,
+        0.01922834488,
+        0.01911286846
+      ]
+    },
+    "top_n": [
+      "FF-COAL",
+      "BioCCS",
+      "PC",
+      "TFP",
+      "LK FOOD"
+    ]
+  },
+  "status": "ok"
+}

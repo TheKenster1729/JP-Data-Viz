@@ -1,0 +1,44 @@
+{
+  "case": "figure/styled/iomap_GLB_2C_2050",
+  "result": {
+    "annotations": [
+      "Feature Importances, Top 5 Features",
+      "Parallel Axis Plot, Top 5 Features"
+    ],
+    "data_digest": "3ebd93ea7fa301550dac9bd07062554e80fba7aa16013397c8a47c9caef25cb6",
+    "kind": "figure",
+    "layout_digest": "0613420772765d3b198ce008e1e167a43a90cd9c6a48d848a4916b30e28e878d",
+    "layout_keys": [
+      "annotations",
+      "height",
+      "margin",
+      "title",
+      "xaxis",
+      "yaxis"
+    ],
+    "n_traces": 2,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": "CART Results for Total Emissions CO2e (Million Ton CO2e), GLB 2C 2050",
+    "traces": [
+      {
+        "n_x": 5,
+        "n_y": 5,
+        "name": null,
+        "type": "bar"
+      },
+      {
+        "dimensions": [
+          "NGCAP",
+          "NGCC",
+          "VINT",
+          "Pop",
+          "AEEI LAM",
+          "Total<br>Emissions<br>CO2e<br>(Million Ton<br>CO2e)"
+        ],
+        "name": null,
+        "type": "parcoords"
+      }
+    ]
+  },
+  "status": "ok"
+}

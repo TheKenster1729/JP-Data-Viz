@@ -1,0 +1,83 @@
+{
+  "case": "retrieval/pub/emissions_GLB_2C_2050",
+  "result": {
+    "columns": [
+      "Run #",
+      "Year",
+      "Value"
+    ],
+    "dtypes": [
+      "int64",
+      "int64",
+      "float64"
+    ],
+    "head": [
+      {
+        "Run #": 1,
+        "Value": 34258.2,
+        "Year": 2050
+      },
+      {
+        "Run #": 2,
+        "Value": 34257.8,
+        "Year": 2050
+      },
+      {
+        "Run #": 3,
+        "Value": 34258.4,
+        "Year": 2050
+      }
+    ],
+    "index_name": "None",
+    "kind": "dataframe",
+    "shape": [
+      400,
+      3
+    ],
+    "stats": {
+      "Run #": {
+        "max": 400.0,
+        "mean": 200.5,
+        "min": 1.0,
+        "nulls": 0,
+        "std": 115.6143013,
+        "sum": 80200.0
+      },
+      "Value": {
+        "max": 34453.9,
+        "mean": 34271.446,
+        "min": 34222.7,
+        "nulls": 0,
+        "std": 47.84122638,
+        "sum": 13708578.4
+      },
+      "Year": {
+        "max": 2050.0,
+        "mean": 2050.0,
+        "min": 2050.0,
+        "nulls": 0,
+        "std": 0.0,
+        "sum": 820000.0
+      }
+    },
+    "tail": [
+      {
+        "Run #": 398,
+        "Value": 34258.3,
+        "Year": 2050
+      },
+      {
+        "Run #": 399,
+        "Value": 34258.4,
+        "Year": 2050
+      },
+      {
+        "Run #": 400,
+        "Value": 34258.4,
+        "Year": 2050
+      }
+    ],
+    "values_digest": "b2f4a19be02d626c2f24b39b0f384cf0aa727316f9b89bad7f0dfc26c652ff3f"
+  },
+  "status": "ok"
+}

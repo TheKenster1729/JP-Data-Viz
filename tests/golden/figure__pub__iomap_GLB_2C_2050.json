@@ -1,0 +1,41 @@
+{
+  "case": "figure/pub/iomap_GLB_2C_2050",
+  "result": {
+    "annotations": [
+      "Feature Importances, Top 5 Features",
+      "Parallel Axis Plot, Top 5 Features"
+    ],
+    "data_digest": "6f6af400115efcc7251d9ae1e74b593e02c6d0908b0a70cec61c869a1b59c3dd",
+    "kind": "figure",
+    "layout_digest": "0b0210cea1cac7ab4a3394bd57c5e7abd65cd2c6a6bd1d7f06e1bd331c3bb2af",
+    "layout_keys": [
+      "annotations",
+      "xaxis",
+      "yaxis"
+    ],
+    "n_traces": 2,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": null,
+    "traces": [
+      {
+        "n_x": 5,
+        "n_y": 5,
+        "name": null,
+        "type": "bar"
+      },
+      {
+        "dimensions": [
+          "NGCAP",
+          "NGCC",
+          "VINT",
+          "Pop",
+          "AEEI LAM",
+          "Total Emissions CO2e (Million Ton CO2e)"
+        ],
+        "name": null,
+        "type": "parcoords"
+      }
+    ]
+  },
+  "status": "ok"
+}

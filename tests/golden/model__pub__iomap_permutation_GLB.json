@@ -1,0 +1,81 @@
+{
+  "case": "model/pub/iomap_permutation_GLB",
+  "result": [
+    {
+      "mean": 0.0415,
+      "std": 0.008154753215,
+      "variable": "NGCAP"
+    },
+    {
+      "mean": 0.0235,
+      "std": 0.004769696007,
+      "variable": "NGCC"
+    },
+    {
+      "mean": 0.021,
+      "std": 0.006819090848,
+      "variable": "VINT"
+    },
+    {
+      "mean": 0.01775,
+      "std": 0.00425,
+      "variable": "Pop"
+    },
+    {
+      "mean": 0.01475,
+      "std": 0.004802343178,
+      "variable": "AEEI LAM"
+    },
+    {
+      "mean": 0.01325,
+      "std": 0.003881043674,
+      "variable": "AEEI MEX"
+    },
+    {
+      "mean": 0.0115,
+      "std": 0.003741657387,
+      "variable": "AEEI ANZ"
+    },
+    {
+      "mean": 0.01075,
+      "std": 0.001952562419,
+      "variable": "AEEI CAN"
+    },
+    {
+      "mean": 0.01025,
+      "std": 0.002610076627,
+      "variable": "AEEI EUR"
+    },
+    {
+      "mean": 0.009,
+      "std": 0.002291287847,
+      "variable": "TFP"
+    },
+    {
+      "mean": 0.00775,
+      "std": 0.002076655966,
+      "variable": "AEEI IND"
+    },
+    {
+      "mean": 0.0075,
+      "std": 0.0025,
+      "variable": "BioCCS"
+    },
+    {
+      "mean": 0.00725,
+      "std": 0.002076655966,
+      "variable": "oil"
+    },
+    {
+      "mean": 0.0065,
+      "std": 0.002,
+      "variable": "AEEI CHN"
+    },
+    {
+      "mean": 0.00625,
+      "std": 0.002015564437,
+      "variable": "E-NOE"
+    }
+  ],
+  "status": "ok"
+}

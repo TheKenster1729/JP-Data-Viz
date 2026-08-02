@@ -10,6 +10,10 @@ import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy import text
 
+# Seed for every estimator in this module. Without it the trees and forests below
+# are not reproducible run-to-run, so published figures cannot be regenerated.
+RANDOM_STATE = 0
+
 # Module-level cache for inputs CSV to avoid repeated file reads
 _INPUTS_CACHE = None
 
@@ -22,7 +26,6 @@ def _get_inputs_df():
     if _INPUTS_CACHE is None:
         _INPUTS_CACHE = pd.read_csv(r"Cleaned Data/InputsMasterTFP.csv")
     return _INPUTS_CACHE.copy()  # Return copy to avoid mutation issues
-
 
 def _filter_inputs_by_region(inputs_df, region):
     """
@@ -56,9 +59,8 @@ def _filter_inputs_by_region(inputs_df, region):
 
     return inputs_df.drop(columns=columns_to_drop)
 
-
 class InputOutputMapping:
-    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
+    def __init__(self, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4, random_state = RANDOM_STATE):
         self.output = output
         self.df = df
         self.scenario = scenario
@@ -71,6 +73,7 @@ class InputOutputMapping:
         self.cart_depth = cart_depth
         self.n_estimators = n_estimators
         self.max_depth = max_depth
+        self.random_state = random_state
 
         # remove region-specific TFP/Pop and AEEI inputs per rules
         self.region = region
@@ -109,12 +112,11 @@ class InputOutputMapping:
         else:
             y_discrete = np.where(self.y_continuous.to_numpy() < percentile, 1, 0)
 
-
         return X, y_discrete
 
     def CART(self):
         X, y = self.preprocess_for_classification()
-        fit_model = DecisionTreeClassifier(max_depth = self.cart_depth)
+        fit_model = DecisionTreeClassifier(max_depth = self.cart_depth, random_state = self.random_state)
         fit_model.fit(X, y)
 
         return fit_model
@@ -132,7 +134,8 @@ class InputOutputMapping:
         fit_model = RandomForestClassifier(
             n_estimators=self.n_estimators, 
             max_depth=self.max_depth,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            random_state=self.random_state
         ).fit(X, y)
 
         # get the average feature importances
@@ -145,8 +148,8 @@ class InputOutputMapping:
     def permutation_importance(self):
         X, y = self.preprocess_for_classification()
 
-        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth).fit(X, y)
-        permutation_importance_results = permutation_importance(fit_model, X, y, n_repeats = 10)
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth, random_state = self.random_state).fit(X, y)
+        permutation_importance_results = permutation_importance(fit_model, X, y, n_repeats = 10, random_state = self.random_state)
 
         important = []
         for i in permutation_importance_results.importances_mean.argsort()[::-1]:
@@ -168,7 +171,7 @@ class OutputOutputMapping:
     # Class-level cache for table name mappings (shared across instances)
     _table_name_cache = {}
     
-    def __init__(self, db_obj, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, other_outputs = [], max_workers = 8):
+    def __init__(self, db_obj, output, region, scenario, year, df, threshold = 70, gt = True, num_to_plot = 5, other_outputs = [], max_workers = 8, random_state = RANDOM_STATE):
         self.db_obj = db_obj
         self.output = output
         self.region = region
@@ -181,6 +184,7 @@ class OutputOutputMapping:
         self.num_to_plot = num_to_plot
         self.other_outputs = other_outputs
         self.max_workers = max_workers  # Number of concurrent threads for DB queries
+        self.random_state = random_state
 
     def _get_table_names_batch(self, outputs):
         """
@@ -326,7 +330,7 @@ class OutputOutputMapping:
         if type(y) is str:
             return y
         
-        fit_model = RandomForestClassifier(n_estimators = 100).fit(self.main_df, y)
+        fit_model = RandomForestClassifier(n_estimators = 100, random_state = self.random_state).fit(self.main_df, y)
 
         # get the average feature importances
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = self.main_df.columns)
@@ -341,7 +345,7 @@ class OutputOutputMapping:
         cls._table_name_cache = {}
 
 class FilteredInputOutputMapping:
-    def __init__(self, constraint_df, region, scenario, year, num_to_plot = 5, cart_depth = 4, n_estimators = 100, random_forest_depth = 4):
+    def __init__(self, constraint_df, region, scenario, year, num_to_plot = 5, cart_depth = 4, n_estimators = 100, random_forest_depth = 4, random_state = RANDOM_STATE):
         self.constraint_df = constraint_df
         self.region = region
         self.scenario = scenario
@@ -351,6 +355,7 @@ class FilteredInputOutputMapping:
         self.cart_depth = cart_depth
         self.n_estimators = n_estimators
         self.random_forest_depth = random_forest_depth
+        self.random_state = random_state
 
         # remove region-specific TFP/Pop and AEEI inputs per rules
         self.inputs = _filter_inputs_by_region(self.inputs, self.region)
@@ -376,14 +381,14 @@ class FilteredInputOutputMapping:
 
     def CART(self):
         self.preprocess_for_classification()
-        fit_model = DecisionTreeClassifier(max_depth = self.cart_depth)
+        fit_model = DecisionTreeClassifier(max_depth = self.cart_depth, random_state = self.random_state)
         fit_model.fit(self.X, self.y_discrete)
 
         return fit_model
 
     def random_forest(self):
         self.preprocess_for_classification()
-        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.random_forest_depth).fit(self.X, self.y_discrete)
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.random_forest_depth, random_state = self.random_state).fit(self.X, self.y_discrete)
 
         # get the average feature importances
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = self.X.columns)
@@ -395,8 +400,8 @@ class FilteredInputOutputMapping:
     def permutation_importance(self):
         self.preprocess_for_classification()
 
-        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.random_forest_depth).fit(self.X, self.y_discrete)
-        permutation_importance_results = permutation_importance(fit_model, self.X, self.y_discrete, n_repeats = 10)
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.random_forest_depth, random_state = self.random_state).fit(self.X, self.y_discrete)
+        permutation_importance_results = permutation_importance(fit_model, self.X, self.y_discrete, n_repeats = 10, random_state = self.random_state)
 
         important = []
         for i in permutation_importance_results.importances_mean.argsort()[::-1]:
@@ -420,7 +425,7 @@ class FilteredOutputOutputMapping:
     # Class-level cache for table name mappings (shared across instances)
     _table_name_cache = {}
     
-    def __init__(self, db_obj, constraint_df, region, scenario, year, num_to_plot = 5, max_workers = 8):
+    def __init__(self, db_obj, constraint_df, region, scenario, year, num_to_plot = 5, max_workers = 8, random_state = RANDOM_STATE):
         self.db_obj = db_obj
         self.constraint_df = constraint_df
         self.region = region
@@ -428,6 +433,7 @@ class FilteredOutputOutputMapping:
         self.year = year
         self.num_to_plot = num_to_plot
         self.max_workers = max_workers
+        self.random_state = random_state
         
         # Get the run numbers from constraint_df
         self.run_numbers = constraint_df["Run #"].values
@@ -548,7 +554,7 @@ class FilteredOutputOutputMapping:
         X = self.df_to_use[self.df_to_use.columns[:-1]]
         y = self.df_to_use["in_constraint_range"]
 
-        random_forest = RandomForestClassifier(n_estimators=100, n_jobs=-1).fit(X, y)
+        random_forest = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=self.random_state).fit(X, y)
         feature_importances = pd.DataFrame(
             [estimator.feature_importances_ for estimator in random_forest.estimators_], 
             columns=X.columns
@@ -559,7 +565,7 @@ class FilteredOutputOutputMapping:
         return sorted_labeled_importances, top_n
 
 class TimeSeriesClustering:
-    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean", num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4):
+    def __init__(self, df, output, region, scenario, n_clusters = 3, metric = "euclidean", num_to_plot = 5, cart_depth = 4, n_estimators = 100, max_depth = 4, random_state = RANDOM_STATE):
         self.df = df
         self.output = output
         self.region = region
@@ -571,9 +577,10 @@ class TimeSeriesClustering:
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.num_to_plot = num_to_plot
+        self.random_state = random_state
 
     def generate_clusters(self):
-        clusters = TimeSeriesKMeans(n_clusters = self.n_clusters, metric = self.metric).fit(self.df_for_clustering)
+        clusters = TimeSeriesKMeans(n_clusters = self.n_clusters, metric = self.metric, random_state = self.random_state).fit(self.df_for_clustering)
 
         return clusters
 
@@ -596,7 +603,7 @@ class TimeSeriesClustering:
         
         self.X = self.inputs[self.inputs.columns[1:]]
         self.y = self.generate_clusters().labels_
-        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth).fit(self.X, self.y)
+        fit_model = RandomForestClassifier(n_estimators = self.n_estimators, max_depth = self.max_depth, random_state = self.random_state).fit(self.X, self.y)
 
         # get the average feature importances
         feature_importances = pd.DataFrame([estimator.feature_importances_ for estimator in fit_model.estimators_], columns = self.X.columns)

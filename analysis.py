@@ -308,9 +308,13 @@ class OutputOutputMapping:
         main_df = pd.DataFrame({"Run #": target_output_run_numbers})
         main_df = main_df.set_index("Run #")
         
-        # Concatenate all valid series at once (more efficient than iterative concat)
+        # Concatenate all valid series at once (more efficient than iterative concat).
+        # Columns must follow outputs_with_tables rather than thread completion
+        # order: the forest subsamples features by position, so a reshuffled
+        # column order changes the fit even with random_state pinned.
         if results:
-            results_df = pd.DataFrame(results)
+            ordered = [output for output, _ in outputs_with_tables if output in results]
+            results_df = pd.DataFrame({output: results[output] for output in ordered})
             # Align on index (Run #)
             main_df = main_df.join(results_df, how="left")
         
@@ -531,13 +535,16 @@ class FilteredOutputOutputMapping:
             for future in as_completed(future_to_output):
                 output_name, series = future.result()
                 if series is not None:
-                    # Use human-readable names for columns
-                    readable_name = Readability().naming_dict_long_names_first.get(output_name, output_name)
-                    results[readable_name] = series
+                    results[output_name] = series
         
-        # Build DataFrame efficiently
+        # Build DataFrame efficiently. Column order follows outputs_with_tables
+        # rather than thread completion order, so the forest sees the same
+        # feature positions on every run.
         if results:
-            self.df_to_use = pd.DataFrame(results)
+            naming = Readability().naming_dict_long_names_first
+            ordered = [output for output, _ in outputs_with_tables if output in results]
+            self.df_to_use = pd.DataFrame(
+                {naming.get(output, output): results[output] for output in ordered})
             self.df_to_use = self.df_to_use.loc[sorted(self.run_numbers)]
         else:
             self.df_to_use = pd.DataFrame()

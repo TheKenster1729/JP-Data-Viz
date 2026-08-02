@@ -1281,11 +1281,15 @@ class RegionalHeatmaps(DashboardFigure):
                 if mapping_df is not None:
                     fetched_data[key] = mapping_df
         
-        # Phase 2: Sequential model training with sklearn parallelism
+        # Phase 2: Sequential model training with sklearn parallelism.
+        # Iterate combinations rather than fetched_data, whose insertion order
+        # depends on which fetches finished first.
         all_results = []
-        for (reg, sce, year), mapping_df in fetched_data.items():
-            results = self._train_single_model(reg, sce, year, mapping_df)
-            all_results.extend(results)
+        for reg, sce, year in combinations:
+            mapping_df = fetched_data.get((reg, sce, year))
+            if mapping_df is None:
+                continue
+            all_results.extend(self._train_single_model(reg, sce, year, mapping_df))
         
         return pd.DataFrame(all_results)
 
@@ -1446,10 +1450,10 @@ if __name__ == "__main__":
     # InputDistributionAlternate(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot(show = True)
 
     # input-output mapping
-    from styling import FinishedFigure
-    df = DataRetrieval(db_obj, renewable_share, "GLB", "Ref", 2050).mapping_df()
-    unstyled = InputOutputMappingPlot(renewable_share, "GLB", "Ref", 2050, df)
-    FinishedFigure(unstyled).make_finished_figure().show()
+    # from styling import FinishedFigure
+    # df = DataRetrieval(db_obj, renewable_share, "GLB", "Ref", 2050).mapping_df()
+    # unstyled = InputOutputMappingPlot(renewable_share, "GLB", "Ref", 2050, df)
+    # FinishedFigure(unstyled).make_finished_figure().show()
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
     # output-output mapping
@@ -1468,9 +1472,9 @@ if __name__ == "__main__":
     # TimeSeriesClusteringPlot(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").make_plot(show = True)
 
     # tree
-    # df = DataRetrieval(db_obj, renewable_share, "GLB", "Ref", 2050).mapping_df()
-    # tree = InputOutputMapping(renewable_share, "GLB", "Ref", 2050, df, cart_depth = 3).CART()
-    # PlotTree(tree).make_plot(show = True)
+    df = DataRetrieval(db_obj, renewable_share, "GLB", "Ref", 2050).mapping_df()
+    tree = InputOutputMapping(renewable_share, "GLB", "Ref", 2050, df, cart_depth = 3).CART()
+    PlotTree(tree).make_plot(show = True)
 
     # stress platform connection
     # STRESSPlatformConnection(db_obj, ["WindGas", "wind", "BioCCS", "gas", "oil", "coal"], ["consumption_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq"], "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).make_plot(show = True)

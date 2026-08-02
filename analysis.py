@@ -606,17 +606,36 @@ class TimeSeriesClustering:
         return feature_importances, sorted_labeled_importances, top_n
 
 if __name__ == "__main__":
-    db = SQLConnection("all_data_jan_2024")
-    custom_output_example = "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share"
-    
+    db = SQLConnection("publication")
+    # custom_output_example = "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share"
+
     # input-output-mapping
     # df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).input_output_mapping_df()
     # io = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).random_forest()
     # print(io[-1])
 
     # cart
-    df = DataRetrieval(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050).mapping_df()
-    cart_results = InputOutputMapping("emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref", 2050, df).CART()
+    renewable_share = json.dumps({
+        "operation": "division",
+        "output1": "elec_prod_Renewables_TWh",
+        "output2": {
+            "operation": "addition",
+            "outputs": [
+                "elec_prod_Renewables_TWh",
+                "elec_prod_Hydro_TWh",
+                "elec_prod_Nuclear_TWh",
+                "elec_prod_Coal_CCS_TWh",
+                "elec_prod_Coal_No_CCS_TWh",
+                "elec_prod_Gas_No_CCS_TWh",
+                "elec_prod_Oil_TWh",
+                "elec_prod_Biomass_No_CCS_TWh",
+            ],
+            "name": "Total Electricity",
+        },
+        "name": "Renewable Share",
+    })
+    df = DataRetrieval(db, renewable_share, "GLB", "2C", 2050).mapping_df()
+    cart_results = InputOutputMapping(renewable_share, "GLB", "2C", 2050, df).CART()
 
     # time series clustering
     # time_series = TimeSeriesClustering(db, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref")

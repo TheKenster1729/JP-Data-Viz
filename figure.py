@@ -609,7 +609,8 @@ class InputOutputMappingPlot(InputOutputMapping, DashboardFigure):
 
         parcoords_df = self.inputs[top_n].copy()
         _, y_discrete = self.preprocess_for_classification()
-        parcoords_df[self.output] = self.y_continuous.values
+        output_display_name = Readability().display_name_for_output(self.output)
+        parcoords_df[output_display_name] = self.y_continuous.values
         parcoords_df["y_discrete"] = y_discrete
 
         first_sign = ">" if self.gt else "<"
@@ -657,7 +658,8 @@ class OutputOutputMappingPlot(OutputOutputMapping, DashboardFigure):
 
         parcoords_df = self.main_df[top_n].copy()
         y_discrete = self.preprocess_for_classification()
-        parcoords_df[self.output] = self.y_continuous.values
+        output_display_name = Readability().display_name_for_output(self.output)
+        parcoords_df[output_display_name] = self.y_continuous.values
         parcoords_df["y_discrete"] = y_discrete
 
         dimensions = []
@@ -959,11 +961,17 @@ class TreeNode:
         self.coverage = coverage
 
 class PlotTree(DashboardFigure):
-    def __init__(self, fit_model, y):
+    def __init__(self, fit_model, y=None):
         super().__init__("cart-tree-diagram")
         self.fit_model = fit_model
         self.fit_tree_model = self.fit_model.tree_
         self.y = y
+        # Class 1 is the interest label from preprocess_for_classification / in_constraint_range.
+        # Metrics are derived from tree_.value so they don't depend on whatever y the caller passed
+        # (some call sites pass continuous values, which broke sum(y)-based coverage).
+        self.interest_idx = int(np.where(self.fit_model.classes_ == 1)[0][0])
+        self.non_interest_idx = 1 - self.interest_idx if len(self.fit_model.classes_) == 2 else 0
+        self.total_interest = self.fit_tree_model.value[0][0][self.interest_idx]
 
     def layout_binary_tree(self, root, depth=0, x=0, y=0, level_height=10, node_spacing=5):
         """
@@ -988,10 +996,18 @@ class PlotTree(DashboardFigure):
         return left_width + node_spacing + right_width
 
     def build_tree_from_CART(self, tree_, node_id=0, depth=0):
-        value = tree_.value[node_id]
-        density = value[0][1]/(value[0][0] + value[0][1])
-        total_num_interest_cases = sum(self.y)
-        coverage = value[0][1]/total_num_interest_cases
+        class_counts = tree_.value[node_id][0]
+        node_interest = class_counts[self.interest_idx]
+        node_non_interest = class_counts[self.non_interest_idx] if len(class_counts) > 1 else 0
+        node_total = class_counts.sum()
+
+        # density: interest cases in this node / all cases in this node
+        density = node_interest / node_total if node_total else 0.0
+        # coverage: interest cases in this node / all interest cases in the tree
+        coverage = node_interest / self.total_interest if self.total_interest else 0.0
+
+        # Always store as [[non-interest, interest]] for hover text
+        value = np.array([[node_non_interest, node_interest]])
 
         if tree_.children_left[node_id] == tree_.children_right[node_id]:  # Leaf node
             return TreeNode(node_id, value=value, feature="leaf", threshold=0, left=None, right=None, density = density, coverage = coverage)
@@ -1009,6 +1025,7 @@ class PlotTree(DashboardFigure):
                 text = "{}<br><={:.2f}</br>".format(node.feature, node.threshold)
             else:
                 text = "Leaf"
+            # value is stored as [[non-interest, interest]]
             hover_text = "Samples: {}<br>Non-interest Cases: {}, Interest Cases: {}<br>Density: {}%, Coverage: {}%".format(int(node.value[0][0] + node.value[0][1]), int(node.value[0][0]), int(node.value[0][1]), int(node.density*100), int(node.coverage*100))
             fig.add_annotation(x=node.x, y=node.y, text=text, showarrow=False, font=dict(size=10), hovertext = hover_text)
             if node.left:
@@ -1389,7 +1406,28 @@ class STRESSPlatformConnection(DashboardFigure):
 
 if __name__ == "__main__":
     # db
-    db_obj = SQLConnection("all_data_aug_2024")
+    db_obj = SQLConnection("publication")
+    renewable_share = json.dumps({
+    "operation": "division",
+    "output1": "elec_prod_Renewables_TWh",
+    "output2": {
+        "operation": "addition",
+        "outputs": [
+            "elec_prod_Renewables_TWh",
+            "elec_prod_Hydro_TWh",
+            "elec_prod_Nuclear_TWh",
+            "elec_prod_Coal_CCS_TWh",
+            "elec_prod_Coal_No_CCS_TWh",
+            "elec_prod_Gas_No_CCS_TWh",
+            "elec_prod_Gas_CCS_TWh",
+            "elec_prod_Oil_TWh",
+            "elec_prod_Biomass_No_CCS_TWh",
+        ],
+        "name": "Total Electricity",
+    },
+    "name": "Renewable Share",
+    })
+
     # timeseries
     # df = DataRetrieval(db_obj, "percapita_consumption_loss_percent", "GLB", "2C_pes", 2050).choropleth_map_df(5, 95)
     # df = DataRetrieval(db_obj, "elec_prod_renewables_twh_pol-division-elec_prod_total_twh_pol-Renewable Share", "GLB", "Ref").single_output_df_to_graph(5, 95)
@@ -1408,8 +1446,10 @@ if __name__ == "__main__":
     # InputDistributionAlternate(["WindGas", "wind", "BioCCS", "gas", "oil", "coal"]).make_plot(show = True)
 
     # input-output mapping
-    # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
-    # InputOutputMappingPlot("consumption_billion_USD2007", "GLB", "Ref", 2050, df).make_plot(show = True)
+    from styling import FinishedFigure
+    df = DataRetrieval(db_obj, renewable_share, "GLB", "Ref", 2050).mapping_df()
+    unstyled = InputOutputMappingPlot(renewable_share, "GLB", "Ref", 2050, df)
+    FinishedFigure(unstyled).make_finished_figure().show()
     # fig.write_image("assets\examples\cart_usa_2c_2050.svg")
 
     # output-output mapping
@@ -1428,9 +1468,9 @@ if __name__ == "__main__":
     # TimeSeriesClusteringPlot(df, "emissions_CO2eq_total_million_ton_CO2eq", "GLB", "Ref").make_plot(show = True)
 
     # tree
-    # df = DataRetrieval(db_obj, "consumption_billion_USD2007", "GLB", "Ref", 2050).mapping_df()
-    # tree = InputOutputMapping("consumption_billion_USD2007", "GLB", "Ref", 2050, df).CART()
-    # PlotTree(tree, df["Value"]).make_plot(show = True)
+    # df = DataRetrieval(db_obj, renewable_share, "GLB", "Ref", 2050).mapping_df()
+    # tree = InputOutputMapping(renewable_share, "GLB", "Ref", 2050, df, cart_depth = 3).CART()
+    # PlotTree(tree).make_plot(show = True)
 
     # stress platform connection
     # STRESSPlatformConnection(db_obj, ["WindGas", "wind", "BioCCS", "gas", "oil", "coal"], ["consumption_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq"], "primary_energy_use_Biofuel_FirstGen_EJ", "GLB", "2C_med", 2050).make_plot(show = True)

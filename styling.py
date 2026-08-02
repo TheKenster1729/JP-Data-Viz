@@ -176,6 +176,17 @@ class Readability:
             suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
         return f"{n}{suffix}"
 
+    def display_name_for_output(self, output):
+        """Resolve a full output id or custom-variable JSON string to a display name."""
+        if output in self.naming_dict_long_names_first:
+            return self.naming_dict_long_names_first[output]
+        if output in self.publication_naming_dict_long_names_first:
+            return self.publication_naming_dict_long_names_first[output]
+        try:
+            return json.loads(output)["name"]
+        except (TypeError, json.JSONDecodeError, KeyError):
+            return output
+
 class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND",
@@ -354,16 +365,7 @@ class FinishedFigure(Color, Readability, Options):
 
     def style_figure(self):
         # this logic block handles the output display name portion of titling figures
-        if self.figure_object.output in self.outputs or self.figure_object.output in self.publication_outputs:
-            if self.figure_object.output in self.publication_outputs:
-                output_name_for_title = self.publication_naming_dict_long_names_first[self.figure_object.output]
-            else:
-                output_name_for_title = self.naming_dict_long_names_first[self.figure_object.output]
-        else:
-            # assume this covers all cases, as an output not present in the data set originally
-            # nor present as a custom output should not occur
-            
-            output_name_for_title = json.loads(self.figure_object.output)["name"]
+        output_name_for_title = self.display_name_for_output(self.figure_object.output)
 
         # define overall title
         scenario_name = self.publication_scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.publication_scenario_display_names else self.scenario_display_names[self.figure_object.scenario]
@@ -381,21 +383,12 @@ class FinishedFigure(Color, Readability, Options):
             self.figure_object.fig.update_annotations(yshift = 20)
             
             def new_name_for_bar_graph(current_name):
-                if current_name in self.outputs:
-                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
-                else:
-                    new_name = self.split_label(current_name, 12)
+                return self.split_label(self.display_name_for_output(current_name), 12)
 
-                return new_name
             self.figure_object.fig.data[0]["x"] = [new_name_for_bar_graph(name) for name in self.figure_object.fig.data[0]["x"]]
 
             for dimension in self.figure_object.fig.data[1]["dimensions"]:
-                current_name = dimension.label
-                if current_name in self.outputs:
-                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
-                else:
-                    new_name = self.split_label(current_name, 12)
-                dimension.label = new_name
+                dimension.label = self.split_label(self.display_name_for_output(dimension.label), 12)
             
             self.figure_object.fig.data[1].labelangle = 30
             self.figure_object.fig.update_layout(margin=dict(b=100))
@@ -430,25 +423,6 @@ class FinishedFigure(Color, Readability, Options):
                 yaxis = dict(title = dict(text = "Importance", font = dict(size = 16))),
                 xaxis = dict(title = dict(text = "Feature", font = dict(size = 16)))
             )
-        if self.figure_object.figure_type == "output-output-mapping-main":
-            def new_name_for_bar_graph(current_name):
-                if current_name in self.outputs:
-                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
-                else:
-                    new_name = self.split_label(current_name, 12)
-
-                return new_name
-            self.figure_object.fig.data[0]["x"] = [new_name_for_bar_graph(name) for name in self.figure_object.fig.data[0]["x"]]
-
-            for dimension in self.figure_object.fig.data[1]["dimensions"]:
-                current_name = dimension.label
-                if current_name in self.outputs:
-                    new_name = self.split_label(self.naming_dict_long_names_first[current_name], 12)
-                else:
-                    new_name = self.split_label(current_name, 12)
-                dimension.label = new_name
-
-            self.figure_object.fig.data[1].labelangle = 30
 
         if self.figure_object.figure_type == "regional-heatmap":
             self.figure_object.fig.update_layout(

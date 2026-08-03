@@ -117,7 +117,7 @@ class SeriesRepository:
         """
         if year is None:
             return pd.DataFrame({RUN: pd.Series(dtype="int64")})
-        frames = self._by_output(outputs, region, scenario, year)
+        frames = self.frames_at_year(outputs, region, scenario, year)
         result = pd.DataFrame()
         for output in outputs:
             column = self.display_name(output)
@@ -128,6 +128,10 @@ class SeriesRepository:
                 result = result[result[RUN].isin(set(frame[RUN]))]
                 result[column] = frame[VALUE]
         return result
+
+    def frames_at_year(self, outputs, region, scenario, year):
+        """Per-output Run #/Year/Value frames at one year (for analysis joins)."""
+        return self._by_output(outputs, region, scenario, year)
 
     def display_name(self, output):
         if self.dataset.has_output(output):

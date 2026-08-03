@@ -29,9 +29,8 @@ from styling import Options
 class SQLConnection:
     """A named database plus the repository bound to it.
 
-    The engine and raw connector are kept because analysis.py still queries
-    name_mappings and the legacy per-series tables directly. Both are created
-    on first use so a connection is not opened for a database nothing reads.
+    The engine and raw connector are kept because legacy tooling may still open
+    a raw connection to the database. Both are created on first use.
     """
 
     def __init__(self, dbname, pool_size=10, max_overflow=20):

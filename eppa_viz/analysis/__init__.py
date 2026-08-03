@@ -1,11 +1,11 @@
-"""Backward-compatible re-exports. Prefer ``eppa_viz.analysis`` in new code."""
+"""Analysis models: input/output mappings and time-series clustering."""
 
-from eppa_viz.analysis import (
+from eppa_viz.analysis.constants import RANDOM_STATE
+from eppa_viz.analysis.mappings import (
     FilteredInputOutputMapping,
     FilteredOutputOutputMapping,
     InputOutputMapping,
     OutputOutputMapping,
-    RANDOM_STATE,
     TimeSeriesClustering,
 )
 

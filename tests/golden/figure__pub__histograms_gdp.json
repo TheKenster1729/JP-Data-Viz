@@ -1,13 +1,13 @@
 {
-  "case": "figure/full/histograms_gdp",
+  "case": "figure/pub/histograms_gdp",
   "result": {
     "annotations": [
-      "2C Med",
+      "2C",
       "Ref"
     ],
-    "data_digest": "344b8111d05372ee141f53215d1a1d24a3d361a4040f92622589e4aec6248947",
+    "data_digest": "c2fdbc709966404ef3851691281be930a509272253a4649f81242a0e73305ccd",
     "kind": "figure",
-    "layout_digest": "e092b6d204a8507e8c5aa3e94b555ca2e9574a152e17f59d6e7064105db99271",
+    "layout_digest": "e3bd5732c03b2fb3c148957de1d4924df5dc551a247d5e02e6e168f0dc07a6f7",
     "layout_keys": [
       "annotations",
       "xaxis",
@@ -25,7 +25,7 @@
     "traces": [
       {
         "n_x": 400,
-        "name": "GLB - 2C Med",
+        "name": "GLB - 2C",
         "type": "histogram"
       },
       {
@@ -35,7 +35,7 @@
       },
       {
         "n_x": 400,
-        "name": "USA - 2C Med",
+        "name": "USA - 2C",
         "type": "histogram"
       },
       {

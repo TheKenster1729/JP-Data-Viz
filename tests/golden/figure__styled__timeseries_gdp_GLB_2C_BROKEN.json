@@ -1,7 +1,0 @@
-{
-  "case": "figure/styled/timeseries_gdp_GLB_2C_BROKEN",
-  "error_message": "'output-time-series'",
-  "error_site": "styling.py:373",
-  "error_type": "KeyError",
-  "status": "error"
-}

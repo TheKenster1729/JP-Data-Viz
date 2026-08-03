@@ -1,0 +1,38 @@
+{
+  "case": "figure/styled/timeseries_gdp_GLB_2C",
+  "result": {
+    "annotations": [],
+    "data_digest": "a7112831e4480a479ae0937b61e438e48ae12e4d4125faba62164af1e0016872",
+    "kind": "figure",
+    "layout_digest": "fd878f29aa61a368379e8e81c4babbaebd20216af5683c640aa1d96db119f267",
+    "layout_keys": [
+      "height",
+      "margin",
+      "title"
+    ],
+    "n_traces": 3,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": "Time Series for GDP (Billion USD2007), GLB 2C 2050",
+    "traces": [
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": "GLB 2C",
+        "type": "scatter"
+      }
+    ]
+  },
+  "status": "ok"
+}

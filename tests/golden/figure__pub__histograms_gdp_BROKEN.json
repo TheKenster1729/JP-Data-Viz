@@ -1,7 +1,0 @@
-{
-  "case": "figure/pub/histograms_gdp_BROKEN",
-  "error_message": "'2C'",
-  "error_site": "figure.py:423",
-  "error_type": "KeyError",
-  "status": "error"
-}

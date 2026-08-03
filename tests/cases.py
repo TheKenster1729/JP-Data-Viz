@@ -91,7 +91,10 @@ FULL_EMISSIONS = "emissions_CO2eq_total_million_ton_CO2eq"
 
 def _styled(fig_object):
     """Run a figure through the styling pipeline and summarize the result."""
-    FinishedFigure(fig_object).style_figure()
+    from eppa_viz.figures.pipeline import apply_finished_style
+    if fig_object.fig is None and getattr(fig_object, "figure", None) is not None:
+        fig_object.fig = fig_object.figure
+    apply_finished_style(fig_object)
     return summarize_figure(fig_object.fig)
 
 
@@ -232,14 +235,12 @@ def cases():
         }
     c["figure/pub/timeseries_gdp_GLB_2C"] = _timeseries
 
-    # OutputHistograms labels its subplots from Options().scenario_display_names,
-    # which has no entry for the publication scenario "2C", so this raises. Kept
-    # as a case so the fix is visible when it lands.
+    # OutputHistograms labels publication scenarios via publication_scenario_display_names.
     def _histograms_pub():
         fig = OutputHistograms("GDP_billion_USD2007", ["GLB", "USA"], ["2C", "Ref"], 2050,
                                db(PUBLICATION), styling_options={"color": "by-region"})
         return summarize_figure(fig.make_plot())
-    c["figure/pub/histograms_gdp_BROKEN"] = _histograms_pub
+    c["figure/pub/histograms_gdp"] = _histograms_pub
 
     def _histograms_full():
         fig = OutputHistograms("GDP_billion_USD2007", ["GLB", "USA"], ["2C_med", "Ref"], 2050,
@@ -307,14 +308,11 @@ def cases():
         return _styled(TimeSeriesClusteringPlot(df, PUB_EMISSIONS, "GLB", "2C"))
     c["figure/styled/timeseries_clustering_GLB"] = _styled_tsclust
 
-    # Raises twice over: NewTimeSeries registers the figure type
-    # "output-time-series" but FinishedFigure keys that entry "output-timeseries",
-    # and it exposes .figure where the styler reads .fig. Time series are the one
-    # figure the app never routes through styling, which is why this survived.
+    # Styled time series: figure type and .fig alias are unified in NewTimeSeries.
     def _styled_timeseries():
         band = DataRetrieval(db(PUBLICATION), "GDP_billion_USD2007", "GLB", "2C").single_output_df_to_graph(5, 95)
         return _styled(NewTimeSeries("GDP_billion_USD2007", "GLB", "2C", 2050, band))
-    c["figure/styled/timeseries_gdp_GLB_2C_BROKEN"] = _styled_timeseries
+    c["figure/styled/timeseries_gdp_GLB_2C"] = _styled_timeseries
 
     def _styled_custom_variable():
         df = DataRetrieval(db(PUBLICATION), RENEWABLE_SHARE_PUBLICATION, "GLB", "2C", 2050).mapping_df()

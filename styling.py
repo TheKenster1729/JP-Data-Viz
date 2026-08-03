@@ -341,8 +341,15 @@ class FinishedFigure(Color, Readability, Options):
         self.display_names_for_figure_type = {"output-timeseries": "Time Series for ", "input-output-mapping-main": "CART Results for ",
                                               "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for ",
                                               "output-output-mapping-main": "Output-Output Mapping for ", "regional-heatmaps": "Regional Heatmap for ",
-                                              "permutation-importance": "Permutation Importance for ", "ts-clustering-cart": "Time Series Clusters CART for "}
+                                              "permutation-importance": "Permutation Importance for ", "ts-clustering-cart": "Time Series Clusters CART for ",
+                                              "output-time-series": "Time Series for "}
         
+    def _figure_type_key(self):
+        """Map legacy figure_type strings to the canonical styling keys."""
+        ft = self.figure_object.figure_type
+        if ft == "output-time-series":
+            return "output-timeseries"
+        return ft
     def split_label(self, label, max_line_length):
         words = label.split()
         lines = []
@@ -369,11 +376,15 @@ class FinishedFigure(Color, Readability, Options):
 
         # define overall title
         scenario_name = self.publication_scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.publication_scenario_display_names else self.scenario_display_names[self.figure_object.scenario]
+        ft = self._figure_type_key()
+        if ft not in self.display_names_for_figure_type:
+            raise KeyError(ft)
+        prefix = self.display_names_for_figure_type[ft]
         if self.figure_object.year:
-            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name + " " + str(self.figure_object.year)
+            title = prefix + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name + " " + str(self.figure_object.year)
         else:
-            title = self.display_names_for_figure_type[self.figure_object.figure_type] + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name
-        self.figure_object.fig.update_layout(title_text = title,
+            title = prefix + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name
+        self.figure_object.fig.update_layout(title_text=title,
                                       margin = dict(l = 20, r = 20),
                                       title = title,
                                       height = 600)
@@ -440,7 +451,7 @@ if __name__ == "__main__":
                             "CHN": "#725D7A", "IND": "#979576", "BRA": "#16824D", "AFR": "#1A5A2D", "MES": "#D6D092",
                             "LAM": "#38A8A3", "REA": "#CCBE2C", "KOR": "#52CE02", "IDZ": "#B03AC2"}
 
-    from figure import OutputOutputMappingPlot
+    from eppa_viz.figures import OutputOutputMappingPlot
     from sql_utils import SQLConnection, DataRetrieval
 
     db_obj = SQLConnection("all_data_jan_2024")

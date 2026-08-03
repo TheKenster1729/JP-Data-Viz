@@ -28,6 +28,7 @@
         "Year": 2050
       }
     ],
+    "index_digest": "09503fd2303cb4cc2fbe3fd29025ddd2d6d7ea322fdf35cb903e0849e9e39f26",
     "index_name": "None",
     "kind": "dataframe",
     "shape": [
@@ -77,7 +78,7 @@
         "Year": 2050
       }
     ],
-    "values_digest": "02f6ee74dc8889ede1fa603fbf6bbe308d363dc9b86d3d708ce961638de5b781"
+    "values_digest": "aab19a4244731c70373e795f862d034c0b92e02d0395bad51608689ea8ffea3d"
   },
   "status": "ok"
 }

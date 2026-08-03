@@ -33,6 +33,7 @@
         "Region": "MEX"
       }
     ],
+    "index_digest": "4f06ec74f19244e77bf08536cbf44117be74d100b4a99be99a8df27d1f82ab80",
     "index_name": "None",
     "kind": "dataframe",
     "shape": [
@@ -85,7 +86,7 @@
         "Region": "IDZ"
       }
     ],
-    "values_digest": "9ca40b4cdc9f5345183fa490bbd17928010f2213af26b121c473543efe9010d0"
+    "values_digest": "3739b3cf6cfe1dbf6750b59016eabd910d7de0ec5b3c61512fa7898c8ecd7594"
   },
   "status": "ok"
 }

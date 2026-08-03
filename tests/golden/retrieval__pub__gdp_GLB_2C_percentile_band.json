@@ -28,6 +28,7 @@
         "Median": 99132.2
       }
     ],
+    "index_digest": "92d618a7f286e723b364bf5c954de70630b6682a0cad5631c1fadfbdae80e0ed",
     "index_name": "Year",
     "kind": "dataframe",
     "shape": [
@@ -77,7 +78,7 @@
         "Median": 352625.5
       }
     ],
-    "values_digest": "c255818b78662f8b924dc715d928c1a2ad2dd1c4215c3a2aa57a5250b1116fef"
+    "values_digest": "815a673ba3df80aa5676b2ff76edf0c2de3eabe95787bf57ae892fe55373bc23"
   },
   "status": "ok"
 }

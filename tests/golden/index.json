@@ -1,6 +1,154 @@
 {
+  "figure/full/histograms_gdp": {
+    "seconds": 1.13,
+    "status": "ok"
+  },
+  "figure/pub/choropleth_gdp_2C_2050": {
+    "seconds": 2.55,
+    "status": "ok"
+  },
+  "figure/pub/histograms_gdp_BROKEN": {
+    "seconds": 0.01,
+    "status": "error"
+  },
+  "figure/pub/iomap_GLB_2C_2050": {
+    "seconds": 0.16,
+    "status": "ok"
+  },
+  "figure/pub/permutation_importance_GLB": {
+    "seconds": 1.78,
+    "status": "ok"
+  },
+  "figure/pub/plot_tree_GLB_2C_2050": {
+    "seconds": 0.17,
+    "status": "ok"
+  },
+  "figure/pub/timeseries_clustering_GLB": {
+    "seconds": 1.08,
+    "status": "ok"
+  },
+  "figure/pub/timeseries_clustering_cart_GLB": {
+    "seconds": 0.3,
+    "status": "ok"
+  },
+  "figure/pub/timeseries_gdp_GLB_2C": {
+    "seconds": 0.06,
+    "status": "ok"
+  },
+  "figure/styled/choropleth_gdp_2C_2050": {
+    "seconds": 2.38,
+    "status": "ok"
+  },
+  "figure/styled/iomap_GLB_2C_2050": {
+    "seconds": 0.15,
+    "status": "ok"
+  },
+  "figure/styled/iomap_custom_renewable_share": {
+    "seconds": 0.52,
+    "status": "ok"
+  },
+  "figure/styled/timeseries_clustering_GLB": {
+    "seconds": 1.04,
+    "status": "ok"
+  },
+  "figure/styled/timeseries_gdp_GLB_2C_BROKEN": {
+    "seconds": 0.07,
+    "status": "error"
+  },
+  "model/full/iomap_cart_GLB": {
+    "seconds": 0.19,
+    "status": "ok"
+  },
+  "model/full/iomap_random_forest_GLB": {
+    "seconds": 0.21,
+    "status": "ok"
+  },
+  "model/pub/filtered_iomap_random_forest_GLB": {
+    "seconds": 0.1,
+    "status": "ok"
+  },
+  "model/pub/iomap_cart_CHN_region_filtered": {
+    "seconds": 0.05,
+    "status": "ok"
+  },
+  "model/pub/iomap_cart_GLB": {
+    "seconds": 0.09,
+    "status": "ok"
+  },
+  "model/pub/iomap_permutation_GLB": {
+    "seconds": 1.76,
+    "status": "ok"
+  },
+  "model/pub/iomap_random_forest_GLB": {
+    "seconds": 0.13,
+    "status": "ok"
+  },
   "model/pub/output_output_random_forest_GLB": {
+    "seconds": 0.24,
+    "status": "ok"
+  },
+  "model/pub/timeseries_cluster_mapping_GLB": {
+    "seconds": 0.27,
+    "status": "ok"
+  },
+  "model/pub/timeseries_clusters_GLB": {
+    "seconds": 0.25,
+    "status": "ok"
+  },
+  "retrieval/full/emissions_CHN_2C_med_2050": {
+    "seconds": 0.17,
+    "status": "ok"
+  },
+  "retrieval/full/emissions_GLB_15C_med_2050": {
+    "seconds": 0.18,
+    "status": "ok"
+  },
+  "retrieval/full/gdp_GLB_Ref_2050_COLLIDING": {
+    "seconds": 0.15,
+    "status": "ok"
+  },
+  "retrieval/full/multi_output_GLB_15C_med_2050": {
+    "seconds": 0.52,
+    "status": "ok"
+  },
+  "retrieval/full/population_USA_Ref_2050_COLLIDING": {
+    "seconds": 0.25,
+    "status": "ok"
+  },
+  "retrieval/full/renewable_share_division_GLB_15C_med_2050": {
     "seconds": 0.33,
+    "status": "ok"
+  },
+  "retrieval/pub/carbon_price_GLB_Ref_series": {
+    "seconds": 0.09,
+    "status": "ok"
+  },
+  "retrieval/pub/emissions_GLB_2C_2050": {
+    "seconds": 0.04,
+    "status": "ok"
+  },
+  "retrieval/pub/gas_ccs_GLB_2C_series": {
+    "seconds": 0.07,
+    "status": "ok"
+  },
+  "retrieval/pub/gdp_2C_2050_choropleth": {
+    "seconds": 2.1,
+    "status": "ok"
+  },
+  "retrieval/pub/gdp_GLB_2C_percentile_band": {
+    "seconds": 0.14,
+    "status": "ok"
+  },
+  "retrieval/pub/gdp_GLB_Ref_2050_COLLIDING": {
+    "seconds": 0.06,
+    "status": "ok"
+  },
+  "retrieval/pub/population_USA_Ref_2050_COLLIDING": {
+    "seconds": 0.04,
+    "status": "ok"
+  },
+  "retrieval/pub/renewable_share_nested_GLB_2C_2050": {
+    "seconds": 0.44,
     "status": "ok"
   }
 }

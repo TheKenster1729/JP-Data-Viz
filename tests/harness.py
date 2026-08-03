@@ -100,8 +100,16 @@ def summarize_frame(df):
         "stats": numeric,
         "head": canonical(df.head(3).to_dict(orient="records")),
         "tail": canonical(df.tail(3).to_dict(orient="records")),
-        # digest over every value, so drift outside the summary still fails
-        "values_digest": digest(canonical(df.to_dict(orient="split"))),
+        # Digest over every value, so drift outside the summary still fails.
+        # The index is digested separately because it is incidental to most of
+        # these frames: today it is whatever row offsets survived a dropna and
+        # a year filter. A new data layer can produce identical numbers on a
+        # different index, and that should read as one obvious difference
+        # rather than as every frame in the suite changing at once. It is not
+        # ignored, because VariableOutput aligns its operands on the index, so
+        # a change there is worth seeing.
+        "values_digest": digest(canonical(df.to_dict(orient="records"))),
+        "index_digest": digest(canonical(list(df.index))),
     }
 
 

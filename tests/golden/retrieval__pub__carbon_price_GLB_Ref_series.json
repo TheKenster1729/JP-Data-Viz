@@ -28,6 +28,7 @@
         "Year": 2020
       }
     ],
+    "index_digest": "3a13cd6ee5a4c66f7777872b3cc79254c286af5b1a422c3b26f8f77c1903aace",
     "index_name": "None",
     "kind": "dataframe",
     "shape": [
@@ -77,7 +78,7 @@
         "Year": 2100
       }
     ],
-    "values_digest": "48d1bf327021b4aaf0768958817f5261230e17d5bc73e6f14380c1b21176db9e"
+    "values_digest": "45aacb81af759db1e5fa3a715900839d1b884c28b0490e6cf842155d60f28f15"
   },
   "status": "ok"
 }

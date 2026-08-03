@@ -1,43 +1,70 @@
+"""Backwards-compatible entry points over the normalized schema.
+
+SQLConnection, DataRetrieval and MultiOutputRetrieval keep the constructor
+signatures and return shapes they have always had. Everything underneath them
+now goes through data.repository, which reads series_values instead of the
+thousands of randomly-named per-series tables the old code walked through
+name_mappings.
+
+Around thirty call sites in app.py, figure.py and analysis.py still use these
+three names; they are migrated to the repository separately. DatabaseModification
+is the Excel ingest and is unchanged: it still writes the old layout, and its
+__main__ call is deliberately commented out.
+"""
+
+import os
+from itertools import product
+
+import mysql.connector
 import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine, text, MetaData, Table
-import os
-from anytree.importer import DictImporter
-from anytree import RenderTree
-import json
-from anytree.search import findall
-from itertools import product
-from styling import Options
-import sqlalchemy
-from sqlalchemy import Integer, Float
-import mysql.connector
+from sqlalchemy import Float, Integer, text
 from random import choices
-from styling import Readability
-from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import config
+from data.repository import ordinal, repository
+from styling import Options
+
 
 class SQLConnection:
+    """A named database plus the repository bound to it.
+
+    The engine and raw connector are kept because analysis.py still queries
+    name_mappings and the legacy per-series tables directly. Both are created
+    on first use so a connection is not opened for a database nothing reads.
+    """
+
     def __init__(self, dbname, pool_size=10, max_overflow=20):
         self.dbname = dbname
-        # Create engine with connection pooling for better concurrent performance
-        # pool_size: number of connections to keep open
-        # max_overflow: additional connections allowed beyond pool_size during high load
-        # pool_pre_ping: validates connections before use (handles dropped connections)
-        self.retrieval_engine = create_engine(
-            'mysql+mysqlconnector://root:password@localhost:3306/{}'.format(self.dbname),
-            pool_size=pool_size,
-            max_overflow=max_overflow,
-            pool_pre_ping=True,
-            pool_recycle=3600  # Recycle connections after 1 hour to prevent stale connections
-        )
-        self.engine = mysql.connector.connect(
-                host = "localhost",
-                user = "root",
-                password = "password",
-                database = self.dbname
-            )
-        self.cursor = self.engine.cursor()
+        self.pool_size = pool_size
+        self.max_overflow = max_overflow
+        self._engine = None
+        self._cursor = None
+
+    @property
+    def repository(self):
+        return repository(self.dbname)
+
+    @property
+    def retrieval_engine(self):
+        return config.engine(self.dbname, self.pool_size, self.max_overflow)
+
+    @property
+    def engine(self):
+        if self._engine is None:
+            self._engine = mysql.connector.connect(**config.connector_kwargs(self.dbname))
+        return self._engine
+
+    @property
+    def cursor(self):
+        if self._cursor is None:
+            self._cursor = self.engine.cursor()
+        return self._cursor
+
 
 class CustomVariable:
+    # Dead: never had a body and is not referenced. Superseded by
+    # data.expressions. Left in place pending a decision to remove it.
     def __init__(self) -> None:
         pass
 
@@ -123,22 +150,10 @@ class MultiOutputRetrieval:
         self.year = year
 
     def construct_df(self):
-        self.df = pd.DataFrame()
-        for output in self.outputs:
-            output_name = Readability().naming_dict_long_names_first[output] if output in Options().outputs else json.loads(output)["name"]
-            df_to_add = pd.DataFrame()
-            df = DataRetrieval(self.db, output, self.region, self.scenario, self.year).mapping_df()
-            df_to_add["Run #"] = df["Run #"]
-            df_to_add[output_name] = df["Value"]
-            if len(self.df) == 0:
-                self.df = df_to_add
-            else:
-                new_run_numbers = set(df["Run #"])
-                self.df = self.df[self.df["Run #"].isin(new_run_numbers)]
-                self.df[output_name] = df["Value"]
-        
-        return self.df 
-    
+        self.df = self.db.repository.multi_output(
+            self.outputs, self.region, self.scenario, self.year)
+        return self.df
+
 class DataRetrieval:
     def __init__(self, db_connection_obj, output, region, scenario, year = None):
         self.db = db_connection_obj
@@ -147,21 +162,21 @@ class DataRetrieval:
         self.scenario = scenario
         self.year = year
 
+    @property
+    def repository(self):
+        return self.db.repository
+
     def number_to_ordinal(self, n):
         """
         Convert an integer from 1 to 100 into its English ordinal representation.
-        
+
         Args:
         n (int): Integer from 1 to 100
-        
+
         Returns:
         str: The ordinal representation of n
         """
-        if 11 <= n <= 13:
-            suffix = 'th'
-        else:
-            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
-        return str(n) + suffix
+        return ordinal(n)
 
     def get_long_name(self, name = None):
         if not name: # this is the default
@@ -169,6 +184,9 @@ class DataRetrieval:
         return name + "_" + self.region + "_" + self.scenario
 
     def parse_custom_vars_division(self, parsed_string):
+        # Dead: lowercases the region and scenario, so the name_mappings lookup
+        # it builds can never match a key. Superseded by data.expressions.
+        # Left in place pending a decision to remove it.
         output1, output2 = parsed_string[0], parsed_string[2]
         long_name_1 = output1 + "_" + self.region.lower() + "_" + self.scenario.lower()
         long_name_2 = output2 + "_" + self.region.lower() + "_" + self.scenario.lower()
@@ -178,7 +196,7 @@ class DataRetrieval:
         with self.db.retrieval_engine.connect() as conn:
             sql_table_name_1 = conn.execute(df1_query, parameters = {"long_name_1": long_name_1}).fetchall()[0][0]
             sql_table_name_2 = conn.execute(df2_query, parameters = {"long_name_2": long_name_2}).fetchall()[0][0]
-        
+
         try:
             df1 = pd.read_sql_table(sql_table_name_1, con = self.db.retrieval_engine).drop(columns = "index_name")
         except KeyError:
@@ -204,192 +222,54 @@ class DataRetrieval:
         return df
 
     def parse_custom_vars_addition(self):
+        # Dead: never had a body. Superseded by data.expressions.Addition.
         pass
 
-    def get_df(self, name = None):
-        if not name: # this is the default
-            name = self.output
-        long_name = self.get_long_name(name)
-        query = text("SELECT `Assigned Name` FROM name_mappings WHERE `Full Output Name`=:long_name")
-
-        with self.db.retrieval_engine.connect() as conn:
-            sql_table_name = conn.execute(query, parameters = {"long_name": long_name}).fetchall()[0][0]
-
-        # a new table implementation resulted in some tables not having the index_name column
-        try:
-            df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine).drop(columns = "index_name")
-        except KeyError:
-            df = pd.read_sql_table(sql_table_name, con = self.db.retrieval_engine)
-
-        df = df.dropna()
-        if self.output == "percapita_consumption_loss_percent":
-            df["Value"] = df["Value"]*100
-
-        df["Value"] = df["Value"].replace("Eps", 0)
-
-        if self.year:
-            df = df[df["Year"] == self.year]
-
-        return df
-
-    def parse_nested_json(self, json_data):
-        """
-        Recursively parse nested JSON strings into dictionaries.
-        
-        :param json_data: The JSON data to parse.
-        :return: The parsed JSON data with nested dictionaries.
-        """
-        if isinstance(json_data, str):
-            try:
-                parsed_data = json.loads(json_data)
-                return self.parse_nested_json(parsed_data)
-            except json.JSONDecodeError:
-                return json_data
-        elif isinstance(json_data, dict):
-            return {key: self.parse_nested_json(value) for key, value in json_data.items()}
-        elif isinstance(json_data, list):
-            return [self.parse_nested_json(item) for item in json_data]
-        else:
-            return json_data
-
-    def recurse_custom_variables(self, variable_dict):
-        from global_classes import VariableOutput
-        variable_dict = self.parse_nested_json(variable_dict)
-        operation = variable_dict["operation"]
-        if operation == "addition":
-            result = None
-            for output in variable_dict["outputs"]:
-                if isinstance(output, dict):
-                    current_df = self.recurse_custom_variables(output)
-                else:
-                    current_df = self.get_df(output)
-                
-                if result is None:
-                    result = current_df
-                else:
-                    # the VariableOutput class supports edge cases, so we use it here to not write the same code again
-                    output1 = VariableOutput(output, output, self.region, self.scenario, result, year = self.year)
-                    output2 = VariableOutput(output, output, self.region, self.scenario, current_df, year = self.year)
-                    result = output1 + output2 # this is a dataframe
-            return result
-
-        output1 = variable_dict["output1"]
-        output1_name = output1.get("name", "nested_operation") if isinstance(output1, dict) else output1
-        if isinstance(output1, dict):
-            output1_value = self.recurse_custom_variables(output1)
-        else:
-            output1_value = self.get_df(output1)
-
-        output2 = variable_dict["output2"]
-        output2_name = output2.get("name", "nested_operation") if isinstance(output2, dict) else output2
-        if isinstance(output2, dict):
-            output2_value = self.recurse_custom_variables(output2)
-        else:
-            output2_value = self.get_df(output2)
-
-        # Now using the extracted names instead of the original objects
-        output1_value = VariableOutput(output1_name, output1_name, self.region, self.scenario, output1_value, year = self.year)
-        output2_value = VariableOutput(output2_name, output2_name, self.region, self.scenario, output2_value, year = self.year)
-        if operation == "subtraction":
-            return output1_value - output2_value
-        elif operation == "multiplication":
-            return output1_value * output2_value
-        elif operation == "division":
-            return output1_value / output2_value
-
-        raise ValueError(f"Unsupported operation: {operation}")
-
     def single_output_df(self):
-        if self.output not in Options().all_outputs:
-            df = self.recurse_custom_variables(self.output)
-
-        else:
-            df = self.get_df()
-
-        return df
+        return self.repository.series(self.output, self.region, self.scenario, self.year)
 
     def single_output_df_to_graph(self, lower_bound, upper_bound):
-        df = self.single_output_df()
-        df_to_graph = df.groupby(["Year"])["Value"].agg([
-            lambda x: np.percentile(x, lower_bound),
-            np.median,
-            lambda x: np.percentile(x, upper_bound)
-            ]
-        )
-        df_to_graph.columns = ['{} Percentile'.format(self.number_to_ordinal(lower_bound)), 'Median', '{} Percentile'.format(self.number_to_ordinal(upper_bound))]
-
-        return df_to_graph
+        return self.repository.percentile_band(
+            self.output, self.region, self.scenario, lower_bound, upper_bound, self.year)
 
     def output_df(self, output, regions, scenarios):
+        # Dead: get_long_name takes one argument, not three, and
+        # single_output_df takes none. This cannot ever have run.
+        # Left in place pending a decision to remove it.
         combinations = product(regions, scenarios)
 
         df_to_return = pd.DataFrame()
         for combo in combinations:
             long_name = self.get_long_name(output, combo[0], combo[1])
-            df = self.single_output_df(long_name)  
+            df = self.single_output_df(long_name)
         #     df = pd.read_sql_table(table, con = self.engine).drop(columns = "index")
         #     df_to_return = pd.concat([df_to_return, df], ignore_index = True)
 
         # return df_to_return
 
     def mapping_df(self):
-        return self.single_output_df().query("Year==@self.year")
-
-    def _fetch_region_stats(self, region, lower_bound, upper_bound):
-        """
-        Fetch statistics for a single region. Designed for concurrent execution.
-        Returns dict with region data or None on failure.
-        """
-        try:
-            # Create a new DataRetrieval instance for this region to avoid state conflicts
-            retrieval = DataRetrieval(self.db, self.output, region, self.scenario, self.year)
-            regional_result = retrieval.single_output_df_to_graph(lower_bound, upper_bound).loc[self.year]
-            
-            return {
-                'Region': region,
-                f'{self.number_to_ordinal(lower_bound)} Percentile': regional_result.iloc[0],
-                'Median': regional_result.iloc[1],
-                f'{self.number_to_ordinal(upper_bound)} Percentile': regional_result.iloc[2]
-            }
-        except Exception:
-            return None
+        if self.year is None:
+            # The old implementation filtered the full series with
+            # query("Year==@self.year"), which matches nothing when year is
+            # None. Preserved so callers see the same empty frame.
+            return self.single_output_df().iloc[0:0]
+        return self.single_output_df()
 
     def choropleth_map_df(self, lower_bound, upper_bound, max_workers=8):
         """
-        Fetch choropleth data for all regions concurrently.
-        
-        Optimized with ThreadPoolExecutor for parallel region data fetching.
-        Provides ~8x speedup for 18 regions with 8 workers.
+        All regions except GLB, in one query.
+
+        max_workers is accepted and ignored: the old implementation fanned one
+        query out per region across a thread pool, and a single query bound by
+        region_id IN (...) is faster than any number of those.
         """
-        regions = Options().region_names[1:]  # All regions except GLB
-        results = []
-        
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all region fetch tasks
-            future_to_region = {
-                executor.submit(self._fetch_region_stats, region, lower_bound, upper_bound): region
-                for region in regions
-            }
-            
-            # Collect results as they complete
-            for future in as_completed(future_to_region):
-                result = future.result()
-                if result is not None:
-                    results.append(result)
-        
-        # Build DataFrame from results
-        lower_col = f'{self.number_to_ordinal(lower_bound)} Percentile'
-        upper_col = f'{self.number_to_ordinal(upper_bound)} Percentile'
-        df_to_return = pd.DataFrame(results, columns=['Region', lower_col, 'Median', upper_col])
-        
-        # Sort by original region order for consistency
-        region_order = {r: i for i, r in enumerate(regions)}
-        df_to_return['_sort'] = df_to_return['Region'].map(region_order)
-        df_to_return = df_to_return.sort_values('_sort').drop(columns='_sort').reset_index(drop=True)
-        
-        return df_to_return
+        return self.repository.choropleth(
+            self.output, Options().region_names[1:], self.scenario, self.year,
+            lower_bound, upper_bound)
 
 class DatabaseModificationForNewStructure(SQLConnection):
+    # Dead: an empty stub. The migration it describes is
+    # scripts/migrate_schema.py. Left in place pending a decision to remove it.
     def __init__(self, dbname, path_to_scenarios = r"Raw Data\Scenarios"):
         super().__init__(dbname)
         self.path_to_scenarios = path_to_scenarios
@@ -398,26 +278,6 @@ class DatabaseModificationForNewStructure(SQLConnection):
         pass
 
 if __name__ == "__main__":
-    # db = SQLConnection("all_data_jan_2024")
-    # print(DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "Ref", 2050).input_output_mapping_df())
-    # SQLConnection("jp_data").input_output_mapping_df("sectoral_output_Electricity_billion_USD2007", "USA", "2C", 2050)
-    # DataRetrieval(db, "sectoral_output_Electricity_billion_USD2007", "GLB", "15C_med", 2050).choropleth_map_df(5, 95)
-    # for output in Options().outputs:
-    #     df = DataRetrieval(db, output, "GLB", "15C_med", 2050).input_output_mapping_df()
-    #     print(len(df) > 350)
-
-    # print(list(Options().outputs).pop("emissions_CO2eq_total_million_ton_CO2eq"))
-    # DatabaseModification("all_data_jan_2024", scenarios = ["About1.5C_pes", "15C_med", "2C_pes"], files = ["1_percapita_consumption_loss_percent_About15C_pes.xlsx", "1_percapita_consumption_loss_percent_15C_med.xlsx", "1_percapita_consumption_loss_percent_2C_pes.xlsx"]).main()
-
-    # m = MultiOutputRetrieval(db, ["sectoral_output_Electricity_billion_USD2007", "emissions_CO2eq_total_million_ton_CO2eq", "consumption_billion_USD2007"], "GLB", "15C_med", 2050)
-    # m.construct_df()
-    # print(m.df)
-    # lower_bound = 5
-    # upper_bound = 95
-    # renewable_share = json.dumps({"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"})
-    # test_custom_output = json.dumps({"operation": "division", "output1": {"operation": "division", "output1": "elec_prod_Renewables_TWh_pol", "output2": "elec_prod_Total_TWh_pol", "name": "Renewable Share"}, "output2": "population_million_people", "name": "Per Capita Renewable Share"})
-    # df = DataRetrieval(db, test_custom_output, "GLB", "15C_med", year = 2050).single_output_df()
-    # print(df)
     # Leave this commented. Running it re-ingests every Excel file as brand new
     # randomly-named tables and appends duplicate rows to name_mappings.
     # DatabaseModification("publication", path_to_scenarios = r"Raw Data/Archive").main()

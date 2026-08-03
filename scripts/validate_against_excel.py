@@ -33,13 +33,13 @@ import argparse
 import glob
 import os
 import re
-import struct
 import sys
 import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 
 import mysql.connector
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -60,9 +60,13 @@ FILENAME = re.compile(r"^\d+_(?P<rest>.+)\.xlsx$")
 YEARS = set(range(2020, 2101, 5))
 
 
-def as_float32(value):
-    """Round a double to the FLOAT the database actually stores."""
-    return struct.unpack("f", struct.pack("f", value))[0]
+def float32_sum(values):
+    """Sum a series as the database would, having stored it as FLOAT.
+
+    Each value is narrowed to float32 first, then accumulated in float64 to
+    match SUM(CAST(value AS DOUBLE)) on the MySQL side.
+    """
+    return float(np.asarray(values, dtype=np.float32).astype(np.float64).sum())
 
 
 def scenarios_for(dataset):
@@ -96,16 +100,24 @@ def aggregate_workbook(job):
     except Exception as exc:  # noqa: BLE001
         return path, None, f"{type(exc).__name__}: {exc}"
 
+    unexpected = set()
     for region, frame in sheets.items():
         if region == "Data Note" or frame.empty:
             continue
         for column in frame.columns:
             if not str(column).isdigit() or int(column) not in YEARS:
                 continue
-            values = frame[column].dropna()
+            # The New_Ensembles workbooks carry GAMS "Eps" markers for values
+            # rounded to nothing. The ingest maps them to 0, so this must too.
+            raw = frame[column].replace("Eps", 0)
+            values = pd.to_numeric(raw, errors="coerce")
+            unexpected |= set(raw[values.isna() & raw.notna()].astype(str).unique())
+            values = values.dropna()
             if len(values):
                 result[(output, region, scenario, int(column))] = (
-                    len(values), float(sum(as_float32(float(v)) for v in values)))
+                    len(values), float32_sum(values))
+    if unexpected:
+        return path, result, f"non-numeric values ignored: {sorted(unexpected)[:5]}"
     return path, result, None
 
 
@@ -166,13 +178,15 @@ def main():
             done += 1
             if error:
                 failures.append((path, error))
-            else:
+            if result:
                 excel.update(result)
             if done % 100 == 0 or done == len(jobs):
                 print(f"   {done}/{len(jobs)} workbooks  {time.time() - started:.0f}s")
-    print(f"  parsed {len(excel)} series in {(time.time() - started)/60:.1f} min")
-    for path, error in failures[:5]:
-        print(f"   unreadable workbook, will fall back to CSV: {os.path.basename(path)}")
+    print(f"  parsed {len(excel)} series-years in {(time.time() - started)/60:.1f} min")
+    if failures:
+        print(f"  {len(failures)} workbook(s) needed attention:")
+        for path, error in failures[:5]:
+            print(f"    {os.path.basename(path)}: {error}")
 
     csv_sourced = load_csv_fallbacks(excel, jobs)
     if csv_sourced:
@@ -187,12 +201,18 @@ def main():
         host="localhost", user="root",
         password=os.environ.get("MYSQL_PWD", "password"), database=args.dataset)
     cursor = connection.cursor()
+    # NULLs are excluded so both sides count the same thing. A blank cell in a
+    # workbook becomes a NULL row here, and whole sheets are blank for regions
+    # an output does not apply to, so counting NULLs would report agreement as
+    # a difference.
     cursor.execute("""
-        SELECT o.name, r.code, s.code, sv.year, COUNT(*), SUM(CAST(sv.value AS DOUBLE))
+        SELECT o.name, r.code, s.code, sv.year, COUNT(sv.value),
+               SUM(CAST(sv.value AS DOUBLE))
         FROM series_values sv
         JOIN outputs   o ON o.output_id   = sv.output_id
         JOIN regions   r ON r.region_id   = sv.region_id
         JOIN scenarios s ON s.scenario_id = sv.scenario_id
+        WHERE sv.value IS NOT NULL
         GROUP BY o.name, r.code, s.code, sv.year""")
     database = {(o, r, s, int(y)): (n, float(total or 0.0))
                 for o, r, s, y, n, total in cursor.fetchall()}
@@ -236,11 +256,13 @@ def main():
     if absent_from_source:
         gaps = defaultdict(set)
         for key in absent_from_source:
-            gaps[(key[0], key[2])].add(key[3])
-        print("\n    years the database has that the source does not "
+            gaps[(key[0], key[2], key[1])].add(key[3])
+        print("\n    in the database but not the source "
               "(source coverage gaps, not errors):")
-        for (output, scenario), years in sorted(gaps.items()):
-            print(f"      {output} [{scenario}]: {sorted(years)}")
+        for (output, scenario, region), years in sorted(gaps.items())[:20]:
+            print(f"      {output} [{scenario}] {region}: {sorted(years)}")
+        if len(gaps) > 20:
+            print(f"      ... and {len(gaps) - 20} more region/scenario combinations")
 
     problems = len(missing_from_db) + len(count_diffs) + len(value_diffs)
     by_output = defaultdict(int)

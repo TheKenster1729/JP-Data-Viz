@@ -49,7 +49,15 @@ def main():
         return 1
 
     os.makedirs(GOLDEN_DIR, exist_ok=True)
-    index, failures = {}, []
+    index_path = os.path.join(GOLDEN_DIR, "index.json")
+    # --only updates a subset; merge into the existing index so an earlier
+    # full capture is not wiped down to the filtered names.
+    if args.only and os.path.exists(index_path):
+        with open(index_path) as fh:
+            index = json.load(fh)
+    else:
+        index = {}
+    failures = []
 
     for i, name in enumerate(sorted(selected), 1):
         started = time.time()
@@ -69,7 +77,7 @@ def main():
             flag = "ok"
         print(f"[{i:2d}/{len(selected)}] {elapsed:6.2f}s  {flag:24s} {name}")
 
-    with open(os.path.join(GOLDEN_DIR, "index.json"), "w") as fh:
+    with open(index_path, "w") as fh:
         json.dump(index, fh, indent=2, sort_keys=True)
         fh.write("\n")
 

@@ -128,7 +128,7 @@
     "status": "ok"
   },
   "retrieval/pub/gas_ccs_GLB_2C_series": {
-    "seconds": 0.07,
+    "seconds": 0.1,
     "status": "ok"
   },
   "retrieval/pub/gdp_2C_2050_choropleth": {

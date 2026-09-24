@@ -8,8 +8,9 @@ name_mappings.
 
 Around thirty call sites in app.py, figure.py and analysis.py still use these
 three names; they are migrated to the repository separately. DatabaseModification
-is the Excel ingest and is unchanged: it still writes the old layout, and its
-__main__ call is deliberately commented out.
+is the legacy Excel ingest and is unchanged: it still writes the old layout, and its
+__main__ call is deliberately commented out. New data goes through
+scripts/ingest_excel.py, which writes series_values directly.
 """
 
 import os

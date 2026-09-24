@@ -259,6 +259,9 @@ def main():
     parser.add_argument("--dataset", required=True, choices=sorted(SCENARIOS_BY_DATASET))
     parser.add_argument("--validate-only", action="store_true",
                         help="re-check an existing migration without rebuilding it")
+    parser.add_argument("--discard-unmapped", action="store_true",
+                        help="rebuild even though series_values holds series that "
+                             "name_mappings does not, deleting them")
     args = parser.parse_args()
 
     connection = connect(args.dataset)
@@ -282,6 +285,15 @@ def main():
             {c: i for c, i in _fetch(cursor, "SELECT code, scenario_id FROM scenarios")},
             {c: i for c, i in _fetch(cursor, "SELECT name, output_id FROM outputs")})
     else:
+        unmapped = unmapped_series(cursor, parsed)
+        if unmapped and not args.discard_unmapped:
+            print(f"\nrefusing to rebuild: series_values holds {len(unmapped)} series with "
+                  "no legacy table, most likely loaded by scripts/ingest_excel.py. "
+                  "Rebuilding would delete them. For example:")
+            for output, region, scenario in unmapped[:10]:
+                print(f"    {output} {region} {scenario}")
+            print("pass --discard-unmapped to rebuild anyway.")
+            return 1
         print("\nbuilding schema ...")
         create_schema(cursor)
         region_ids, scenario_ids, output_ids = populate_dimensions(cursor, parsed, args.dataset)
@@ -306,6 +318,26 @@ def main():
     cursor.close()
     connection.close()
     return 1 if mismatches else 0
+
+
+def unmapped_series(cursor, parsed):
+    """Series in an existing series_values that the rebuild would not recreate.
+
+    This script rebuilds from the legacy per-series tables only, so anything
+    loaded straight into series_values would be lost.
+    """
+    cursor.execute("SELECT COUNT(*) FROM information_schema.tables "
+                   "WHERE table_schema=DATABASE() AND table_name='series_values'")
+    if not cursor.fetchone()[0]:
+        return []
+    cursor.execute("""
+        SELECT o.name, r.code, s.code
+        FROM (SELECT DISTINCT output_id, region_id, scenario_id FROM series_values) sv
+        JOIN outputs   o ON o.output_id   = sv.output_id
+        JOIN regions   r ON r.region_id   = sv.region_id
+        JOIN scenarios s ON s.scenario_id = sv.scenario_id""")
+    mapped = {(output, region, scenario) for output, region, scenario, _, _ in parsed}
+    return sorted(set(cursor.fetchall()) - mapped)
 
 
 def _fetch(cursor, query):

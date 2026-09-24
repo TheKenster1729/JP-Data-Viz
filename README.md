@@ -76,7 +76,7 @@ Open `http://0.0.0.0:8050` (Dash default). For production-style serving, use gun
 
 ## Tests
 
-Golden tests freeze retrieval, analysis, and figure outputs:
+Golden tests freeze retrieval, analysis, and figure outputs (to make sure that things are behaving consistently after future changes):
 
 ```bash
 pytest tests/test_golden.py

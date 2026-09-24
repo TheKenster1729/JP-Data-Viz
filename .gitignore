@@ -4,3 +4,5 @@
 /all_data_aug_2024.sql
 .DS_Store
 backups/
+__pycache__/
+*.pyc

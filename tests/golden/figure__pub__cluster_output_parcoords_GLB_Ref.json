@@ -1,0 +1,42 @@
+{
+  "case": "figure/pub/cluster_output_parcoords_GLB_Ref",
+  "result": {
+    "annotations": [
+      "Reference Global Outputs<br>with Clusters, 2100"
+    ],
+    "data_digest": "9bc7a82f8f910119d0321bbba3e4f7557beef5a9e173ec363b690a9408fac497",
+    "kind": "figure",
+    "layout_digest": "4fc7bf5164dc9307a6eabd2176c4942e1e247b203f2ba6d7e5e3fb8d85d40f29",
+    "layout_keys": [
+      "annotations",
+      "font",
+      "height",
+      "margin",
+      "paper_bgcolor",
+      "plot_bgcolor",
+      "title",
+      "width"
+    ],
+    "n_traces": 1,
+    "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
+    "title": null,
+    "traces": [
+      {
+        "dimensions": [
+          "Total Elec (TWh)",
+          "Total PrimEnergy (EJ)",
+          "GDP Growth (%)",
+          "Nuclear (TWh)",
+          "Gas (TWh)",
+          "CCS (TWh)",
+          "Renew (TWh)",
+          "Carbon Price (USD/t)",
+          "2100 Share"
+        ],
+        "name": null,
+        "type": "parcoords"
+      }
+    ]
+  },
+  "status": "ok"
+}

@@ -5,9 +5,9 @@
       "Feature Importances, Top 5 Features",
       "Parallel Axis Plot, Top 5 Features"
     ],
-    "data_digest": "9c477286a7583a133ec78d7603569acb438518458914ae8488ad4451769af63d",
+    "data_digest": "8daaa1fbd87a64a40af62505bb967b78e7dfc9e778e2dc0eb73288f61baf26f7",
     "kind": "figure",
-    "layout_digest": "fe2d92d7c15b0238d545e8d7d1b46d32aa1a2af7d1d081a04c6c31568be9c5a5",
+    "layout_digest": "ef9b49bbc15563778d8620b95988253c9481904ca0d5e2094f01cd28d7456dba",
     "layout_keys": [
       "annotations",
       "height",
@@ -18,7 +18,7 @@
     ],
     "n_traces": 2,
     "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
-    "title": "CART Results for Renewable Share, GLB 2C 2050",
+    "title": "CART Results for Renewables Share, GLB 2C 2050",
     "traces": [
       {
         "n_x": 5,

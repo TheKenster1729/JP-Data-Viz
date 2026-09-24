@@ -1,5 +1,13 @@
 """Dashboard figure builders (plotly)."""
 
+import sys
+from pathlib import Path
+
+# `python eppa_viz/figures/mapping_plots.py` only adds this folder to sys.path.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 import json
 import hashlib
 import re
@@ -13,7 +21,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from plotly.colors import n_colors
 
-from analysis import (
+from eppa_viz.analysis import (
     FilteredInputOutputMapping,
     FilteredOutputOutputMapping,
     InputOutputMapping,
@@ -23,7 +31,7 @@ from analysis import (
 from eppa_viz.figures.base import DashboardFigure, OUTPUT_TIMESERIES
 from eppa_viz.figures.utils import sanitize_uid, TraceInfo
 from sql_utils import DataRetrieval, SQLConnection
-from styling import Color, Options, Readability
+from styling import Color, Options, Readability, FinishedFigure
 
 
 
@@ -184,3 +192,34 @@ class FilteredOutputOutputMappingPlot(FilteredOutputOutputMapping, DashboardFigu
 
         return fig
 
+if __name__ == "__main__":
+    # Custom variable spec (same structure as the Custom Variables tab). Use a
+    # JSON string for plotting — that matches the dashboard output-dropdown value.
+    db_obj = SQLConnection("publication")
+    renewable_share_spec = {
+        "operation": "division",
+        "output1": "elec_prod_Renewables_TWh",
+        "output2": {
+            "operation": "addition",
+            "outputs": [
+                "elec_prod_Renewables_TWh",
+                "elec_prod_Hydro_TWh",
+                "elec_prod_Nuclear_TWh",
+                "elec_prod_Coal_CCS_TWh",
+                "elec_prod_Coal_No_CCS_TWh",
+                "elec_prod_Gas_No_CCS_TWh",
+                "elec_prod_Gas_CCS_TWh",
+                "elec_prod_Oil_TWh",
+                "elec_prod_Biomass_No_CCS_TWh",
+            ],
+            "name": "Total Electricity",
+        },
+        "name": "Renewable Share",
+    }
+    renewable_share = json.dumps(renewable_share_spec)
+
+    region, scenario, year = "GLB", "2C", 2050
+    df = DataRetrieval(db_obj, renewable_share, region, scenario, year).mapping_df()
+    fig = OutputOutputMappingPlot(db_obj, renewable_share, region, scenario, year, df).make_plot(show=True)
+    # finished_fig = FinishedFigure(fig).make_finished_figure()
+    # finished_fig.show()

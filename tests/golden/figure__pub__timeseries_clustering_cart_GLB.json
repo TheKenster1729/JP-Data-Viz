@@ -1,41 +1,2433 @@
 {
   "case": "figure/pub/timeseries_clustering_cart_GLB",
   "result": {
-    "annotations": [
-      "Feature Importances, Top 5 Features",
-      "Parallel Axis Plot, Top 5 Features"
-    ],
-    "data_digest": "37ae5ee58bc3cbe20f17e60afc738d1065a14ae3f7ef47e5fb2accc5b0b479ef",
+    "annotations": [],
+    "data_digest": "158916157659d96728aa35eb116bb3716d33fd844af9db0848b21db487f7d3f1",
     "kind": "figure",
-    "layout_digest": "4a81f5a637230fe37532a9ea57c4c8c6b81e21c2d47ac207da1cc81447ef9207",
+    "layout_digest": "90663c3b28f13f1992620c277b349d2088421ee9de423bdc3bf600574dc21461",
     "layout_keys": [
-      "annotations",
+      "font",
       "height",
+      "margin",
+      "paper_bgcolor",
+      "plot_bgcolor",
+      "showlegend",
+      "title",
       "width",
       "xaxis",
-      "yaxis"
+      "xaxis2",
+      "yaxis",
+      "yaxis2"
     ],
-    "n_traces": 2,
+    "n_traces": 401,
     "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
-    "title": null,
+    "title": "Most Important Features to Predict Cluster 1, Global Total Emissions CO2e (Million Ton CO2e) Under 2C",
     "traces": [
       {
-        "n_x": 5,
-        "n_y": 5,
+        "n_x": 4,
+        "n_y": 4,
         "name": null,
         "type": "bar"
       },
       {
-        "dimensions": [
-          "FF-COAL",
-          "BioCCS",
-          "PC",
-          "TFP",
-          "LK FOOD",
-          "total_emissions_CO2e_million_ton_CO2e"
-        ],
+        "n_x": 17,
+        "n_y": 17,
         "name": null,
-        "type": "parcoords"
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
+      },
+      {
+        "n_x": 17,
+        "n_y": 17,
+        "name": null,
+        "type": "scatter"
       }
     ]
   },

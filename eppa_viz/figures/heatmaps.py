@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from plotly.colors import n_colors
 
-from analysis import (
+from eppa_viz.analysis import (
     FilteredInputOutputMapping,
     FilteredOutputOutputMapping,
     InputOutputMapping,

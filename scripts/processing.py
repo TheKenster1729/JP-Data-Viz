@@ -1,5 +1,9 @@
-# goal of this module is to take in data from every source and return data that can be used in the analysis and figure modules
-# modularity is key - if data sources change, only this module needs to be updated, not any others
+"""Legacy Excel/CSV ingest helpers (not used by the Dash app).
+
+Run from the repository root, e.g. ``python scripts/processing.py``.
+Database migration and validation live in ``scripts/migrate_schema.py`` and
+``scripts/validate_against_excel.py``.
+"""
 import os
 import pandas as pd
 import openpyxl as op

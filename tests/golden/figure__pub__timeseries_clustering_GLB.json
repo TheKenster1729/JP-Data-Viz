@@ -2,2430 +2,2440 @@
   "case": "figure/pub/timeseries_clustering_GLB",
   "result": {
     "annotations": [],
-    "data_digest": "302ce4643eb2bf1b255c4b84c1d8bea3554c05ff9be984761a7cb4abb8994c6d",
+    "data_digest": "b522bdbfec16a83f9a079e537c493ffd1d659cea2d41e203d145e87d9278193a",
     "kind": "figure",
-    "layout_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-    "layout_keys": [],
+    "layout_digest": "015105ff4a263640d788c29e6341dc6f8699a9cc5adc1288459070b55da23184",
+    "layout_keys": [
+      "font",
+      "legend",
+      "margin",
+      "paper_bgcolor",
+      "plot_bgcolor",
+      "showlegend",
+      "title",
+      "xaxis",
+      "yaxis"
+    ],
     "n_traces": 403,
     "template_digest": "9736eae1815c4356a37c2813c4902975321730352e374a804b2a6f0c3826389c",
-    "title": null,
+    "title": "Time Series Clustering, Total Emissions CO2e (Million Ton CO2e) Under 2C",
     "traces": [
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 1",
+        "name": "Cluster 1 (27%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 2",
+        "name": "Cluster 2 (29%)",
         "type": "scatter"
       },
       {
         "n_x": 17,
         "n_y": 17,
-        "name": "Cluster 3",
+        "name": "Cluster 3 (44%)",
         "type": "scatter"
       }
     ]

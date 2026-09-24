@@ -274,7 +274,8 @@ class TimeSeriesClustering:
         self.region = region
         self.scenario = scenario
         self.n_clusters = n_clusters
-        self.df_for_clustering = self.df.pivot(columns="Year", index="Run #")
+        frame = self.df.pivot(index="Run #", columns="Year", values="Value")
+        self.df_for_clustering = frame.sort_index(axis=1)
         self.metric = metric
         self.cart_depth = cart_depth
         self.n_estimators = n_estimators
@@ -283,12 +284,21 @@ class TimeSeriesClustering:
         self.random_state = random_state
 
     def generate_clusters(self):
-        return TimeSeriesKMeans(
+        from eppa_viz.figures.cluster_label_cache import (
+            _FittedClusters,
+            reorder_clusters_by_terminal_year,
+        )
+        raw = TimeSeriesKMeans(
             n_clusters=self.n_clusters,
             metric=self.metric,
             random_state=self.random_state).fit(self.df_for_clustering)
+        return reorder_clusters_by_terminal_year(
+            _FittedClusters(raw.labels_, raw.cluster_centers_, inertia_=raw.inertia_),
+            self.df_for_clustering,
+        )
 
     def cluster_mapping(self):
+        """Multiclass RF (legacy); prefer cluster_mapping_binary for publication figures."""
         self.inputs = prepare_inputs(
             self.region, self.scenario, output=self.output,
             drop_runs_map=RUNS_TO_DROP_BY_OUTPUT)
@@ -298,4 +308,26 @@ class TimeSeriesClustering:
             n_estimators=self.n_estimators,
             max_depth=self.max_depth,
             random_state=self.random_state).fit(self.X, self.y)
+        return _forest_importances(fit_model, self.X.columns, self.num_to_plot)
+
+    def cluster_mapping_binary(self, cluster_index):
+        """
+        Random forest for membership in one cluster (in cluster vs not).
+        cluster_index is 0-based (0 = Cluster 1).
+        """
+        labels = self.generate_clusters().labels_
+        labels_by_run = pd.Series(labels, index=self.df_for_clustering.index)
+        self.inputs = prepare_inputs(
+            self.region, self.scenario, output=self.output,
+            drop_runs_map=RUNS_TO_DROP_BY_OUTPUT)
+        cluster_col = self.inputs["Run #"].map(labels_by_run)
+        valid = cluster_col.notna()
+        self.X = self.inputs.loc[valid, self.inputs.columns[1:]]
+        y_clusters = cluster_col.loc[valid].astype(int).to_numpy()
+        self.y = y_clusters
+        y_binary = (y_clusters == cluster_index).astype(int)
+        fit_model = RandomForestClassifier(
+            n_estimators=self.n_estimators,
+            max_depth=self.max_depth,
+            random_state=self.random_state).fit(self.X, y_binary)
         return _forest_importances(fit_model, self.X.columns, self.num_to_plot)

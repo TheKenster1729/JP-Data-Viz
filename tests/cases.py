@@ -68,6 +68,7 @@ RENEWABLE_SHARE_PUBLICATION = json.dumps({
             "elec_prod_Coal_CCS_TWh",
             "elec_prod_Coal_No_CCS_TWh",
             "elec_prod_Gas_No_CCS_TWh",
+            "elec_prod_Gas_CCS_TWh",
             "elec_prod_Oil_TWh",
             "elec_prod_Biomass_No_CCS_TWh",
         ],
@@ -200,7 +201,7 @@ def cases():
     def _cluster_mapping():
         df = DataRetrieval(db(PUBLICATION), PUB_EMISSIONS, "GLB", "2C").single_output_df()
         _, importances, top_n = TimeSeriesClustering(
-            df, PUB_EMISSIONS, "GLB", "2C").cluster_mapping()
+            df, PUB_EMISSIONS, "GLB", "2C", num_to_plot=4).cluster_mapping_binary(0)
         return {"top_n": canonical(top_n), "importances": canonical(importances.head(20))}
     c["model/pub/timeseries_cluster_mapping_GLB"] = _cluster_mapping
 
@@ -266,6 +267,19 @@ def cases():
         df = DataRetrieval(db(PUBLICATION), PUB_EMISSIONS, "GLB", "2C").single_output_df()
         return summarize_figure(TimeSeriesClusteringPlotCART(df, PUB_EMISSIONS, "GLB", "2C").fig)
     c["figure/pub/timeseries_clustering_cart_GLB"] = _tsclust_cart_fig
+
+    def _cluster_outputs_fig():
+        from eppa_viz.figures.cluster_output_parcoords import (
+            ClusterOutputParcoordsPlot,
+            RENEWABLE_SHARE_SPEC,
+        )
+        share = json.dumps(RENEWABLE_SHARE_SPEC)
+        df = DataRetrieval(db(PUBLICATION), share, "GLB", "Ref").single_output_df()
+        plot = ClusterOutputParcoordsPlot(
+            db(PUBLICATION), df, share, "GLB", "Ref", year=2100,
+        )
+        return summarize_figure(plot.fig)
+    c["figure/pub/cluster_output_parcoords_GLB_Ref"] = _cluster_outputs_fig
 
     # PlotTree only returns its figure from make_plot(); it never assigns .fig.
     # This also pins the density and coverage numbers on every node, which were

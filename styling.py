@@ -2,6 +2,7 @@ import pandas as pd
 from plotly.colors import n_colors, hex_to_rgb, convert_dict_colors_to_same_type
 from PIL import ImageColor
 import json
+import re
 
 class Color:
     def __init__(self):
@@ -187,6 +188,12 @@ class Readability:
         except (TypeError, json.JSONDecodeError, KeyError):
             return output
 
+    def display_title_for_output(self, output):
+        """Display name for figure titles (e.g. Renewable → Renewables)."""
+        name = self.display_name_for_output(output)
+        return re.sub(r"\bRenewable\b", "Renewables", name)
+
+
 class Options:
     def __init__(self):
         self.region_names = ["GLB", "USA", "CAN", "MEX", "JPN", "ANZ", "EUR", "ROE", "RUS", "ASI", "CHN", "IND",
@@ -342,6 +349,7 @@ class FinishedFigure(Color, Readability, Options):
                                               "choropleth-map": "Choropleth Map for ", "ts-clustering": "Time Series Clusters for ",
                                               "output-output-mapping-main": "Output-Output Mapping for ", "regional-heatmaps": "Regional Heatmap for ",
                                               "permutation-importance": "Permutation Importance for ", "ts-clustering-cart": "Time Series Clusters CART for ",
+                                              "multi-region-rf-heatmap": "",
                                               "output-time-series": "Time Series for "}
         
     def _figure_type_key(self):
@@ -371,25 +379,27 @@ class FinishedFigure(Color, Readability, Options):
         return '<br>'.join(lines)
 
     def style_figure(self):
-        # this logic block handles the output display name portion of titling figures
-        output_name_for_title = self.display_name_for_output(self.figure_object.output)
-
-        # define overall title
-        scenario_name = self.publication_scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.publication_scenario_display_names else self.scenario_display_names[self.figure_object.scenario]
         ft = self._figure_type_key()
         if ft not in self.display_names_for_figure_type:
             raise KeyError(ft)
-        prefix = self.display_names_for_figure_type[ft]
-        if self.figure_object.year:
-            title = prefix + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name + " " + str(self.figure_object.year)
-        else:
-            title = prefix + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name
-        self.figure_object.fig.update_layout(title_text=title,
-                                      margin = dict(l = 20, r = 20),
-                                      title = title,
-                                      height = 600)
+
+        if ft != "multi-region-rf-heatmap":
+            # this logic block handles the output display name portion of titling figures
+            output_name_for_title = self.display_title_for_output(self.figure_object.output)
+
+            # define overall title
+            scenario_name = self.publication_scenario_display_names[self.figure_object.scenario] if self.figure_object.scenario in self.publication_scenario_display_names else self.scenario_display_names[self.figure_object.scenario]
+            prefix = self.display_names_for_figure_type[ft]
+            if self.figure_object.year:
+                title = prefix + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name + " " + str(self.figure_object.year)
+            else:
+                title = prefix + output_name_for_title + ", " + self.figure_object.region + " " + scenario_name
+            self.figure_object.fig.update_layout(title_text=title,
+                                          margin = dict(l = 20, r = 20),
+                                          title = title,
+                                          height = 600)
         # plot-specific changes
-        if self.figure_object.figure_type == "input-output-mapping-main" or self.figure_object.figure_type == "output-output-mapping-main" or self.figure_object.figure_type == "ts-clustering-cart":
+        if self.figure_object.figure_type == "input-output-mapping-main" or self.figure_object.figure_type == "output-output-mapping-main":
             self.figure_object.fig.update_yaxes(title_text = "Feature Importance", row = 1, col = 1)
             self.figure_object.fig.update_annotations(yshift = 20)
             
@@ -415,18 +425,60 @@ class FinishedFigure(Color, Readability, Options):
                         )
 
         if self.figure_object.figure_type == "ts-clustering":
-            self.figure_object.fig.update_layout(
-                yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16)))
+            from eppa_viz.figures.clustering_style import (
+                apply_publication_cluster_style,
+                default_y_axis_label,
+                paper_cluster_title,
+                plot_years_from_pivot,
             )
+            x_years = plot_years_from_pivot(self.figure_object.df_for_clustering)
+            title = paper_cluster_title(
+                self.figure_object.output,
+                self.figure_object.region,
+                self.figure_object.scenario,
+            )
+            y_label = default_y_axis_label(self.figure_object.output)
+            apply_publication_cluster_style(
+                self.figure_object.fig, title, y_label, x_years,
+            )
+            self.figure_object.fig.update_layout(height=600)
 
         if self.figure_object.figure_type == "ts-clustering-cart":
+            from eppa_viz.figures.clustering_style import (
+                apply_publication_cluster_cart_style,
+                cart_y_axis_label,
+                paper_cart_title,
+                plot_years_from_pivot,
+            )
+            x_years = plot_years_from_pivot(self.figure_object.df_for_clustering)
+            title = paper_cart_title(
+                self.figure_object.output,
+                self.figure_object.region,
+                self.figure_object.scenario,
+                self.figure_object.highlight_cluster,
+            )
+            y_label = cart_y_axis_label(self.figure_object.output)
+            apply_publication_cluster_cart_style(
+                self.figure_object.fig, title, y_label, x_years,
+            )
+            self.figure_object.fig.update_layout(height=750, width=1000)
+
+        if self.figure_object.figure_type == "ts-clustering-outputs":
+            from eppa_viz.figures.clustering_style import (
+                apply_publication_cluster_parcoords_style,
+                paper_cluster_outputs_title,
+                PAPER_PARCOORDS_HEIGHT,
+                PAPER_PARCOORDS_WIDTH,
+            )
+            title = paper_cluster_outputs_title(
+                self.figure_object.region,
+                self.figure_object.scenario,
+                self.figure_object.year,
+            )
+            apply_publication_cluster_parcoords_style(self.figure_object.fig, title)
             self.figure_object.fig.update_layout(
-                yaxis = dict(title = dict(text = output_name_for_title, font = dict(size = 16))),
-                xaxis = dict(title = dict(text = "Year", font = dict(size = 16))),
-                title = "Time Series Clusters for {}".format(output_name_for_title),
-                height = 750,
-                width = 1200
+                height=PAPER_PARCOORDS_HEIGHT,
+                width=PAPER_PARCOORDS_WIDTH,
             )
 
         if self.figure_object.figure_type == "permutation-importance":
